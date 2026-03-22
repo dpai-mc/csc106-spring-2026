@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Installing VirtualBox and Ubuntu Server — Windows 11 | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style (global) ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav Bar ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 { font-size: 1.2rem; color: #1e293b; }
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+h4 {
+  font-size: 0.95rem;
+  color: #1e3a5f;
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.intro-note {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+}
+
+/* ── Task Sections ── */
+.task-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  scroll-margin-top: 3.5rem;
+}
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+.task-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.task-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  background: #6366f1;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.toggle-btn {
+  background: none;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s, color 0.15s;
+}
+.toggle-btn:hover,
+.toggle-btn:focus {
+  background: #6366f1;
+  color: #fff;
+}
+.task-content { padding: 1.25rem; }
+
+/* ── Download Box ── */
+.download-box {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.download-box a { color: #166534; font-weight: 600; }
+.download-box a:hover,
+.download-box a:focus { text-decoration: underline; }
+.download-box .verify {
+  margin-top: 0.45rem;
+  color: #15803d;
+  font-size: 0.88rem;
+}
+
+/* ── Video + Transcript ── */
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Steps ── */
+ol.steps {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0 0.85rem;
+}
+ol.steps li { margin-bottom: 0.55rem; font-size: 0.95rem; }
+ol.steps li strong { color: #1e3a5f; }
+ol.steps ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.3rem;
+}
+ol.steps ul li { margin-bottom: 0.25rem; }
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Tip / Warning Boxes ── */
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#hypervisor">Task 1: VirtualBox</a>
+  <a href="#ubuntu-server">Task 2: Ubuntu Server</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ────────────────────────────────────────────────── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 · Week 1 · Windows 11</p>
+    <h1 id="page-heading">Setting Up Your Linux Environment</h1>
+    <p>This tutorial prepares your Windows 11 computer for <strong>Lab 1</strong>. You will complete two tasks: install VirtualBox (a hypervisor that lets you run Linux inside a window on your PC), then use it to install Ubuntu Server 24.04 LTS as a virtual machine.</p>
+    <p>Each task includes a short video walkthrough and written step-by-step instructions. Use whichever works best for you — many students find it helpful to follow the written steps alongside the video.</p>
+    <div class="intro-note" role="note">
+      <strong>On an older Intel-based Mac?</strong> Intel Macs use the same x86_64 processor architecture as Windows PCs. You can follow this guide and download VirtualBox for macOS (Intel) instead of the Windows version — all other steps are the same.
+    </div>
+  </section>
+
+  <!-- ── Task 1: VirtualBox ──────────────────────────────────────────── -->
+  <section id="hypervisor" class="task-section" aria-labelledby="hypervisor-heading">
+    <div class="task-header">
+      <div class="task-title">
+        <span class="task-number" aria-hidden="true">1</span>
+        <h2 id="hypervisor-heading">Install VirtualBox</h2>
+      </div>
+      <button class="toggle-btn"
+              aria-expanded="true"
+              aria-controls="hypervisor-content"
+              id="toggle-hypervisor">
+        Collapse section
+      </button>
+    </div>
+
+    <div id="hypervisor-content" class="task-content">
+
+      <h3>What is a hypervisor?</h3>
+      <p>A <strong>hypervisor</strong> is software that lets your computer run one or more separate operating systems inside isolated windows, as if each were running on its own hardware. The operating system running inside is called a <strong>virtual machine (VM)</strong>. For this course, your Windows 11 desktop stays exactly as it is — VirtualBox simply adds a layer that runs Linux alongside it. Nothing about your existing system changes.</p>
+      <p>Oracle VirtualBox is free, open-source, and the standard hypervisor for Windows in this course. You will also install the <strong>VirtualBox Extension Pack</strong>, which adds support for USB devices, shared clipboard, and better keyboard/mouse integration inside your VM.</p>
+
+      <h3>Download VirtualBox</h3>
+      <div class="download-box">
+        <div>Official download page: <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer">virtualbox.org/wiki/Downloads</a></div>
+        <div class="verify">&#10003; Download both items from this page: the <strong>Windows hosts</strong> installer and the <strong>VirtualBox Extension Pack</strong> (listed in a separate section just below the installer).</div>
+        <div class="verify">&#10003; Installer filename starts with <code>VirtualBox-</code> and ends in <code>-Win.exe</code> (~120&nbsp;MB). The Extension Pack file ends in <code>.vbox-extpack</code>.</div>
+      </div>
+
+      <h3>Video: Download and Install VirtualBox on Windows</h3>
+      <div class="video-wrap">
+        <div class="video-col">
+          <div class="video-container" id="vc-1">
+            <iframe id="yt-1"
+                    src="https://www.youtube.com/embed/IGdJpmcc1U8?enablejsapi=1"
+                    title="Download and Install VirtualBox on Windows"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+        <div class="transcript-col">
+          <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for VirtualBox install video">
+            <p class="loading">Loading transcript&hellip;</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Written step-by-step instructions</h3>
+      <ol class="steps">
+        <li>Open your browser and go to <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer">virtualbox.org/wiki/Downloads</a>.</li>
+        <li>Under <strong>VirtualBox platform packages</strong>, click <strong>Windows hosts</strong> to download the installer. Save it to your Downloads folder.</li>
+        <li>On the same page, scroll down to the <strong>VirtualBox Extension Pack</strong> section and click <strong>All supported platforms</strong> to download it. Save it to the same Downloads folder.</li>
+        <li>Open your Downloads folder and double-click the VirtualBox installer (filename starts with <code>VirtualBox-</code>).</li>
+        <li>Click through the installer accepting all default settings. If Windows shows a User Account Control prompt, click <strong>Yes</strong>.</li>
+        <li>A warning about network interfaces being briefly interrupted is normal — click <strong>Yes</strong> to proceed.</li>
+        <li>Click <strong>Install</strong> and wait about 1–2 minutes for the installation to complete.</li>
+        <li>When prompted to start VirtualBox at the end, leave the checkbox <strong>unchecked</strong> and click <strong>Finish</strong>.</li>
+        <li>Return to your Downloads folder and double-click the Extension Pack file (ends in <code>.vbox-extpack</code>). VirtualBox opens automatically.</li>
+        <li>In the Extension Pack installation dialog, scroll down to read the license agreement, then click <strong>I Agree</strong>. Wait about 30 seconds for the install to finish.</li>
+        <li>To verify: in VirtualBox, click <strong>Tools</strong> in the left sidebar, then click <strong>Extensions</strong>. The Oracle VM VirtualBox Extension Pack should appear in the list and show as enabled.</li>
+      </ol>
+
+    </div><!-- /hypervisor-content -->
+  </section>
+
+  <!-- ── Task 2: Ubuntu Server ──────────────────────────────────────── -->
+  <section id="ubuntu-server" class="task-section" aria-labelledby="ubuntu-heading">
+    <div class="task-header">
+      <div class="task-title">
+        <span class="task-number" aria-hidden="true">2</span>
+        <h2 id="ubuntu-heading">Install Ubuntu Server 24.04 on VirtualBox</h2>
+      </div>
+      <button class="toggle-btn"
+              aria-expanded="true"
+              aria-controls="ubuntu-content"
+              id="toggle-ubuntu">
+        Collapse section
+      </button>
+    </div>
+
+    <div id="ubuntu-content" class="task-content">
+
+      <h3>What is Ubuntu Server — and why no graphical desktop?</h3>
+      <p>Ubuntu Server is a version of Linux built for computers that run services and host files rather than run desktop apps. It has no graphical interface — you interact entirely at the command line. This is exactly how professional Linux servers work in the real world. If the text-only login feels unfamiliar at first, that is completely normal and something you will quickly grow comfortable with over the course of the semester.</p>
+      <p><strong>Why the ISO version matters:</strong> Because you are on a Windows PC (or an Intel Mac), your processor uses the <strong>x86_64 (amd64)</strong> architecture. You must download the amd64 ISO — the ARM version will not work on your hardware.</p>
+
+      <h3>Download Ubuntu Server 24.04 LTS</h3>
+      <div class="download-box">
+        <div>Official download page: <a href="https://ubuntu.com/download/server" target="_blank" rel="noopener noreferrer">ubuntu.com/download/server</a></div>
+        <div class="verify">&#10003; Click <strong>Download Ubuntu Server 24.04 LTS</strong>. This is the correct x86_64 (amd64) version for Windows / VirtualBox.</div>
+        <div class="verify">&#10003; Filename looks like <code>ubuntu-24.04.X-live-server-amd64.iso</code> — approximately 2.7&nbsp;GB. The download may take several minutes depending on your connection.</div>
+      </div>
+
+      <h3>Video: Download and Install Ubuntu Server 24.04 on VirtualBox</h3>
+      <div class="video-wrap">
+        <div class="video-col">
+          <div class="video-container" id="vc-2">
+            <iframe id="yt-2"
+                    src="https://www.youtube.com/embed/MwNIDLzy0DA?enablejsapi=1"
+                    title="Download and Install Ubuntu Server 24.04 on VirtualBox"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+        <div class="transcript-col">
+          <div id="tc-2" class="transcript-container" role="region" aria-label="Transcript for Ubuntu Server install video">
+            <p class="loading">Loading transcript&hellip;</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>Note about the video:</strong> The video uses VirtualBox's <em>Unattended Installation</em> shortcut to speed up the demo. For Lab 1, follow the written steps below instead — they walk you through the installer manually so you can make deliberate choices and capture the screenshots required by the assignment.
+      </div>
+
+      <h3>Written step-by-step instructions</h3>
+
+      <h4>Part A — Create the Virtual Machine</h4>
+      <ol class="steps">
+        <li>Open VirtualBox. Click the <strong>New</strong> button (blue star icon in the toolbar) to open the new VM wizard.</li>
+        <li>Enter a name for your VM, for example <code>Ubuntu Server</code>.</li>
+        <li>Under <strong>ISO Image</strong>, click the dropdown and choose <strong>Other&hellip;</strong>. Browse to your Downloads folder and select the Ubuntu Server ISO file (<code>ubuntu-24.04.X-live-server-amd64.iso</code>).</li>
+        <li><strong>Important:</strong> Check the box labeled <strong>Skip Unattended Installation</strong>. This lets you walk through every installer screen yourself, which is required for the Lab 1 screenshots.</li>
+        <li>Click <strong>Next</strong>. On the Hardware screen:
+          <ul>
+            <li><strong>Base Memory:</strong> at least 2048&nbsp;MB (2&nbsp;GB); 4096&nbsp;MB (4&nbsp;GB) is recommended if your PC has the RAM.</li>
+            <li><strong>Processors:</strong> 1 or 2 CPUs.</li>
+          </ul>
+        </li>
+        <li>Click <strong>Next</strong>. On the Hard Disk screen, set the virtual disk size to at least <strong>25&nbsp;GB</strong>. 50&nbsp;GB is a comfortable size if you have the space.</li>
+        <li>Click <strong>Next</strong>, review the summary, then click <strong>Finish</strong>. VirtualBox creates the VM and boots it automatically into the Ubuntu installer.</li>
+      </ol>
+
+      <h4>Part B — Walk Through the Ubuntu Installer</h4>
+      <p style="font-size:0.92rem;">Use the <strong>arrow keys</strong> and <strong>Enter</strong> to navigate the installer. Steps marked <strong>&#128247; Screenshot</strong> are required for the Lab 1 submission.</p>
+      <ol class="steps">
+        <li><strong>Language:</strong> Select <strong>English</strong> and press Enter.</li>
+        <li><strong>Installer update:</strong> Choose <strong>Continue without updating</strong>.</li>
+        <li><strong>Keyboard layout:</strong> Leave as <strong>English (US)</strong> and select Done.</li>
+        <li><strong>Installation type:</strong> Leave the default <strong>Ubuntu Server</strong> selected and choose Done.</li>
+        <li><strong>Network:</strong> The installer configures your network via DHCP automatically. Select Done.</li>
+        <li><strong>Proxy:</strong> Leave blank and select Done.</li>
+        <li><strong>Mirror:</strong> Wait a moment for the installer to test the package mirror. When it shows OK, select Done.</li>
+        <li><strong>Storage &#128247; Screenshot:</strong> Choose <strong>Use an entire disk</strong>. Select Done, then review the filesystem summary and select Done again. Confirm with <strong>Continue</strong>.</li>
+        <li><strong>Profile &#128247; Screenshot:</strong> Fill in the following fields, then select Done:
+          <ul>
+            <li><strong>Your name:</strong> Your real name or a course alias.</li>
+            <li><strong>Server's hostname:</strong> A short lowercase name with no spaces, e.g., <code>ubuntu-server</code>.</li>
+            <li><strong>Username:</strong> A lowercase username you will remember — this is the account you will use all semester.</li>
+            <li><strong>Password:</strong> Choose a strong password and write it down somewhere safe. You will type it frequently.</li>
+          </ul>
+        </li>
+        <li><strong>Ubuntu Pro:</strong> Select <strong>Skip for now</strong>.</li>
+        <li><strong>OpenSSH:</strong> Move the cursor to <strong>Install OpenSSH server</strong> and press <strong>Space</strong> to enable it. Select Done. OpenSSH allows you to connect to your VM from a terminal window later in the course.</li>
+        <li><strong>Snaps:</strong> Do not select any optional packages. Select Done.</li>
+        <li>Wait for the installation to finish — approximately 5–10 minutes. When you see <strong>Reboot Now</strong>, select it and press Enter.</li>
+      </ol>
+
+      <h4>Part C — First Login and Verification</h4>
+      <ol class="steps">
+        <li>If the system appears to hang after rebooting, go to the VirtualBox menu bar: <strong>Devices &rarr; Optical Drives &rarr; Remove disk from virtual drive</strong>, then press Enter in the VM window to continue booting.</li>
+        <li><strong>&#128247; Screenshot:</strong> At the login prompt, type your username and press Enter, then type your password and press Enter. The password will not appear on screen as you type — this is normal for Linux.</li>
+        <li>Once logged in, run the following command to confirm the system is working:<br><code>uname -a</code></li>
+        <li><strong>&#128247; Screenshot:</strong> The output should show the Linux kernel version and end with <code>x86_64 GNU/Linux</code>.</li>
+        <li>Confirm network connectivity (you will need this for <code>apt</code> later):<br><code>ip a</code><br>You should see an IP address on one of the listed network interfaces.</li>
+        <li>To shut down the VM cleanly when you are done:<br><code>sudo shutdown now</code><br>Enter your password when prompted.</li>
+      </ol>
+
+      <div class="tip-box">
+        <strong>Tip — VM reboots back into the installer?</strong> This means the ISO image was not ejected automatically. In VirtualBox, open <strong>Settings &rarr; Storage</strong> for the VM, click the optical drive entry showing the ISO, and remove it. Then start the VM again and it will boot normally into the installed system.
+      </div>
+
+    </div><!-- /ubuntu-content -->
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Collapsible sections ─────────────────────────────────────────── */
+  document.querySelectorAll('.toggle-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      document.getElementById(btn.getAttribute('aria-controls')).hidden = expanded;
+      btn.textContent = expanded ? 'Expand section' : 'Collapse section';
+    });
+  });
+
+  /* ── VTT content ──────────────────────────────────────────────────── */
+  var VTT = [
+    /* 0: Install VirtualBox on Windows */
+    `WEBVTT
+
+00:00.640 --> 00:07.320
+Aloha so in this video I'm going to talk about how to install VirtualBox on
+
+00:07.320 --> 00:16.200
+Windows so you're gonna go to this URL https www.virtualbox.org
+
+00:16.200 --> 00:23.100
+slash wiki slash downloads and there'll be a link on the instruction page for
+
+00:23.100 --> 00:27.360
+this you're gonna select the Windows host to
+
+00:27.360 --> 00:37.440
+download it and we're gonna download it to downloads and save it okay and then
+
+00:37.440 --> 00:45.660
+also over here we're gonna download the VirtualBox extension pack so we're
+
+00:45.660 --> 00:49.260
+gonna have to accept the license and download it again I'll download it to
+
+00:49.260 --> 00:57.340
+the same place all right and that's all we need to do to get
+
+00:57.340 --> 01:04.120
+ready to go so let's open that location and we're gonna install VirtualBox by
+
+01:04.120 --> 01:09.960
+double-clicking on it and we'll run the installer I'm just gonna accept all the
+
+01:09.960 --> 01:16.840
+defaults okay so I'm not gonna change the position I'm gonna leave it in the
+
+01:16.840 --> 01:20.500
+same place proceed with installation I'm missing
+
+01:20.500 --> 01:25.420
+some dependencies so it's gonna install them
+
+01:27.340 --> 01:31.960
+shortcut on the quick launch register all I'll keep them all and I want to
+
+01:31.960 --> 01:40.720
+install it okay and it doesn't take too long to install so we will not
+
+01:40.720 --> 01:45.280
+start VirtualBox we're just gonna finish and then we're gonna double click on the
+
+01:45.280 --> 01:51.700
+extension pack to install it and it will open up VirtualBox automatically and
+
+01:51.700 --> 01:57.120
+I'll reinstall since I installed it before you have to scroll down and then
+
+01:57.340 --> 02:02.140
+read all this VirtualBox license if you want to be safe scroll to the
+
+02:02.140 --> 02:07.780
+bottom click I agree and let it finish installing it'll take a little bit of
+
+02:07.780 --> 02:14.160
+time to install and it may look like this when you're done
+
+02:14.160 --> 02:19.220
+okay and all you need to do is click on the tools go to extensions you'll see
+
+02:19.220 --> 02:24.620
+that the extensions are installed okay and the extensions do
+
+02:24.620 --> 02:27.160
+things like make it easier for your keyboard your
+
+02:27.160 --> 02:32.680
+mouse and other devices to connect to VirtualBox okay so we'll go back to
+
+02:32.680 --> 02:37.660
+welcome because this is our normal place where we start and that's the whole
+
+02:37.660 --> 02:43.780
+thing to downloading and installing VirtualBox on Windows catch you on the
+
+02:43.780 --> 02:46.240
+next video`,
+
+    /* 1: Install Ubuntu Server on VirtualBox (Windows) */
+    `WEBVTT
+
+00:00.000 --> 00:08.640
+Aloha so in this video I'm going to download and install Ubuntu server on
+
+00:08.640 --> 00:15.080
+Windows on VirtualBox for Windows okay so before we start what we need to do is
+
+00:15.080 --> 00:24.800
+go to the Ubuntu server download so I did a search for Ubuntu
+
+00:24.800 --> 00:35.540
+server download okay and I take the Ubuntu one okay and since I'm doing on
+
+00:35.540 --> 00:41.820
+Windows all I want to do is click download 24.04 version at the
+
+00:41.820 --> 00:48.120
+time of this is the latest version you could download and you're going to save
+
+00:48.120 --> 00:54.780
+it once it starts now I've already downloaded it because it is about three gigabytes
+
+00:54.780 --> 01:01.400
+all right so I saved it in downloads
+
+01:04.220 --> 01:11.640
+I saved it in downloads it's right here ubuntu live server 24.04.1 right so
+
+01:11.640 --> 01:16.200
+that's what we want and then we will go to VirtualBox
+
+01:16.200 --> 01:44.300
+once VirtualBox is open I'm going to create a new virtual machine
+
+01:44.300 --> 01:54.240
+I'm gonna create a new virtual machine okay and give it a name
+
+01:54.360 --> 02:08.420
+I'm gonna store it in the default location I'm gonna select the ISO
+
+02:08.420 --> 02:19.000
+here's the Ubuntu server and I'll say open okay so it already fills in the type and subtype for me
+
+02:19.000 --> 02:34.940
+then I could skip unattended install and walk through all the install but I'm gonna use the unattended install
+
+02:34.940 --> 02:48.120
+the unattended install meaning it already has some predetermined settings it creates a default user
+
+02:49.000 --> 02:56.980
+it creates a user the password is changeme okay so that's gonna be the default user and password
+
+02:56.980 --> 03:08.500
+now we want to do hardware it defaults to two gigs of RAM and one CPU
+
+03:08.500 --> 03:25.240
+I'm gonna go to 4096 MB and instead of one CPU I'm gonna give it two
+
+03:25.240 --> 03:45.720
+and then the hard disk I'm gonna make it 50 GB but you need at least 25 gigs free space
+
+03:47.760 --> 03:52.920
+right and then once I'm okay with that I'm not gonna change anything else
+
+03:52.920 --> 04:03.480
+I'm gonna click finish and now it's gonna try to open up
+
+04:38.820 --> 04:46.020
+now it's gonna power up because now I gave it a unique name
+
+04:47.380 --> 04:56.720
+default is to do the install and so we should just wait for it
+
+04:56.720 --> 05:16.520
+to install it takes a little bit but it should work out and I'll come back once it's ready
+
+05:17.380 --> 05:33.900
+let's take a few minutes to finish all that installation and now it's rebooting
+
+05:33.900 --> 05:46.260
+it should just come up with a command prompt for us to login okay
+
+05:47.380 --> 06:17.200
+[installation in progress]
+
+07:35.560 --> 07:38.260
+OK, so I'm logged in.
+
+07:43.420 --> 07:47.080
+So you can always close the VM window. The command for shutdown is
+
+07:47.200 --> 07:52.060
+sudo shutdown now.
+
+07:54.680 --> 07:56.360
+Enter your password.
+
+08:05.440 --> 08:07.060
+OK, and it'll shut down.
+
+08:08.560 --> 08:12.600
+One of the things to check — in settings
+
+08:13.500 --> 08:17.160
+in storage you can see the optical drive.
+
+08:17.200 --> 08:20.320
+If it says empty that's where the
+
+08:24.880 --> 08:27.880
+ISO image was connected.
+
+08:31.400 --> 08:35.960
+The first time through it didn't eject itself so it made a little error and then it ejected itself.
+
+08:37.440 --> 08:41.840
+If you have problems check that to make sure after you've installed it that the ISO image is gone.
+
+08:43.840 --> 08:52.120
+All right that's all there really is to installing Ubuntu server on VirtualBox.
+
+08:52.120 --> 09:00.040
+One of the things you can do in VirtualBox is create groups to organize your VMs.
+
+09:00.040 --> 09:12.200
+You can right click on a VM and move it to a group which is a nice way to manage things
+
+09:12.200 --> 09:50.400
+if you have a lot of VMs — you could group by class and things like that. It's kind of nice.
+
+09:51.400 --> 09:55.200
+Thanks for watching.`
+  ];
+
+  /* ── YouTube multi-player setup ───────────────────────────────────── */
+  var PLAYER_IDS      = ['yt-1',  'yt-2'];
+  var CONTAINER_IDS   = ['vc-1',  'vc-2'];
+  var TRANSCRIPT_IDS  = ['tc-1',  'tc-2'];
+
+  var players    = [null, null];
+  var timers     = [null, null];
+  var transcripts = [[], []];
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript(n) {
+    var container = document.getElementById(TRANSCRIPT_IDS[n]);
+    container.innerHTML = '';
+    transcripts[n].forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        var p = players[n];
+        if (p && p.seekTo) { p.seekTo(cue.start, true); p.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine(n) {
+    var p = players[n];
+    if (!p || !p.getCurrentTime) return;
+    var t = p.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_IDS[n]);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          /* Scroll within the container only */
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight(n) {
+    var vc = document.getElementById(CONTAINER_IDS[n]);
+    var tc = document.getElementById(TRANSCRIPT_IDS[n]);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  function onStateChange(event, n) {
+    clearInterval(timers[n]);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timers[n] = setInterval(function () { highlightLine(n); }, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    PLAYER_IDS.forEach(function (id, n) {
+      players[n] = new YT.Player(id, {
+        events: { onStateChange: function (e) { onStateChange(e, n); } }
+      });
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    VTT.forEach(function (vtt, n) {
+      transcripts[n] = parseVtt(vtt);
+      populateTranscript(n);
+      setTimeout(function () { syncHeight(n); }, 150);
+    });
+
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { syncHeight(0); syncHeight(1); }, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>

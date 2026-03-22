@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 1 Overview - Linux Installation and Package Management</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* ── Top Nav Bar ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.week-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.25rem;
+  color: #1e293b;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid #e2e8f0;
+  scroll-margin-top: 3.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Paragraphs and Lists ── */
+p { margin-bottom: 0.85rem; }
+
+ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85rem;
+}
+ul li { margin-bottom: 0.35rem; }
+
+code {
+  background: #f1f5f9;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Cards ── */
+.card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.card-accent {
+  border-left: 4px solid #6366f1;
+}
+
+/* ── CSLO Tag ── */
+.cslo-tag {
+  display: inline-block;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+/* ── Checklist ── */
+.checklist {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0.85rem;
+}
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.35rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-size: 0.95rem;
+}
+.checklist li:hover {
+  background: #f1f5f9;
+}
+.checklist li.checked {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.checklist li.checked .cb-box {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+.cb-box {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #94a3b8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.1rem;
+  background: #fff;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.cb-label {
+  flex: 1;
+}
+.cb-points {
+  font-size: 0.8rem;
+  color: #64748b;
+  white-space: nowrap;
+  margin-top: 0.1rem;
+}
+
+/* ── Collapsible / Accordion ── */
+.collapsible-toggle {
+  background: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.65rem 1rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s;
+}
+.collapsible-toggle:hover,
+.collapsible-toggle:focus {
+  background-color: #f1f5f9;
+  outline: 2px solid #6366f1;
+  outline-offset: 1px;
+}
+.collapsible-toggle .arrow {
+  transition: transform 0.2s;
+  font-size: 0.85rem;
+}
+.collapsible-toggle[aria-expanded="true"] .arrow {
+  transform: rotate(90deg);
+}
+.collapsible-content {
+  display: none;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  background: #fafbfc;
+  margin-bottom: 1rem;
+}
+.collapsible-content.open {
+  display: block;
+}
+
+/* ── Highlight Box ── */
+.highlight-box {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.93rem;
+}
+.highlight-box strong {
+  color: #92400e;
+}
+
+/* ── Looking Ahead Box ── */
+.looking-ahead {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  margin-top: 1.5rem;
+}
+.looking-ahead h2 {
+  border-bottom: none;
+  margin-top: 0;
+  color: #3730a3;
+  font-size: 1.1rem;
+  padding-bottom: 0;
+}
+
+/* ── Video Placeholder ── */
+.video-placeholder-wrapper {
+  margin-bottom: 1.5rem;
+}
+.video-placeholder-wrapper h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+.video-placeholder {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%;
+  background: #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.video-placeholder-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  text-align: center;
+  padding: 1.5rem;
+}
+.video-placeholder-inner .play-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  color: #6366f1;
+  line-height: 1;
+}
+.video-placeholder-inner p {
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+}
+.video-placeholder-inner .placeholder-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+.video-placeholder-inner .placeholder-note {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  h1 { font-size: 1.35rem; }
+  .container { padding: 1rem 0.85rem 2rem; }
+  .top-nav { gap: 0.15rem 0.5rem; padding: 0.5rem 0.75rem; }
+  .top-nav a { font-size: 0.8rem; padding: 0.25rem 0.4rem; }
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Top Navigation -->
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#welcome">Welcome</a>
+  <a href="#video">Video</a>
+  <a href="#goals">Goals</a>
+  <a href="#concepts">Key Concepts</a>
+  <a href="#activities">Activities</a>
+  <a href="#course-arc">Course Arc</a>
+  <a href="#looking-ahead">Looking Ahead</a>
+</nav>
+
+<main id="main-content" class="container" role="main">
+
+  <!-- Week Label + Title -->
+  <p class="week-label">Week 1 of 8</p>
+  <h1 id="welcome">Linux Installation and Package Management</h1>
+  <p>
+    Welcome to CSC 106, Introduction to Linux II. This is where things get hands-on right away.
+  </p>
+  <p>
+    This week you will install Ubuntu Server on a virtual machine, make real decisions about partitioning and user setup, and then use the <code>apt</code> package manager to install, update, and remove software. By the end of the week, you will have a working Linux server that you will build on for the rest of the course.
+  </p>
+  <p>
+    If this is your first time installing an operating system from scratch, that is completely fine. The process has a lot of steps, but each one is manageable, and you will have guidance along the way. Most students find the installation surprisingly satisfying once it clicks.
+  </p>
+
+  <!-- Video Placeholder -->
+  <h2 id="video">Instructor Introduction</h2>
+  <div class="video-placeholder-wrapper">
+    <div class="video-placeholder" role="img" aria-label="Placeholder for the instructor introduction video. This video is not yet available.">
+      <div class="video-placeholder-inner">
+        <span class="play-icon" aria-hidden="true">&#9654;</span>
+        <p class="placeholder-title">Welcome to CSC 106 and Installing Ubuntu Server</p>
+        <p>Course orientation, what to expect over 8 weeks, and a walkthrough of the Ubuntu Server 24.04 LTS installation in VirtualBox.</p>
+        <p class="placeholder-note">This video is coming soon. It will be added once all Week 1 module content is finalized.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Learning Goals -->
+  <h2 id="goals">Learning Goals</h2>
+  <p>By the end of this week, you should be able to:</p>
+  <ul>
+    <li>Install Ubuntu Server on a virtual machine, making informed choices at each step (partitioning, user creation, network settings). <span class="cslo-tag">CSLO 1</span></li>
+    <li>Use <code>apt</code> to search for, install, update, and remove packages. <span class="cslo-tag">CSLO 1</span></li>
+    <li>Explain the role of repositories and how package managers resolve dependencies. <span class="cslo-tag">CSLO 1</span></li>
+    <li>Identify where system data, process data, and package data are stored on a Linux system. <span class="cslo-tag">CSLO 1</span></li>
+  </ul>
+
+  <!-- Key Concepts -->
+  <h2 id="concepts">Key Concepts and Themes</h2>
+  <div class="card card-accent">
+    <h3>Installation Decisions Matter</h3>
+    <p>
+      When you install Ubuntu Server, you are not just clicking "Next" repeatedly. You are choosing a disk layout, creating your first user account, and configuring network settings. These choices affect how the server behaves for its entire lifetime. Pay attention to <em>why</em> each option exists, not just what to click.
+    </p>
+  </div>
+  <div class="card card-accent">
+    <h3>Package Management with <code>apt</code></h3>
+    <p>
+      On Debian-based systems like Ubuntu, <code>apt</code> is how you install, update, and remove software. It pulls packages from repositories, resolves dependencies automatically, and keeps track of what is installed. You will use <code>apt</code> constantly throughout this course, so getting comfortable with it now pays off quickly. A common early mistake is forgetting to run <code>apt update</code> before trying to install something. That is normal; you will remember after the first time it trips you up.
+    </p>
+  </div>
+  <div class="card card-accent">
+    <h3>Where Things Live on a Linux System</h3>
+    <p>
+      Linux organizes files in a very specific directory structure. Configuration files go in <code>/etc</code>, variable data (logs, package caches) goes in <code>/var</code>, and the <code>/proc</code> filesystem gives you a window into running processes and hardware. Understanding this layout helps you troubleshoot problems and find what you need without guessing.
+    </p>
+  </div>
+
+  <!-- Activities Checklist -->
+  <h2 id="activities">Required Activities</h2>
+  <p>
+    Here is everything you need to complete this week. Use this as a checklist to track your progress. Click an item to mark it done (this is just for your own reference and is not saved).
+  </p>
+
+  <ul class="checklist" aria-label="Week 1 activity checklist">
+    <li role="checkbox" aria-checked="false" tabindex="0">
+      <span class="cb-box" aria-hidden="true"></span>
+      <span class="cb-label"><strong>Reading:</strong> Linux Essentials Chapters 12 and 13</span>
+    </li>
+    <li role="checkbox" aria-checked="false" tabindex="0">
+      <span class="cb-box" aria-hidden="true"></span>
+      <span class="cb-label"><strong>Cisco Lab:</strong> Linux Essentials Chapter 13 Lab (Where Data is Stored)</span>
+      <span class="cb-points">15 pts</span>
+    </li>
+    <li role="checkbox" aria-checked="false" tabindex="0">
+      <span class="cb-box" aria-hidden="true"></span>
+      <span class="cb-label"><strong>Hands-on Assignment:</strong> Ubuntu Server Install (screenshots, write-up, terminal output)</span>
+      <span class="cb-points">25 pts</span>
+    </li>
+    <li role="checkbox" aria-checked="false" tabindex="0">
+      <span class="cb-box" aria-hidden="true"></span>
+      <span class="cb-label"><strong>RSI Discussion 1:</strong> "Choosing and Installing Linux" (post by Wednesday, two replies by Sunday)</span>
+      <span class="cb-points">15 pts</span>
+    </li>
+  </ul>
+
+  <div class="highlight-box">
+    <strong>Total required points this week:</strong> 55 points. There is also an optional extra credit opportunity (5 pts) to read Linux 1 Chapter 24 and write a one-page comparison of <code>apt</code> vs. <code>yum</code>/<code>dnf</code>. Details are in the assignment description.
+  </div>
+
+  <!-- Collapsible Course Arc -->
+  <h2 id="course-arc">Course Arc</h2>
+  <button class="collapsible-toggle" aria-expanded="false" aria-controls="course-arc-content" id="course-arc-btn">
+    <span>Where does this week fit in the 8-week course?</span>
+    <span class="arrow" aria-hidden="true">&#9654;</span>
+  </button>
+  <div class="collapsible-content" id="course-arc-content" role="region" aria-labelledby="course-arc-btn">
+    <p>
+      CSC 106 is an 8-week course that builds from installation to a fully configured, secured Linux server. Here is the big picture:
+    </p>
+    <ul>
+      <li><strong>Week 1 (this week):</strong> Install Ubuntu Server and learn package management.</li>
+      <li><strong>Week 2:</strong> Explore hardware, the kernel, and the boot process.</li>
+      <li><strong>Week 3:</strong> Understand runlevels, systemd targets, and managing services.</li>
+      <li><strong>Week 4:</strong> Advanced shell scripting and Mini-Project 1 (automation script).</li>
+      <li><strong>Week 5:</strong> Users, groups, and system security fundamentals.</li>
+      <li><strong>Week 6:</strong> File permissions, ownership, and networking basics.</li>
+      <li><strong>Week 7:</strong> Network configuration, web server setup, and security hardening.</li>
+      <li><strong>Week 8:</strong> Integration and Mini-Project 2 (build and document a complete server).</li>
+    </ul>
+    <p>
+      Everything you do this week (your VM, your package management skills, your understanding of where files live) carries forward. The VM you create now is the same one you will configure, script, and secure over the coming weeks.
+    </p>
+    <p>
+      The course assesses three Student Learning Outcomes:
+    </p>
+    <ul>
+      <li><strong>CSLO 1:</strong> Install and configure a Linux operating system.</li>
+      <li><strong>CSLO 2:</strong> Configure a Linux operating system as a platform for web-based and other applications.</li>
+      <li><strong>CSLO 3:</strong> Describe Linux runlevels and startup scripts.</li>
+    </ul>
+    <p>This week focuses on CSLO 1. You will see CSLOs 2 and 3 introduced in the weeks ahead.</p>
+  </div>
+
+  <!-- Looking Ahead -->
+  <div class="looking-ahead" id="looking-ahead">
+    <h2>Looking Ahead: Week 2</h2>
+    <p>
+      Next week you will look under the hood of the system you just installed. You will learn what the Linux kernel does, how to inspect your hardware from the command line, and how your server gets from a powered-off state to a login prompt (the boot process). Commands like <code>lspci</code>, <code>lsblk</code>, <code>lsmod</code>, and <code>dmesg</code> will become part of your toolkit.
+    </p>
+    <p>
+      Having a working Ubuntu Server VM this week is essential. Week 2 assumes you can log in and run commands on it, so make sure your installation is solid before you move on.
+    </p>
+  </div>
+
+</main>
+
+<script>
+/* ── Checklist Toggle ── */
+document.querySelectorAll('.checklist li').forEach(function(item) {
+  function toggle() {
+    var isChecked = item.getAttribute('aria-checked') === 'true';
+    item.setAttribute('aria-checked', String(!isChecked));
+    item.classList.toggle('checked', !isChecked);
+    var box = item.querySelector('.cb-box');
+    if (box) {
+      box.textContent = !isChecked ? '\u2713' : '';
+    }
+  }
+  item.addEventListener('click', toggle);
+  item.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggle();
+    }
+  });
+});
+
+/* ── Collapsible Toggle ── */
+document.querySelectorAll('.collapsible-toggle').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    var contentId = btn.getAttribute('aria-controls');
+    var content = document.getElementById(contentId);
+    if (content) {
+      content.classList.toggle('open', !expanded);
+    }
+  });
+  btn.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+});
+
+/* ── Smooth scroll offset for sticky nav ── */
+document.querySelectorAll('.top-nav a[href^="#"]').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    var targetId = this.getAttribute('href').substring(1);
+    var target = document.getElementById(targetId);
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.focus({ preventScroll: true });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
