@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 1: Installing Ubuntu Server — CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1e3a5f;
+      --blue: #0056b3;
+      --blue-light: #e8f0fb;
+      --green: #2d6a2d;
+      --green-light: #e8f5e8;
+      --orange: #8a5500;
+      --orange-light: #fff8e6;
+      --text: #1a1a1a;
+      --muted: #555;
+      --border: #cdd5e0;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --nav-h: 52px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 200;
+      border-radius: 0 0 4px 0;
+      font-size: .9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      overflow-x: auto;
+      height: var(--nav-h);
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    nav a {
+      color: #c8d8f0;
+      text-decoration: none;
+      font-size: .875rem;
+      padding: 6px 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    nav a:focus-visible { outline: none; border-color: #7bbfff; color: #fff; }
+    nav a.active { background: rgba(255,255,255,.2); color: #fff; font-weight: 600; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    [id] { scroll-margin-top: calc(var(--nav-h) + 12px); }
+
+    /* ── Header card ── */
+    .lab-header {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      border-left: 6px solid var(--navy);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .lab-header h1 { font-size: 1.6rem; color: var(--navy); margin-bottom: 8px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--navy);
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .section-card h2 {
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    .phase-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    h3 { font-size: 1rem; color: var(--navy); margin: 20px 0 8px; }
+    p { margin-bottom: 12px; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 12px; }
+    li { margin-bottom: 5px; }
+
+    /* ── Objectives list ── */
+    .obj-list { list-style: none; padding: 0; }
+    .obj-list li {
+      padding: 8px 12px 8px 36px;
+      position: relative;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: var(--blue-light);
+    }
+    .obj-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 11px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    /* ── Numbered step list ── */
+    .step-list { list-style: none; padding: 0; counter-reset: steps; }
+    .step-list > li {
+      counter-increment: steps;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: var(--navy);
+      color: #fff;
+      min-width: 30px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+      user-select: none;
+      aria-hidden: true;
+    }
+    .step-content { flex: 1; min-width: 0; }
+    .step-content h3 { margin-top: 0; }
+
+    /* ── Response fields ── */
+    .response-group { margin-top: 18px; }
+    .response-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .response-group .prompt-text {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: .9rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+      background: #fafcff;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,86,179,.12);
+    }
+    .code-ta {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .85rem;
+      background: #f3f4f6;
+    }
+    .code-ta:focus { background: #f9fafb; }
+
+    /* ── Collapsible hints ── */
+    details {
+      background: var(--green-light);
+      border-radius: 6px;
+      border-left: 4px solid var(--green);
+      margin: 14px 0;
+    }
+    details summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--green);
+      font-size: .9rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary .arrow {
+      display: inline-block;
+      font-size: .7rem;
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    details summary:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body { padding: 0 14px 14px; font-size: .9rem; }
+    .hint-body > *:first-child { margin-top: 0; }
+    .hint-body ul { margin-bottom: 0; }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--orange-light);
+      border-left: 4px solid #e6900a;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .9rem;
+    }
+    .callout strong { color: var(--orange); }
+
+    /* ── Inline code and command blocks ── */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #eef1f7;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: .9em;
+    }
+    .cmd-block {
+      background: #1e2a3a;
+      color: #d4e8ff;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .9rem;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+    .cmd-block .prompt { color: #7bbfff; }
+
+    /* ── Screenshot checklist ── */
+    .ss-list { list-style: none; padding: 0; }
+    .ss-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      font-size: .9rem;
+    }
+    .ss-list input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .ss-list label { cursor: pointer; }
+
+    /* ── Submission grid ── */
+    .submit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    @media (max-width: 580px) { .submit-grid { grid-template-columns: 1fr; } }
+    .submit-item {
+      background: var(--blue-light);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    .submit-item h3 { margin: 0 0 6px; font-size: .95rem; color: var(--navy); }
+    .submit-item p { margin: 0; font-size: .875rem; color: var(--muted); }
+
+    /* ── PDF button ── */
+    .btn-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-pdf:hover { background: #152d4d; }
+    .btn-pdf:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .section-card, .lab-header { padding: 20px 16px; }
+      .lab-header h1 { font-size: 1.35rem; }
+    }
+
+    /* ── Print / Save as PDF ── */
+    @media print {
+      nav, .btn-pdf { display: none !important; }
+      body { background: #fff; font-size: 11pt; }
+      main { padding: 0; }
+      .section-card, .lab-header {
+        box-shadow: none;
+        border: 1px solid #bbb;
+        break-inside: avoid;
+        margin-bottom: 16pt;
+        padding: 16pt;
+      }
+      textarea { display: none !important; }
+      .print-value {
+        display: block !important;
+        min-height: 48pt;
+        border: 1px solid #aaa;
+        border-radius: 3pt;
+        padding: 6pt 8pt;
+        background: #fafafa;
+        font-size: 9.5pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+      .code-ta + .print-value {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 9pt;
+      }
+      details { break-inside: avoid; }
+      details:not([open]) { display: none; }
+      .phase-label { color: #555; }
+      a { color: inherit; text-decoration: none; }
+    }
+    .print-value { display: none; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav aria-label="Lab sections">
+  <div class="nav-inner">
+    <a href="#scenario">Scenario</a>
+    <a href="#objectives">Objectives</a>
+    <a href="#phase1">Phase 1: Prepare</a>
+    <a href="#phase2">Phase 2: Install</a>
+    <a href="#phase3">Phase 3: Verify</a>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Header ── -->
+  <header class="lab-header" id="top">
+    <p class="phase-label">CSC 106 — Week 1</p>
+    <h1>Lab 1: Installing Ubuntu Server</h1>
+    <div class="meta-row">
+      <span><strong>Points:</strong> 25</span>
+      <span><strong>Type:</strong> Hands-on Assignment</span>
+      <span class="badge">CSLO 1</span>
+    </div>
+  </header>
+
+  <!-- ── Scenario ── -->
+  <section class="section-card" id="scenario" aria-labelledby="scenario-h">
+    <h2 id="scenario-h">Scenario and Context</h2>
+    <p>You have just been brought on as a junior systems administrator at a small nonprofit that runs its own website and a few internal tools. The organization's previous server was a shared hosting plan that kept going down and offered no control over the software stack. Leadership has approved a move to a self-hosted Linux server.</p>
+    <p>Your first task: stand up a fresh Ubuntu Server, confirm it is running correctly, and verify that you can install software on it. You will use this same server throughout the rest of the course — adding services, configuring the network, managing users, and eventually handing off a complete, documented server environment.</p>
+    <p><strong>Why Linux?</strong> Linux is free, stable, widely used in server environments, and gives administrators fine-grained control over the software stack. The <em>server edition</em> (no graphical desktop) keeps the system lean, reduces the attack surface, and matches how real production servers are configured. When you connect to a remote server in a professional setting, this text-only environment is what you will see.</p>
+  </section>
+
+  <!-- ── Objectives ── -->
+  <section class="section-card" id="objectives" aria-labelledby="obj-h">
+    <h2 id="obj-h">What You Will Demonstrate</h2>
+    <ul class="obj-list">
+      <li>Install Ubuntu Server 24.04 LTS on a virtual machine, making deliberate choices at each step.</li>
+      <li>Describe your partitioning, hostname, user account, and network decisions and explain why you made them.</li>
+      <li>Log in to the server at the command line after installation.</li>
+      <li>Verify the running kernel and system with <code>uname -a</code>.</li>
+      <li>Confirm network connectivity and refresh the package index with <code>sudo apt update</code>.</li>
+      <li>Capture screenshots of key installation milestones.</li>
+    </ul>
+  </section>
+
+  <!-- ── Phase 1 ── -->
+  <section class="section-card" id="phase1" aria-labelledby="phase1-h">
+    <p class="phase-label">Phase 1 of 3</p>
+    <h2 id="phase1-h">Prepare Your Virtual Machine</h2>
+
+    <p>Before installing Ubuntu Server, you need a <strong>hypervisor</strong> — software that creates and runs virtual machines (VMs) on your computer. A VM lets you run a full Linux server inside a window on your existing system without needing dedicated hardware. This course supports two hypervisors:</p>
+    <ul>
+      <li><strong>VirtualBox</strong> — for Windows PCs (and Intel-based Macs)</li>
+      <li><strong>UTM</strong> — for Macs with Apple Silicon (M1, M2, M3, M4, or later)</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Before you continue:</strong> Follow the hypervisor setup guide for your computer (available in this week's Canvas module). Create a new VM and download the correct Ubuntu Server 24.04 LTS ISO for your platform. Attach the ISO to the VM. Return here once your VM is created and ready to boot from the ISO.
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Why the ISO architecture matters</summary>
+      <div class="hint-body">
+        <p>Ubuntu Server 24.04 LTS comes in two builds for different CPU types:</p>
+        <ul>
+          <li><strong>amd64 (x86_64)</strong> — for VirtualBox on Windows or Intel Macs. Download the standard Ubuntu Server 24.04 LTS ISO.</li>
+          <li><strong>arm64 (aarch64)</strong> — for UTM on Apple Silicon Macs. Download the Ubuntu Server 24.04 LTS for ARM ISO.</li>
+        </ul>
+        <p>These two ISOs are not interchangeable. Attaching the wrong one will either fail to boot or run very slowly inside the VM. The setup guides for each platform tell you exactly which file to download.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Recommended VM resource settings</summary>
+      <div class="hint-body">
+        <p>These settings give you a functional server without requiring a high-end machine:</p>
+        <ul>
+          <li><strong>CPU:</strong> 2 virtual cores</li>
+          <li><strong>RAM:</strong> 2 GB (2048 MB)</li>
+          <li><strong>Virtual disk:</strong> 20 GB (dynamically allocated is fine)</li>
+          <li><strong>Network adapter:</strong> NAT (default) — lets the VM reach the internet through your host machine</li>
+        </ul>
+        <p>The hypervisor setup guides walk through these settings step by step.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ── Phase 2 ── -->
+  <section class="section-card" id="phase2" aria-labelledby="phase2-h">
+    <p class="phase-label">Phase 2 of 3</p>
+    <h2 id="phase2-h">Install Ubuntu Server 24.04 LTS</h2>
+
+    <p>Follow the Ubuntu Server installation walkthrough guide for your platform (available in this week's Canvas module). That guide steps through every screen of the installer in detail. As you work through it, document your choices in the response fields below.</p>
+
+    <div class="callout">
+      <strong>Take screenshots as you go.</strong> You need to capture at least three: the partitioning screen (before confirming), the user creation screen, and the first login prompt after the server finishes booting. You will upload these screenshots directly to the Canvas assignment alongside this completed lab.
+    </div>
+
+    <h3>Screenshot Checklist</h3>
+    <p>Check each item as you capture it — these are the screenshots you will submit:</p>
+    <ul class="ss-list" role="list">
+      <li>
+        <input type="checkbox" id="ss1">
+        <label for="ss1">Partitioning screen showing the proposed disk layout, before confirming</label>
+      </li>
+      <li>
+        <input type="checkbox" id="ss2">
+        <label for="ss2">User creation screen showing the username and server name fields</label>
+      </li>
+      <li>
+        <input type="checkbox" id="ss3">
+        <label for="ss3">First login prompt — the terminal after the server finishes booting</label>
+      </li>
+    </ul>
+
+    <!-- Partitioning -->
+    <div class="response-group">
+      <label for="resp-partition">1. Partitioning choices</label>
+      <p class="prompt-text">Did you use guided (automatic) or manual partitioning? Briefly describe what partitions the installer created — or what you created manually — and why you accepted or changed the defaults.</p>
+      <textarea id="resp-partition" name="resp-partition" rows="5" placeholder="Example: I used guided partitioning. The installer created a 1 GB EFI partition, a 2 GB swap partition, and used the remaining 17 GB for the root (/) partition. I accepted the defaults because..."></textarea>
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> What to look for: partitioning</summary>
+      <div class="hint-body">
+        <p>Guided partitioning typically creates:</p>
+        <ul>
+          <li>An <strong>EFI</strong> or <strong>boot</strong> partition — where the bootloader (GRUB) lives</li>
+          <li>A <strong>swap</strong> partition or swapfile — used as overflow memory when RAM is full</li>
+          <li>A root (<strong>/</strong>) partition — everything else; the main filesystem</li>
+        </ul>
+        <p>For this course, the guided defaults are completely appropriate. Manual partitioning is used in production environments with specific storage layout requirements (for example, putting <code>/var</code> on its own partition to prevent log files from filling the root filesystem).</p>
+      </div>
+    </details>
+
+    <!-- Hostname / user -->
+    <div class="response-group">
+      <label for="resp-user">2. Hostname and user account</label>
+      <p class="prompt-text">What hostname and username did you set? Why did you choose those names? If you used default suggestions, note what those were and whether you changed them.</p>
+      <textarea id="resp-user" name="resp-user" rows="4" placeholder="Example: Hostname: linuxserver, Username: sysadmin. I chose 'linuxserver' because..."></textarea>
+    </div>
+
+    <!-- OpenSSH -->
+    <div class="response-group">
+      <label for="resp-ssh">3. OpenSSH installation</label>
+      <p class="prompt-text">Did you enable the OpenSSH server option during installation? Why does having SSH matter for a server with no graphical desktop?</p>
+      <textarea id="resp-ssh" name="resp-ssh" rows="4" placeholder="Yes/No and your reasoning..."></textarea>
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Why OpenSSH matters for a server</summary>
+      <div class="hint-body">
+        <p>SSH (Secure Shell) is the standard tool for connecting to a Linux server remotely. Because Ubuntu Server has no graphical interface, SSH is often the <em>only</em> practical way to manage the server once it is in place — you connect from your laptop over an encrypted connection and run commands as if you were sitting in front of the machine.</p>
+        <p>Enabling SSH during installation means the service starts automatically at boot. You will put this to use in Week 7 when you configure SSH key-based authentication.</p>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- ── Phase 3 ── -->
+  <section class="section-card" id="phase3" aria-labelledby="phase3-h">
+    <p class="phase-label">Phase 3 of 3</p>
+    <h2 id="phase3-h">First Login and System Verification</h2>
+
+    <p>The installation is complete and the server has rebooted. Now you will log in, confirm the system is running correctly, and verify that the package manager can reach the internet. These are the first commands a sysadmin runs on any freshly installed server.</p>
+
+    <div class="callout">
+      <strong>Text-only login is normal.</strong> Ubuntu Server boots to a plain text prompt — no desktop, no mouse pointer. Type your username and press Enter, then type your password (characters will not appear as you type) and press Enter. If the login succeeds, you will see a shell prompt.
+    </div>
+
+    <ol class="step-list" aria-label="Verification steps">
+
+      <li>
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-content">
+          <h3>Log in and note the shell prompt</h3>
+          <p>After entering your credentials, you will see a prompt that looks like this:</p>
+          <div class="cmd-block"><span class="prompt">yourusername@hostname</span>:~$</div>
+          <p>This prompt shows your username, the server hostname, and your current directory (<code>~</code> is shorthand for your home directory). You are now inside the server. Every command you type will run directly on this Linux system.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-content">
+          <h3>Check the kernel and system information</h3>
+          <p>Run this command exactly as shown:</p>
+          <div class="cmd-block"><span class="prompt">$</span> uname -a</div>
+          <p>This prints a single line containing information about the running kernel and system. Paste the output below and answer the follow-up questions.</p>
+          <div class="response-group">
+            <label for="resp-uname">uname -a output and explanation</label>
+            <p class="prompt-text">Paste the full output of <code>uname -a</code>. Then, on separate lines below the output, identify: (1) the kernel version number, (2) the hostname, and (3) the CPU architecture — you should see <code>x86_64</code> on VirtualBox or <code>aarch64</code> on UTM.</p>
+            <textarea id="resp-uname" name="resp-uname" class="code-ta" rows="7" placeholder="Paste terminal output here, then add your labeled explanation below..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> How to read uname -a output</summary>
+            <div class="hint-body">
+              <p>Example output:</p>
+              <p><code>Linux myserver 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC Fri Sep 13 14:11:45 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux</code></p>
+              <ul>
+                <li><strong>Linux</strong> — the kernel name</li>
+                <li><strong>myserver</strong> — the hostname you set during installation</li>
+                <li><strong>6.8.0-45-generic</strong> — the kernel version number</li>
+                <li><strong>x86_64</strong> — the CPU architecture (you will see <code>aarch64</code> on Apple Silicon)</li>
+                <li><strong>GNU/Linux</strong> — the operating system type</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">3</div>
+        <div class="step-content">
+          <h3>Confirm network connectivity</h3>
+          <p>Send four test packets to Google's public DNS server to verify the VM can reach the internet:</p>
+          <div class="cmd-block"><span class="prompt">$</span> ping -c 4 8.8.8.8</div>
+          <div class="response-group">
+            <label for="resp-ping">ping output and interpretation</label>
+            <p class="prompt-text">Paste the complete output. Are packets being received (0% packet loss)? What does a successful ping confirm about the VM's network configuration?</p>
+            <textarea id="resp-ping" name="resp-ping" class="code-ta" rows="7" placeholder="Paste ping output here, then answer the questions..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> If ping fails or reports packet loss</summary>
+            <div class="hint-body">
+              <ul>
+                <li>Make sure the VM's network adapter is set to <strong>NAT</strong> in your hypervisor settings.</li>
+                <li>Check that your host machine is connected to the internet.</li>
+                <li>Try pinging your gateway instead: run <code>ip route</code> to find the gateway address, then <code>ping -c 4 &lt;gateway-address&gt;</code>. If that works but 8.8.8.8 does not, the issue may be DNS or a firewall on the host.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">4</div>
+        <div class="step-content">
+          <h3>Refresh the package index</h3>
+          <p>Run the command below. The <code>sudo</code> prefix runs the command with administrator privileges, which is required to update system-level package data. The first time you use <code>sudo</code> in a session you will be asked for your password.</p>
+          <div class="cmd-block"><span class="prompt">$</span> sudo apt update</div>
+          <p>This does <em>not</em> install or upgrade anything — it contacts Ubuntu's package repositories and downloads a fresh list of what is available. You must do this before installing software on a fresh system.</p>
+          <div class="response-group">
+            <label for="resp-apt">apt update output and interpretation</label>
+            <p class="prompt-text">Paste the complete output of <code>sudo apt update</code>. How many package sources did apt check? Did it report any errors or warnings? In your own words, what did this command actually do?</p>
+            <textarea id="resp-apt" name="resp-apt" class="code-ta" rows="10" placeholder="Paste apt update output here, then answer the questions..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Reading apt update output</summary>
+            <div class="hint-body">
+              <p>Each line tells you what apt did with a specific repository entry from <code>/etc/apt/sources.list</code>:</p>
+              <ul>
+                <li><strong>Hit</strong> — apt checked the source; nothing has changed since the last update</li>
+                <li><strong>Get</strong> — apt downloaded new package index data from this source</li>
+                <li><strong>Ign</strong> — the entry was ignored (often a duplicate or unreachable source)</li>
+              </ul>
+              <p>The final summary line shows how many packages could be upgraded. Running <code>apt update</code> only refreshes apt's local index — it does not install or change anything. Think of it as refreshing the catalog before you shop.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">5</div>
+        <div class="step-content">
+          <h3>Reflect on the experience</h3>
+          <div class="response-group">
+            <label for="resp-reflect">Reflection</label>
+            <p class="prompt-text">What surprised you about the installation process or the first login? Was there a step that was confusing or that you had to repeat? Is the text-only environment different from what you expected? Write at least two or three sentences.</p>
+            <textarea id="resp-reflect" name="resp-reflect" rows="5" placeholder="Your reflection here..."></textarea>
+          </div>
+        </div>
+      </li>
+
+    </ol>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="section-card" id="submission" aria-labelledby="submission-h">
+    <h2 id="submission-h">Deliverables and Submission</h2>
+    <p>This assignment is worth <strong>25 points</strong> and assesses <strong>CSLO 1</strong> (Install and configure a Linux operating system). Submit both of the following to the Lab 1 assignment in Canvas:</p>
+
+    <div class="submit-grid">
+      <div class="submit-item">
+        <h3>Screenshots (3 required)</h3>
+        <p>Partitioning screen, user creation screen, and first login prompt. Upload as image files (.png or .jpg) or combine into a single PDF.</p>
+      </div>
+      <div class="submit-item">
+        <h3>Completed lab (PDF)</h3>
+        <p>Use the Save as PDF button below to export this page with all your typed responses. Upload the resulting PDF to Canvas alongside your screenshots.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Before saving:</strong> Scroll back through each phase and make sure all response fields are filled in. Your typed text will appear in the PDF. The screenshot checklist checkboxes will not appear in the PDF — that is expected; screenshots are submitted separately.
+    </div>
+
+    <button class="btn-pdf" onclick="saveAsPDF()" type="button">
+      &#128461;&nbsp; Save as PDF
+    </button>
+  </section>
+
+</main>
+
+<script>
+  // Scroll-spy: highlight active nav link as user scrolls
+  (function () {
+    var sections = ['scenario', 'objectives', 'phase1', 'phase2', 'phase3', 'submission'];
+    var links = {};
+    sections.forEach(function (id) {
+      var a = document.querySelector('nav a[href="#' + id + '"]');
+      if (a) links[id] = a;
+    });
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && links[entry.target.id]) {
+          Object.values(links).forEach(function (a) { a.classList.remove('active'); });
+          links[entry.target.id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+
+    sections.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  })();
+
+  // Save as PDF: sync textarea values to print divs, open hints, print, restore
+  function saveAsPDF() {
+    document.querySelectorAll('textarea').forEach(function (ta) {
+      var pv = ta.parentNode.querySelector('.print-value');
+      if (!pv) {
+        pv = document.createElement('div');
+        pv.className = 'print-value' + (ta.classList.contains('code-ta') ? ' code-ta' : '');
+        ta.parentNode.insertBefore(pv, ta.nextSibling);
+      }
+      pv.textContent = ta.value.trim() || '(No response entered)';
+    });
+
+    var closed = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      closed.push(d);
+      d.setAttribute('open', '');
+    });
+
+    window.print();
+
+    window.addEventListener('afterprint', function restore() {
+      closed.forEach(function (d) { d.removeAttribute('open'); });
+      window.removeEventListener('afterprint', restore);
+    });
+  }
+</script>
+
+</body>
+</html>

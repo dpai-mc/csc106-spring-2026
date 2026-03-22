@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discussion 1: Choosing and Installing Linux — CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1e3a5f;
+      --blue: #0056b3;
+      --blue-light: #e8f0fb;
+      --green: #2d6a2d;
+      --green-light: #e8f5e8;
+      --red: #8b1a1a;
+      --red-light: #fdf0f0;
+      --orange: #8a5500;
+      --orange-light: #fff8e6;
+      --text: #1a1a1a;
+      --muted: #555;
+      --border: #cdd5e0;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --nav-h: 52px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 200;
+      border-radius: 0 0 4px 0;
+      font-size: .9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      overflow-x: auto;
+      height: var(--nav-h);
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    nav a {
+      color: #c8d8f0;
+      text-decoration: none;
+      font-size: .875rem;
+      padding: 6px 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    nav a:focus-visible { outline: none; border-color: #7bbfff; color: #fff; }
+    nav a.active { background: rgba(255,255,255,.2); color: #fff; font-weight: 600; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    [id] { scroll-margin-top: calc(var(--nav-h) + 12px); }
+
+    /* ── Header card ── */
+    .lab-header {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      border-left: 6px solid var(--navy);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .lab-header h1 { font-size: 1.6rem; color: var(--navy); margin-bottom: 8px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: .9rem;
+      color: var(--muted);
+      align-items: center;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--navy);
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .deadline-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--orange-light);
+      border: 1px solid #e6900a;
+      border-radius: 4px;
+      padding: 2px 9px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .section-card h2 {
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    h3 { font-size: 1rem; color: var(--navy); margin: 18px 0 8px; }
+    h3:first-child { margin-top: 0; }
+    p { margin-bottom: 12px; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 12px; }
+    li { margin-bottom: 5px; }
+
+    /* ── Prompt display ── */
+    .prompt-box {
+      background: var(--blue-light);
+      border-left: 5px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+      padding: 20px 24px;
+      margin: 0 0 16px;
+    }
+    .prompt-box p { margin-bottom: 10px; }
+    .prompt-box p:last-child { margin-bottom: 0; }
+    .prompt-thread {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #b8d0ef;
+    }
+    .prompt-thread-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+
+    /* ── Requirements list ── */
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 580px) { .req-grid { grid-template-columns: 1fr; } }
+    .req-card {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 14px 16px;
+      background: #fafcff;
+    }
+    .req-card h3 { margin: 0 0 6px; font-size: .95rem; }
+    .req-card p { margin: 0; font-size: .875rem; color: var(--muted); }
+    .req-card .due { font-weight: 700; color: var(--navy); }
+
+    /* ── Substantive reply guidance ── */
+    .compare-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    @media (max-width: 600px) { .compare-row { grid-template-columns: 1fr; } }
+    .compare-cell {
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: .875rem;
+    }
+    .compare-cell p { margin: 0; }
+    .cell-yes {
+      background: var(--green-light);
+      border-left: 4px solid var(--green);
+    }
+    .cell-no {
+      background: var(--red-light);
+      border-left: 4px solid #c0392b;
+    }
+    .compare-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .label-yes { color: var(--green); }
+    .label-no { color: var(--red); }
+
+    /* ── Grading rubric table ── */
+    .rubric-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+      margin-top: 8px;
+    }
+    .rubric-table th {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .rubric-table th:last-child { text-align: center; }
+    .rubric-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .rubric-table tr:last-child td { border-bottom: none; }
+    .rubric-table tr:nth-child(even) td { background: #f8f9fb; }
+    .rubric-table .pts {
+      text-align: center;
+      font-weight: 700;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+    .rubric-total td {
+      background: var(--blue-light) !important;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    /* ── Example cards ── */
+    .example-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    @media (max-width: 660px) { .example-pair { grid-template-columns: 1fr; } }
+    .example-card {
+      border-radius: 7px;
+      padding: 16px 18px;
+      font-size: .875rem;
+      line-height: 1.55;
+    }
+    .example-card-good {
+      background: var(--green-light);
+      border: 1px solid #aad4aa;
+      border-top: 4px solid var(--green);
+    }
+    .example-card-weak {
+      background: var(--red-light);
+      border: 1px solid #e0b0b0;
+      border-top: 4px solid #c0392b;
+    }
+    .example-card-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .label-good { color: var(--green); }
+    .label-weak { color: var(--red); }
+    .example-card blockquote {
+      font-style: italic;
+      border: none;
+      padding: 0;
+      margin: 0 0 10px;
+      color: #2a2a2a;
+    }
+    .example-card .analysis {
+      font-style: normal;
+      font-size: .825rem;
+      color: var(--muted);
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,0,0,.1);
+    }
+    .example-card .analysis ul { margin-bottom: 0; }
+
+    /* ── Draft section ── */
+    .draft-block { margin-bottom: 28px; }
+    .draft-block:last-child { margin-bottom: 0; }
+    .draft-block > label {
+      display: block;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .draft-block .draft-desc {
+      font-size: .875rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: .9rem;
+      line-height: 1.6;
+      resize: vertical;
+      color: var(--text);
+      background: #fafcff;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,86,179,.12);
+    }
+    .draft-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    /* Word count */
+    .wc-display {
+      font-size: .875rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #f3f4f6;
+      color: var(--muted);
+      transition: background .2s, color .2s, border-color .2s;
+    }
+    .wc-low { background: #fdf0f0; color: #c0392b; border-color: #e0b0b0; }
+    .wc-warn { background: var(--orange-light); color: var(--orange); border-color: #e6900a; }
+    .wc-ok { background: var(--green-light); color: var(--green); border-color: #aad4aa; }
+
+    /* Copy button */
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      color: var(--navy);
+      border: 2px solid var(--navy);
+      border-radius: 6px;
+      padding: 6px 16px;
+      font-size: .875rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .btn-copy:hover { background: var(--navy); color: #fff; }
+    .btn-copy:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .btn-copy:disabled { opacity: .7; cursor: default; }
+    .btn-copy.copied { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* ── Collapsible hints ── */
+    details {
+      background: var(--green-light);
+      border-radius: 6px;
+      border-left: 4px solid var(--green);
+      margin: 14px 0;
+    }
+    details summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--green);
+      font-size: .9rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary .arrow {
+      display: inline-block;
+      font-size: .7rem;
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    details summary:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body { padding: 0 14px 14px; font-size: .9rem; }
+    .hint-body > *:first-child { margin-top: 0; }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--orange-light);
+      border-left: 4px solid #e6900a;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .9rem;
+    }
+    .callout strong { color: var(--orange); }
+
+    /* ── Inline code ── */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #eef1f7;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: .9em;
+    }
+
+    /* ── Submission section ── */
+    .submit-steps { list-style: none; padding: 0; counter-reset: ssteps; }
+    .submit-steps li {
+      counter-increment: ssteps;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .submit-steps li::before {
+      content: counter(ssteps);
+      background: var(--navy);
+      color: #fff;
+      min-width: 26px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 26px;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .submit-steps li p { margin: 0; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .section-card, .lab-header { padding: 20px 16px; }
+      .lab-header h1 { font-size: 1.35rem; }
+    }
+
+    /* ── Print ── */
+    @media print {
+      nav { display: none !important; }
+      body { background: #fff; }
+      .section-card, .lab-header { box-shadow: none; border: 1px solid #bbb; break-inside: avoid; padding: 16pt; margin-bottom: 14pt; }
+      .btn-copy { display: none !important; }
+      textarea { display: none !important; }
+      .print-value {
+        display: block !important;
+        min-height: 48pt;
+        border: 1px solid #aaa;
+        border-radius: 3pt;
+        padding: 6pt 8pt;
+        background: #fafafa;
+        font-size: 9.5pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .wc-display { display: none !important; }
+      details:not([open]) { display: none; }
+    }
+    .print-value { display: none; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav aria-label="Discussion sections">
+  <div class="nav-inner">
+    <a href="#prompt">Prompt</a>
+    <a href="#requirements">Requirements</a>
+    <a href="#rubric">Rubric</a>
+    <a href="#examples">Examples</a>
+    <a href="#draft">Draft</a>
+    <a href="#submit">Post to Canvas</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Header ── -->
+  <header class="lab-header" id="top">
+    <p class="section-label">CSC 106 — Week 1 — RSI Discussion</p>
+    <h1>Discussion 1: Choosing and Installing Linux</h1>
+    <div class="meta-row">
+      <span><strong>Points:</strong> 15</span>
+      <span class="badge">CSLO 1</span>
+      <span class="deadline-tag">&#128197; Original post due Wednesday</span>
+      <span class="deadline-tag">&#128197; Replies due Sunday</span>
+    </div>
+  </header>
+
+  <!-- ── Prompt ── -->
+  <section class="section-card" id="prompt" aria-labelledby="prompt-h">
+    <h2 id="prompt-h">Discussion Prompt</h2>
+    <p>This week you installed Ubuntu Server from scratch. This discussion has two threads — respond to both in a single post.</p>
+
+    <div class="prompt-box" role="region" aria-label="Discussion prompt">
+      <div class="prompt-thread-label">Thread 1 — Your installation experience</div>
+      <p>You just installed Ubuntu Server from scratch. What surprised you about the process, or what was different from what you expected? Was there a step that felt confusing or that you had to repeat? Share at least one specific detail from your own installation experience.</p>
+
+      <div class="prompt-thread">
+        <div class="prompt-thread-label">Thread 2 — Distribution choice</div>
+        <p>In a professional setting, what factors would influence your choice of Linux distribution for a server? Think about things like long-term support, package availability, and community resources.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> What do "long-term support," "package availability," and "community resources" mean?</summary>
+      <div class="hint-body">
+        <p>These terms come up constantly in professional Linux conversations. Here is what they mean in plain language:</p>
+        <ul>
+          <li><strong>Long-term support (LTS):</strong> Some Linux releases are designated LTS, meaning the publisher commits to providing security updates and bug fixes for a longer period — typically 5 years for Ubuntu LTS versus 9 months for a standard release. On a production server you cannot afford to reinstall the OS every year, so LTS releases are strongly preferred.</li>
+          <li><strong>Package availability:</strong> How many software packages are available in the distribution's official repositories, and how current they are. A distribution with a large, well-maintained package ecosystem means you can install almost any server software with <code>apt</code> or <code>dnf</code> without resorting to third-party sources.</li>
+          <li><strong>Community resources:</strong> The size and quality of documentation, forums, Stack Overflow answers, and tutorials written for that distribution. If something breaks at 2 AM, you want to be able to find a relevant answer quickly. Ubuntu and RHEL-based distributions have the largest communities for server use.</li>
+        </ul>
+        <p>Other factors worth mentioning: cost (RHEL requires a subscription; Ubuntu LTS and Rocky Linux are free), support contracts (important for enterprise environments), and familiarity within a team.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ── Requirements ── -->
+  <section class="section-card" id="requirements" aria-labelledby="req-h">
+    <h2 id="req-h">Participation Requirements</h2>
+
+    <div class="req-grid">
+      <div class="req-card">
+        <h3>Original post</h3>
+        <p>Write <span class="due">at least 150 words</span> addressing both threads of the prompt. Post by <span class="due">Wednesday</span>. Include at least one specific detail from your own installation experience — a specific command, a step that tripped you up, or a decision you made.</p>
+      </div>
+      <div class="req-card">
+        <h3>Two peer replies</h3>
+        <p>Reply to <span class="due">at least two classmates</span> by <span class="due">Sunday</span>. Each reply must be substantive — it should add a new idea, ask a follow-up question, or offer a constructive alternative. See below for what that looks like.</p>
+      </div>
+    </div>
+
+    <h3>What makes a reply "substantive"?</h3>
+    <p>A substantive reply engages with something specific your classmate wrote. It does at least one of the following:</p>
+    <ul>
+      <li>Adds information or a perspective your classmate did not mention</li>
+      <li>Asks a follow-up question that invites them to go deeper</li>
+      <li>Shares a contrasting experience and explains why it might be different</li>
+      <li>Offers a constructive alternative to a choice or opinion they expressed</li>
+    </ul>
+
+    <div class="compare-row">
+      <div class="compare-cell cell-yes">
+        <div class="compare-label label-yes">&#10003; Substantive</div>
+        <p>"You mentioned the partitioning screen confused you — I had the same reaction. What helped me was running <code>lsblk</code> after the install to see how the disk actually ended up laid out. Did you notice whether the installer created a separate swap partition or a swapfile? I'm curious whether that varies by the options you pick."</p>
+      </div>
+      <div class="compare-cell cell-no">
+        <div class="compare-label label-no">&#10007; Not substantive</div>
+        <p>"Great post! I agree that Ubuntu is a good choice for servers. I also had some issues during the installation but managed to get through it. Good point about the support."</p>
+      </div>
+    </div>
+
+    <h3>What to expect from your instructor</h3>
+    <ul>
+      <li><strong>Monday:</strong> The instructor posts a welcome message to open the discussion.</li>
+      <li><strong>Thursday:</strong> The instructor replies with follow-up questions in at least three student threads.</li>
+      <li><strong>The following Monday:</strong> The instructor posts a summary of common themes and any misconceptions that came up.</li>
+    </ul>
+  </section>
+
+  <!-- ── Rubric ── -->
+  <section class="section-card" id="rubric" aria-labelledby="rubric-h">
+    <h2 id="rubric-h">Grading Rubric</h2>
+    <p>This discussion is worth <strong>15 points</strong>. Your original post, your replies, and the overall quality of your engagement are each evaluated separately.</p>
+
+    <table class="rubric-table" aria-label="Discussion grading rubric">
+      <thead>
+        <tr>
+          <th scope="col">Component</th>
+          <th scope="col">Criteria</th>
+          <th scope="col">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Original post</strong></td>
+          <td>
+            Posted by Wednesday. Minimum 150 words. Directly addresses both threads of the prompt with specific details, examples, or commands. Demonstrates engagement with the week's Linux topics — not just general opinions.
+          </td>
+          <td class="pts">8</td>
+        </tr>
+        <tr>
+          <td><strong>Peer replies</strong><br><span style="font-size:.8rem;color:var(--muted)">2 required · 2 pts each</span></td>
+          <td>
+            Both posted by Sunday. Each reply is substantive: it adds a new idea, asks a follow-up question, or offers a constructive alternative. Replies that only agree ("Great post!") or restate what the classmate said do not earn credit.
+          </td>
+          <td class="pts">4</td>
+        </tr>
+        <tr>
+          <td><strong>Quality and depth</strong></td>
+          <td>
+            Demonstrates thoughtful reflection on the installation experience. Technical content is accurate. Shows a genuine willingness to engage with peers' perspectives rather than just completing the minimum.
+          </td>
+          <td class="pts">3</td>
+        </tr>
+        <tr class="rubric-total">
+          <td colspan="2">Total</td>
+          <td class="pts">15</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top:16px;">
+      <strong>Note on the 3-point quality component:</strong> This is not a separate task — it is an assessment of how well your original post and replies are done together. A post that meets the word count but is vague and generic will score lower here than one that is specific, accurate, and reflective. Sharing a real experience (including a mistake or something confusing) and connecting it to the concepts in the readings is the easiest way to earn these points.
+    </div>
+  </section>
+
+  <!-- ── Examples ── -->
+  <section class="section-card" id="examples" aria-labelledby="examples-h">
+    <h2 id="examples-h">What Good Looks Like</h2>
+    <p>The examples below are representative student responses — not model answers. They illustrate the difference between responses that earn full credit and responses that do not.</p>
+
+    <!-- Original post examples -->
+    <h3>Original Post Examples</h3>
+
+    <div class="example-pair" aria-label="Original post examples">
+      <div class="example-card example-card-good">
+        <div class="example-card-label label-good">&#10003; Strong original post</div>
+        <blockquote>
+          "Installing Ubuntu Server was more disorienting than I expected, mostly because the installer is text-based — no mouse, just arrow keys and Enter. The step that actually tripped me up was partitioning. I chose guided partitioning and then panicked when I saw a message saying it would use the entire virtual disk. Once I read it more carefully and confirmed the layout (a small EFI partition, a swap partition, and a large root partition), it made sense and I moved on.
+
+          For a production server I would stick with Ubuntu Server LTS or move to Rocky Linux depending on the organization. Ubuntu 24.04 LTS gets five years of standard support plus additional security updates, which matters when you cannot afford to rebuild a server every couple of years. I also found that almost every troubleshooting article I turned to during the install was written with Ubuntu in mind, which makes a real difference when something breaks. That said, in an enterprise environment where a vendor support contract matters, I would seriously look at RHEL or Rocky Linux as a free RHEL-compatible alternative."
+        </blockquote>
+        <div class="analysis">
+          <strong>Why this earns full credit:</strong>
+          <ul>
+            <li>Addresses both threads (personal experience <em>and</em> distribution choice)</li>
+            <li>Names a specific step (partitioning) and explains what happened</li>
+            <li>Uses accurate technical vocabulary (EFI partition, swap, LTS, RHEL)</li>
+            <li>Discusses trade-offs rather than just stating a preference</li>
+            <li>Well over 150 words</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="example-card example-card-weak">
+        <div class="example-card-label label-weak">&#10007; Weak original post</div>
+        <blockquote>
+          "The installation went pretty well for me. I had a few issues but figured them out. Ubuntu is a popular choice for servers because it's well-supported and easy to use. I would choose Ubuntu for most server tasks because it's what we're learning in this class. Overall I think Linux is better for servers than Windows because it's free and open source."
+        </blockquote>
+        <div class="analysis">
+          <strong>Why this earns partial credit at best:</strong>
+          <ul>
+            <li>Under 150 words</li>
+            <li>No specific detail from the installation experience — "a few issues" is vague</li>
+            <li>Does not engage with the distribution choice factors in the prompt (LTS, packages, community)</li>
+            <li>Circular reasoning: "I'd choose Ubuntu because that's what we're learning"</li>
+            <li>The Linux vs. Windows point is off-topic</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply examples -->
+    <h3>Peer Reply Examples</h3>
+    <p>The following replies are responding to the strong original post shown above.</p>
+
+    <div class="example-pair" aria-label="Peer reply examples">
+      <div class="example-card example-card-good">
+        <div class="example-card-label label-good">&#10003; Strong reply</div>
+        <blockquote>
+          "The partitioning step caught me off guard too. What helped me was running <code>lsblk</code> right after the install finished so I could actually see the partitions that were created and confirm the layout matched what I approved. Did you happen to notice whether the installer created a swap partition or a swapfile? My install created a swapfile instead, and I'm not sure if that's a default that changed in 24.04 or something specific to my setup.
+
+          Your point about community resources resonates with me. I was using Rocky Linux briefly last semester and the documentation quality is noticeably thinner than Ubuntu's — especially for newer packages. I think for a class environment Ubuntu is an easy call, but I'm curious whether you'd feel differently if the scenario called for FIPS compliance or an environment that requires a specific vendor's support."
+        </blockquote>
+        <div class="analysis">
+          <strong>Why this earns full credit:</strong>
+          <ul>
+            <li>Responds to something specific the classmate wrote (partitioning, community resources)</li>
+            <li>Shares a related experience and an observation (<code>lsblk</code>, swapfile vs. swap partition)</li>
+            <li>Asks a genuine follow-up question that invites a deeper response</li>
+            <li>Introduces a new angle (FIPS compliance) without going off-topic</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="example-card example-card-weak">
+        <div class="example-card-label label-weak">&#10007; Weak reply</div>
+        <blockquote>
+          "Great post! I agree that Ubuntu is a good choice for servers. I also had some trouble during the installation but got through it eventually. Good point about the support contracts."
+        </blockquote>
+        <div class="analysis">
+          <strong>Why this does not earn credit:</strong>
+          <ul>
+            <li>Does not engage with anything specific from the classmate's post</li>
+            <li>"I also had some trouble" — no detail, no shared experience</li>
+            <li>"Good point about the support contracts" — just repeating, not extending</li>
+            <li>Adds no new information, perspective, or question</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Draft ── -->
+  <section class="section-card" id="draft" aria-labelledby="draft-h">
+    <h2 id="draft-h">Draft Your Post and Replies</h2>
+    <p>Use the fields below to draft your work before posting to Canvas. When you are ready, use the <strong>Copy</strong> button next to each field to copy the text, then paste it into the Canvas discussion.</p>
+
+    <!-- Original post -->
+    <div class="draft-block">
+      <label for="ta-post">Original Post Draft</label>
+      <p class="draft-desc">Address both threads: your installation experience <em>and</em> distribution choice for servers. Minimum 150 words. Post to Canvas by Wednesday.</p>
+      <textarea id="ta-post" name="ta-post" rows="10"
+        placeholder="Start drafting here. Address Thread 1 (your installation experience) and Thread 2 (distribution choice for servers). Include at least one specific detail from your install."></textarea>
+      <div class="draft-footer">
+        <span id="wc-post" class="wc-display" aria-live="polite" aria-atomic="true">0 / 150 words</span>
+        <button class="btn-copy" type="button" id="btn-post" onclick="copyDraft('ta-post','btn-post')" aria-label="Copy original post draft to clipboard">
+          &#128203; Copy post
+        </button>
+      </div>
+    </div>
+
+    <!-- Reply 1 -->
+    <div class="draft-block">
+      <label for="ta-reply1">Reply 1 Draft</label>
+      <p class="draft-desc">Pick something specific from a classmate's post to respond to. Add a new idea, a follow-up question, or a different perspective. Post by Sunday.</p>
+      <textarea id="ta-reply1" name="ta-reply1" rows="6"
+        placeholder="Draft your first reply here. Reference something specific your classmate wrote, then add your own perspective or question."></textarea>
+      <div class="draft-footer">
+        <span></span>
+        <button class="btn-copy" type="button" id="btn-r1" onclick="copyDraft('ta-reply1','btn-r1')" aria-label="Copy reply 1 draft to clipboard">
+          &#128203; Copy reply 1
+        </button>
+      </div>
+    </div>
+
+    <!-- Reply 2 -->
+    <div class="draft-block">
+      <label for="ta-reply2">Reply 2 Draft</label>
+      <p class="draft-desc">Reply to a second classmate. Do not repeat what you wrote in Reply 1 — look for a different angle or a different classmate's experience to engage with.</p>
+      <textarea id="ta-reply2" name="ta-reply2" rows="6"
+        placeholder="Draft your second reply here."></textarea>
+      <div class="draft-footer">
+        <span></span>
+        <button class="btn-copy" type="button" id="btn-r2" onclick="copyDraft('ta-reply2','btn-r2')" aria-label="Copy reply 2 draft to clipboard">
+          &#128203; Copy reply 2
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Post to Canvas ── -->
+  <section class="section-card" id="submit" aria-labelledby="submit-h">
+    <h2 id="submit-h">Post to Canvas</h2>
+    <p>When your drafts are ready, post them to the Canvas discussion board for Discussion 1. Nothing is submitted through this page.</p>
+
+    <ol class="submit-steps">
+      <li><p>Open the <strong>Discussion 1: Choosing and Installing Linux</strong> thread in Canvas (find it in this week's module or in the Discussions section).</p></li>
+      <li><p>Click <strong>Reply</strong> to start your original post. Use the <strong>Copy post</strong> button above to copy your draft, paste it in, review it, and click <strong>Submit</strong>. Post by <strong>Wednesday</strong>.</p></li>
+      <li><p>Return to the discussion after other students have posted. Read through your classmates' posts and find two to reply to. Use your Reply drafts as a starting point — you can refine them once you have read the actual posts you are responding to. Submit both replies by <strong>Sunday</strong>.</p></li>
+      <li><p>Check back after the instructor posts follow-up questions (by Thursday) and again after the Monday summary post. Reading the instructor's summary each week is one of the best ways to catch any misunderstandings before they carry forward.</p></li>
+    </ol>
+  </section>
+
+</main>
+
+<script>
+  // ── Scroll-spy ──
+  (function () {
+    var ids = ['prompt', 'requirements', 'rubric', 'examples', 'draft', 'submit'];
+    var links = {};
+    ids.forEach(function (id) {
+      var a = document.querySelector('nav a[href="#' + id + '"]');
+      if (a) links[id] = a;
+    });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && links[entry.target.id]) {
+          Object.values(links).forEach(function (a) { a.classList.remove('active'); });
+          links[entry.target.id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  })();
+
+  // ── Live word count on original post ──
+  (function () {
+    var ta = document.getElementById('ta-post');
+    var wc = document.getElementById('wc-post');
+    if (!ta || !wc) return;
+
+    function update() {
+      var text = ta.value.trim();
+      var count = text === '' ? 0 : text.split(/\s+/).length;
+      wc.className = 'wc-display';
+      if (count >= 150) {
+        wc.textContent = count + ' words \u2713';
+        wc.classList.add('wc-ok');
+      } else if (count >= 100) {
+        wc.textContent = count + ' / 150 words';
+        wc.classList.add('wc-warn');
+      } else {
+        wc.textContent = count + ' / 150 words';
+        wc.classList.add('wc-low');
+      }
+    }
+
+    ta.addEventListener('input', update);
+    update();
+  })();
+
+  // ── Copy to clipboard ──
+  function copyDraft(taId, btnId) {
+    var ta = document.getElementById(taId);
+    var btn = document.getElementById(btnId);
+    var text = ta.value.trim();
+
+    if (!text) {
+      var orig = btn.textContent;
+      btn.textContent = 'Nothing to copy';
+      setTimeout(function () { btn.textContent = orig; }, 1800);
+      return;
+    }
+
+    function onSuccess() {
+      var orig = btn.innerHTML;
+      btn.innerHTML = '\u2713 Copied!';
+      btn.classList.add('copied');
+      btn.disabled = true;
+      setTimeout(function () {
+        btn.innerHTML = orig;
+        btn.classList.remove('copied');
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    function fallback() {
+      ta.select();
+      try {
+        document.execCommand('copy');
+        onSuccess();
+      } catch (e) {
+        btn.textContent = 'Select text manually';
+      }
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+</script>
+
+</body>
+</html>
