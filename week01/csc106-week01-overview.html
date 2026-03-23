@@ -270,56 +270,44 @@ code {
   padding-bottom: 0;
 }
 
-/* ── Video Placeholder ── */
-.video-placeholder-wrapper {
-  margin-bottom: 1.5rem;
-}
-.video-placeholder-wrapper h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-.video-placeholder {
-  width: 100%;
-  position: relative;
-  padding-bottom: 56.25%;
-  background: #1e293b;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.video-placeholder-inner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* ── Video + Transcript ── */
+.video-transcript-layout {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  text-align: center;
-  padding: 1.5rem;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
-.video-placeholder-inner .play-icon {
-  font-size: 3rem;
-  margin-bottom: 0.75rem;
-  color: #6366f1;
-  line-height: 1;
+@media (min-width: 768px) {
+  .video-transcript-layout { flex-direction: row; align-items: flex-start; }
+  .video-col { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
 }
-.video-placeholder-inner p {
-  margin-bottom: 0.4rem;
-  font-size: 0.95rem;
+#transcript-container {
+  height: 24rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  font-size: 0.875rem;
 }
-.video-placeholder-inner .placeholder-title {
-  color: #e2e8f0;
+.transcript-line {
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 0.2rem;
+  line-height: 1.5;
+  color: #334155;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background-color: #f0f7ff;
   font-weight: 600;
-  font-size: 1.05rem;
-  margin-bottom: 0.35rem;
-}
-.video-placeholder-inner .placeholder-note {
-  font-size: 0.82rem;
-  color: #64748b;
-  font-style: italic;
+  border-left: 4px solid #6366f1;
+  padding-left: 12px;
+  transition: background-color 0.2s;
 }
 
 /* ── Responsive ── */
@@ -363,13 +351,23 @@ code {
 
   <!-- Video Placeholder -->
   <h2 id="video">Instructor Introduction</h2>
-  <div class="video-placeholder-wrapper">
-    <div class="video-placeholder" role="img" aria-label="Placeholder for the instructor introduction video. This video is not yet available.">
-      <div class="video-placeholder-inner">
-        <span class="play-icon" aria-hidden="true">&#9654;</span>
-        <p class="placeholder-title">Welcome to CSC 106 and Installing Ubuntu Server</p>
-        <p>Course orientation, what to expect over 8 weeks, and a walkthrough of the Ubuntu Server 24.04 LTS installation in VirtualBox.</p>
-        <p class="placeholder-note">This video is coming soon. It will be added once all Week 1 module content is finalized.</p>
+  <div class="video-transcript-layout">
+    <div class="video-col">
+      <div id="video-container" style="width:100%;height:0;padding-bottom:56.25%;position:relative;">
+        <iframe id="youtube-player"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                src="https://www.youtube.com/embed/rgWur8lY_P8?enablejsapi=1"
+                title="Instructor Introduction – CSC 106 Week 1"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+    <div class="transcript-col">
+      <div id="transcript-container" role="region" aria-label="Video transcript" aria-live="polite">
+        <p style="color:#94a3b8;text-align:center;padding:1rem 0;">Loading transcript…</p>
       </div>
     </div>
   </div>
@@ -538,5 +536,1601 @@ document.querySelectorAll('.top-nav a[href^="#"]').forEach(function(link) {
 });
 </script>
 
+
+<script>
+(function () {
+  var VIDEO_ID = 'rgWur8lY_P8';
+  var player, timeUpdater;
+  var parsedTranscript = [];
+
+  var vttContent = `WEBVTT
+
+00:00.240 --> 00:07.700
+Good morning, or good afternoon, or good evening, whenever you are actually viewing this video.
+
+00:08.000 --> 00:14.820
+So, this video, when you get here, this is going to be the homepage, the modules is the homepage,
+
+00:15.760 --> 00:22.880
+and you've already gone through here to go through start here, and we go to start here for the week
+
+00:22.880 --> 00:30.300
+one overview, and this is the video right here that we're on. That's just a placeholder in here
+
+00:30.300 --> 00:39.440
+for right now. Okay, so before we start here, or here, I first want to go through, or go over
+
+00:39.440 --> 00:45.460
+the syllabus just a little bit. Okay, the syllabus you'll find under course introduction,
+
+00:45.460 --> 00:48.240
+and all that's in there right now is the syllabus.
+
+00:50.280 --> 00:52.860
+Okay, if you want a copy, a hard copy of the syllabus,
+
+00:52.880 --> 01:00.320
+it's very long, but you can download it, print it, or save it to a file
+
+01:00.320 --> 01:09.540
+as a PDF, and you'll have all this information, however you want it. Otherwise, if not,
+
+01:09.600 --> 01:16.280
+then you can always access it here online. It's broken into four parts. There's a course overview,
+
+01:17.220 --> 01:20.840
+just, you know, introducts the course, what the learning objectives are,
+
+01:21.260 --> 01:22.700
+why you should take this course.
+
+01:22.880 --> 01:27.120
+Okay, then there's my information, and the course information.
+
+01:28.520 --> 01:34.280
+This is my email address. This is my office phone. You'll get better response probably
+
+01:34.280 --> 01:40.800
+from my email address. I'm not in the office all that much, since almost all my classes are online.
+
+01:43.760 --> 01:49.100
+I have a Zoom room that I use for meetings, but you need to schedule them. So
+
+01:49.100 --> 01:52.860
+this class, only online.
+
+01:52.880 --> 01:57.120
+No meetings. Everything's just going to be posted. All your stuff's going to be posted.
+
+01:58.660 --> 02:01.740
+I do have office hours on Monday from two to four,
+
+02:02.500 --> 02:10.600
+online via Zoom, but I'll set you pre-schedule. So go to my calendar and put yourself in on Monday,
+
+02:11.120 --> 02:19.460
+or email me. My calendar has all my availability, but it does block out the times when I'm in my
+
+02:19.460 --> 02:22.760
+office. I need to fix these because these are not right. I need to fix these because these are not
+
+02:22.760 --> 02:29.160
+right. So hopefully by the time you see it, they'll be fixed. They're 12.30 to 1.30.
+
+02:30.960 --> 02:33.580
+I think every day, Tuesday, Wednesday, Thursday, I think.
+
+02:36.380 --> 02:38.320
+Okay, so I need to fix that.
+
+02:41.220 --> 02:47.700
+Please use them. Please email me. I'll talk about it in a second, but basically you should email me
+
+02:47.700 --> 02:52.320
+through the inbox in our course. That's the best way.
+
+02:52.760 --> 02:59.340
+Is in Canvas, is go to the inbox, email me. It says I have 43, but I don't really have 43
+
+02:59.340 --> 03:05.800
+because I usually answer them from my email and not the inbox. So it doesn't show up as answered.
+
+03:09.000 --> 03:14.240
+Okay, course outline. This gives you a good idea of what we're going to cover in this class.
+
+03:14.880 --> 03:21.980
+We have an eight, it's an eight-week class, one and a half credits. So this will kind of give you
+
+03:21.980 --> 03:22.740
+an idea of what we're going to cover in this class. So I'm going to go ahead and start. I'm going to
+
+03:22.740 --> 03:28.580
+do the first week. This week is a little heavy. I'll just be honest with you. There's a lot of
+
+03:28.580 --> 03:35.280
+stuff to do. Part of it's getting started. Part of it's weird because next week is we're off.
+
+03:36.340 --> 03:43.140
+So we lose all that momentum and then we start again. So there's all this stuff going on, right?
+
+03:43.140 --> 03:52.700
+So it's a little heavy, but hopefully it'll all work out. So next week is spring break and then
+
+03:52.740 --> 03:57.240
+we come back and you can see what we're going to cover each week.
+
+03:58.440 --> 04:02.180
+And it's broken into kind of three sections or four sections. I'm sorry.
+
+04:03.980 --> 04:10.940
+Okay. And there's going to be four discussions. So every other week, starting with week one,
+
+04:11.060 --> 04:17.560
+so one, three, five, and seven, there's typically a lab every week, except for weeks four and eight.
+
+04:18.140 --> 04:22.680
+There's a mini project, which you'll get assigned like in week three,
+
+04:22.740 --> 04:27.180
+so that you don't have to try to do everything in a week.
+
+04:29.920 --> 04:37.620
+Okay. And then policies. I'm sure you've seen most of these before from various instructors, but
+
+04:37.620 --> 04:41.200
+Canvas learning management system, you have any issues with learning Canvas,
+
+04:41.380 --> 04:46.720
+you don't really understand how to use it. There's a helpline. There's also a
+
+04:46.720 --> 04:52.300
+Canvas self-enrollment for a course that you can take on, you know, learning all the features
+
+04:52.740 --> 05:03.340
+of Canvas, such as setting up your, how you get notified about changes or things like that in
+
+05:03.340 --> 05:13.880
+Canvas. So it's worth doing, I think, if you haven't used it pretty much. Okay. If you're a
+
+05:13.880 --> 05:20.520
+pro at it, don't worry about it. You're good. Okay. Course communication, prefer everything
+
+05:20.520 --> 05:21.420
+through Canvas Inbox.
+
+05:22.740 --> 05:28.840
+Okay. Through Canvas Inbox, that makes sure all the course organizations within Canvas
+
+05:28.840 --> 05:36.180
+shell, college actually wants instructors to do that, so they can show that we're actually
+
+05:36.180 --> 05:45.380
+having discussions with you, especially in online classes. Okay. So I'll try to make every effort
+
+05:45.380 --> 05:52.720
+to respond within one to two days, 24 to 48 hours. Sometimes I'm sitting there,
+
+05:52.740 --> 05:58.440
+and my computer, and I get a message. Sometimes I'll answer right away. Usually I don't see them,
+
+05:58.560 --> 06:05.740
+but sometimes I do. Weekends can take longer because I try not to sit in front of my computer
+
+06:05.740 --> 06:17.980
+all weekend. So since I sit in front of my computer all week. Okay. So assignment and late
+
+06:17.980 --> 06:22.720
+submissions, I'd like you to try to do everything no later than the due date. So if you have a
+
+06:22.740 --> 06:31.280
+due date, I tend to not have closed like the standard labs and stuff. They don't really close
+
+06:31.280 --> 06:37.700
+until the end of the semester. Although our two mini projects will probably have due dates that
+
+06:37.700 --> 06:43.380
+say you must finish them by such and such a date. Okay. So everything else is kind of, it's okay to
+
+06:43.380 --> 06:50.200
+turn in late. There's no really deductions. I put it on here so that I can if I want to, but I
+
+06:50.200 --> 06:51.280
+generally don't.
+
+06:52.740 --> 06:58.920
+I don't apply any deductions to anybody. If you are having difficulties, though, too much work,
+
+06:58.960 --> 07:04.160
+things going on, make sure you reach out. Students with disabilities, you need to go through the
+
+07:04.160 --> 07:10.980
+Disability Resource Center. Student conduct expectations, academic honesty expectations.
+
+07:12.560 --> 07:18.940
+Financial aid, if you aren't getting financial aid, you may want to go see if you qualify for it.
+
+07:21.080 --> 07:22.300
+Privacy and session tracking.
+
+07:22.740 --> 07:28.300
+I use a lot of web pages, and sometimes I put progress bars and stuff, but those progress bars are session
+
+07:28.300 --> 07:38.400
+only. I never track anything. I don't store any cookies. So there's nothing in here that will, you should
+
+07:38.400 --> 07:49.240
+be able to deem as invasion of your privacy. Okay. I'm not trying to find out anything about you. I just
+
+07:49.240 --> 07:52.100
+use it as a tool for you.
+
+07:52.740 --> 07:57.580
+Kind of show your own progress and say, hey, I'm almost done. Maybe I'll just sit here and finish it.
+
+07:59.780 --> 08:05.800
+Student resources. There's resources, guides for all the things that are available for students.
+
+08:06.700 --> 08:09.960
+Food assistance, technology support, mental health, tutoring, all that kind of stuff.
+
+08:12.120 --> 08:17.020
+The non-discrimination policy that we don't discriminate on race, color, national origin,
+
+08:17.020 --> 08:21.040
+sex, gender identity, disability, age, sexual orientation, or other protected characteristics.
+
+08:22.740 --> 08:24.900
+There's lots of things so that talent and knowledge comes in.
+
+08:24.900 --> 08:26.600
+All of these types of things I, I think should be part of.
+
+08:26.740 --> 08:30.040
+Title nine is sexual assault.
+
+08:31.840 --> 08:34.520
+It just talks about your rights and how to
+
+08:34.940 --> 08:36.040
+report something. If you feel like someone is
+
+08:37.040 --> 08:41.860
+stepping over the line, so to speak.
+
+08:41.860 --> 08:42.680
+FERPA.
+
+08:42.680 --> 08:46.160
+Student privacy.
+
+08:46.160 --> 08:48.820
+We're not allowed to disclose anything without your consent.
+
+08:48.820 --> 08:51.780
+You, except for you always have the right to inspect your own records.
+
+08:51.780 --> 08:52.180
+Okay.
+
+08:52.180 --> 08:52.400
+As it appears.
+
+08:52.400 --> 08:52.740
+I agree.
+
+08:52.740 --> 08:59.220
+an instructor i can't talk to anybody about any of your work how you're doing except for you unless
+
+08:59.220 --> 09:07.240
+you give me the rights to talk to them about it mental health and wellness if you feel like
+
+09:07.240 --> 09:14.400
+that feeling quite right or you feel like you're feeling tired all the time or you know too much
+
+09:14.400 --> 09:21.000
+things going on you can always contact the health and wellness services they're there to
+
+09:21.000 --> 09:24.440
+provide whatever support they can and support that you need
+
+09:24.440 --> 09:30.580
+tutoring and academic support free tutoring for computer science is generally through mesa
+
+09:30.580 --> 09:35.080
+except for for this course they technically aren't supposed to help you but they might help
+
+09:35.080 --> 09:43.680
+you anyway um there are no other in-person tutoring activities on campus there is and
+
+09:43.680 --> 09:50.820
+through online tutoring you can access the um i forget what it's called
+
+09:50.820 --> 09:50.980
+netflix
+
+09:51.000 --> 09:58.680
+tutor i think it's called you can access net tutor and when you go to the tutoring center
+
+09:58.680 --> 10:08.460
+you can pick computer science and it and you can get support online support through this system
+
+10:08.460 --> 10:13.860
+all right
+
+10:13.860 --> 10:20.620
+technology support
+
+10:21.000 --> 10:26.200
+it help desk primarily um if it has to do with anything about our class any of the pages that
+
+10:26.200 --> 10:31.480
+we put up then you probably have to talk to me about it but if it's how do i get internet access
+
+10:31.480 --> 10:37.240
+on campus and i can't connect to the network my email's not working i don't remember how to get
+
+10:37.240 --> 10:45.800
+into my email that kind of stuff you need to contact the help desk and then emergency on campus
+
+10:45.800 --> 10:48.660
+contacts for campus security
+
+10:48.660 --> 10:49.060
+um
+
+10:49.060 --> 10:51.160
+Paul
+
+10:51.160 --> 10:56.040
+es
+
+10:56.100 --> 11:01.220
+that's just suicide prevention lifeline is 988 and crisis tech
+
+11:01.220 --> 11:08.080
+line text line okay important semester dates i need to fix these first three i have no idea what
+
+11:08.080 --> 11:16.760
+they are for a late start class i'm pretty sure the last date to drop with a w is april 17th
+
+11:18.160 --> 11:18.900
+there might be
+
+11:18.900 --> 11:22.980
+this might be the end of this week because typically that's what it is the
+
+11:22.980 --> 11:31.400
+first week same with add probably last day to do refund enrollment fees if you
+
+11:31.400 --> 11:42.120
+did them I say apply for a pass no pass is the 22nd which is I think the last
+
+11:42.120 --> 11:47.820
+day of the semester or the second to last day of the semester so anyway
+
+11:47.820 --> 11:53.280
+that's the syllabus orient you to the course and from the standpoint of what
+
+11:53.280 --> 12:07.780
+we have all right so for the course itself okay so I'm not gonna go through
+
+12:07.780 --> 12:11.660
+all this but this is typically there's always going to be at the beginning of
+
+12:11.660 --> 12:17.760
+the week there'll be an overview it'll be similar to this we'll have a little
+
+12:17.760 --> 12:17.800
+bit of an overview of the course itself but typically if you're new to the course
+
+12:17.800 --> 12:22.620
+video i'll introduce what's going on what i think is important this week or what i think you should
+
+12:22.620 --> 12:28.520
+focus on and then you know it'll have what's our learning goals for the week how they do they
+
+12:28.520 --> 12:37.120
+apply to the student learning objectives you know the course learning objectives like which ones do
+
+12:37.120 --> 12:45.000
+they apply to key concepts so this week we're going to make you're going to create an ubuntu
+
+12:45.000 --> 12:49.660
+server that you're going to use for your mini projects and maybe some other lab assignments
+
+12:49.660 --> 13:00.680
+as we go through the course and so this is hey installation decision matter how to do package
+
+13:00.680 --> 13:08.840
+management where things live in linux system how do you find stuff and so what we have is for this
+
+13:08.840 --> 13:14.400
+week i'm going to have and i have another longer list of what you're going to do this week
+
+13:14.400 --> 13:14.980
+so
+
+13:15.000 --> 13:18.140
+but um you're going to read these two chapters from our textbook
+
+13:18.140 --> 13:24.580
+and i will go over next how to get a tech our textbook and then you'll do this lab
+
+13:24.580 --> 13:30.200
+it's part of our textbook and then you have a hands-on assignment which is created
+
+13:30.200 --> 13:37.040
+ubuntu server i have all the instructions and tutorials on how to do that and then there will
+
+13:37.040 --> 13:43.820
+be a discussion post and i didn't fix this one the first post is due thursday and then you're
+
+13:43.820 --> 13:44.920
+going to reply to two people by
+
+13:45.000 --> 13:49.160
+sunday okay and you can see the points for each activity here on the right
+
+13:49.160 --> 13:53.640
+then
+
+13:53.640 --> 14:02.640
+where does this fit you know this is week one it's all ubuntu server learn a little bit about
+
+14:02.640 --> 14:09.700
+package management then we'll talk about um hardware kernel boot process understanding
+
+14:09.700 --> 14:14.120
+run levels systemd targets managing services
+
+14:15.000 --> 14:22.280
+shell scripting and mini project then user group and system security fundamentals file permissions
+
+14:22.280 --> 14:28.200
+ownership networking basics network configuration and then week eight the last week will be a mini
+
+14:28.200 --> 14:39.720
+project okay everything you do every week is going to carry forward um so the last mini project will
+
+14:41.400 --> 14:44.840
+undoubtedly invariably require you to
+
+14:45.000 --> 14:50.520
+do something from almost every week of the course so kind of like the final
+
+14:52.200 --> 14:58.200
+okay our course student learning objectives one is installing configure linux operating system
+
+14:58.200 --> 14:59.240
+you can do that this week
+
+15:01.800 --> 15:05.240
+configure linux operating system as a platform for web based and other applications
+
+15:06.840 --> 15:09.560
+when we're going to do that we're going to do that sometime and then
+
+15:10.120 --> 15:14.440
+describe linux run levels of startup scripts you know we're going to do run levels here in week 3
+
+15:15.320 --> 15:21.800
+we're going to be doing scripting in week four okay
+
+15:24.920 --> 15:28.200
+and then just a little bit about looking into week two
+
+15:30.600 --> 15:38.680
+all right so i have a longer to-do list than that was on the little checklist
+
+15:38.680 --> 15:44.200
+for the overview the overview that was pretty much true this is the details okay
+
+15:45.000 --> 15:49.320
+of what we need to do this week so obviously course overview i just went over it
+
+15:50.680 --> 15:55.720
+watch the course orientation ap demo video there's no ap demo video
+
+15:55.720 --> 15:59.720
+but this is the current course orientation video
+
+16:02.040 --> 16:04.200
+you need to register for cisco networking academy
+
+16:05.480 --> 16:09.960
+okay because that's our resource for this course it's cisco network academy
+
+16:11.080 --> 16:14.440
+and you have to enroll in this linux essentials
+
+16:15.160 --> 16:21.000
+and then you need to what's really in linux essentials essentials you need to link
+
+16:21.880 --> 16:27.640
+your netcat account to you need to create an ndg account that becomes linked to your netcat account
+
+16:28.200 --> 16:32.440
+so that when you go in pretty much every time you go in you're going to have to log in
+
+16:32.440 --> 16:39.960
+to neticad open the course click on the links go into the actual chapter and then you're probably
+
+16:39.960 --> 16:43.320
+going to have to log into ndg every time let's see what's next
+
+16:43.320 --> 16:43.720
+so
+
+16:45.000 --> 16:45.240
+okay
+
+16:45.240 --> 16:49.160
+okay
+
+16:49.160 --> 16:53.160
+and i'll show you this read the through things do this chapter here
+
+16:55.160 --> 17:01.480
+and then i have a hypervisor in his server actually i didn't set it up this way
+
+17:02.280 --> 17:08.200
+i set it up as a windows and a mac and it does everything so if you're on a mac you
+
+17:08.200 --> 17:11.640
+do you just follow the mac instructions if you're on windows you follow the windows instructions
+
+17:15.240 --> 17:17.880
+all right all this is part of that
+
+17:19.720 --> 17:22.840
+there's an assignment with it it's lab one so there's some
+
+17:23.560 --> 17:25.400
+screenshots you're supposed to take and some
+
+17:27.720 --> 17:32.440
+short write-ups you're supposed to do so you can submit that and you do that online
+
+17:33.160 --> 17:35.480
+within the lab itself and then you
+
+17:37.400 --> 17:41.720
+click the apprentice pdf and save it as a pdf and you submit your pdf which already has all the
+
+17:42.280 --> 17:43.160
+stuff that you captured
+
+17:45.000 --> 17:51.240
+and then you have a discussion which is the first initial is due thursday and then following is
+
+17:51.240 --> 17:56.040
+sunday and then there is an extra credit opportunity which is optional you don't have to
+
+17:56.040 --> 18:04.920
+do it but if you want to great and what these do is they go beyond what our basic requirements for
+
+18:04.920 --> 18:14.760
+the course are okay so um there are two other courses that go deeper into linux than the course
+
+18:14.760 --> 18:20.200
+that we're using on cisco and they are called linux one and linux two we're going to do linux
+
+18:20.200 --> 18:25.560
+essentials okay we're going to use resources from linux essentials we're not doing the whole course
+
+18:25.560 --> 18:32.280
+because i'm assuming that you completed 105 and you have some knowledge about linux already
+
+18:32.840 --> 18:34.280
+so we're not going to do all that part
+
+18:36.440 --> 18:39.960
+all right so you're going to read it and then you're going to submit this little do a little
+
+18:42.280 --> 18:44.680
+one page comparison based on what's
+
+18:44.760 --> 18:49.960
+in linux 1 chapter 24 package management it's a little bit more information on package management
+
+18:50.840 --> 18:58.600
+and it goes beyond just ubuntu it looks at red hat primarily red hot and so you can compare them
+
+18:58.600 --> 19:04.680
+they all do the same thing but sometimes they use different packages and commands to do essentially
+
+19:07.400 --> 19:09.320
+okay so the first thing you actually have to do
+
+19:13.320 --> 19:14.360
+is you have to
+
+19:14.760 --> 19:17.000
+enroll in cisco networking academy
+
+19:21.560 --> 19:26.520
+here i don't want to go here so um there's a link
+
+19:30.760 --> 19:33.960
+in the things already but here's cisco networking academy
+
+19:35.160 --> 19:43.560
+and to get in you go it's netacad.com to get in you go to login and if you have an account you log
+
+19:43.560 --> 19:44.440
+in with that account
+
+19:45.160 --> 19:53.400
+you don't have an account you go down here and sign up or you can use a lot your google a google
+
+19:53.400 --> 19:59.240
+account and use all odds if you want okay the one thing i'm going to tell you is don't use your
+
+19:59.240 --> 20:06.920
+college email using email you think you're going to have for a long time because cisco stores
+
+20:07.800 --> 20:13.560
+basically anybody can sign up for cisco stuff just whether you have to pay or not and what is
+
+20:13.560 --> 20:20.880
+is available to you depends on how you're affiliated okay in this case I'm
+
+20:20.880 --> 20:25.440
+going to send you invite to have invites for you to join the courses that we're
+
+20:25.440 --> 20:31.160
+going to be using let me log into my I
+
+20:31.160 --> 20:49.620
+just the set of problem with having long passwords sometimes you even type them okay
+
+20:49.620 --> 20:57.000
+oops thatансuh crap okay so you can see how I'm using a gmail account because
+
+20:57.000 --> 21:01.160
+everything I do like all the courses I teach all of course
+
+21:01.160 --> 21:07.660
+Versus I complete all the certificates of achievement I get through Cisco.
+
+21:09.200 --> 21:11.920
+It's stored and tied to your email address.
+
+21:13.140 --> 21:15.800
+In the future, you can change it, but it's really difficult.
+
+21:16.360 --> 21:17.980
+I don't like it when you try to change it.
+
+21:18.100 --> 21:20.900
+At least in the past, it's been super difficult to change your email address
+
+21:20.900 --> 21:25.260
+and have all that information about things you've completed go with you.
+
+21:26.320 --> 21:28.360
+So if you may want them in the future,
+
+21:28.360 --> 21:31.720
+you should use an email address that you're probably going to have for a long time
+
+21:31.720 --> 21:33.540
+or you think you're going to have for a long time.
+
+21:35.540 --> 21:36.520
+Okay, log in.
+
+21:36.600 --> 21:37.980
+I'm going to put my password in.
+
+21:39.980 --> 21:41.840
+Okay, and yours is going to look a little bit different.
+
+21:42.200 --> 21:45.620
+I have a slightly different view because I'm an instructor.
+
+21:47.040 --> 21:53.960
+Okay, but this course, this is our Linux essentials.
+
+21:54.600 --> 21:57.120
+This is the course that's our primary course.
+
+21:57.120 --> 21:58.120
+This is the required thing.
+
+21:58.360 --> 21:59.040
+You need to do.
+
+22:00.300 --> 22:00.700
+Okay.
+
+22:01.940 --> 22:04.420
+I don't need to join this because I'm already in, right?
+
+22:05.120 --> 22:09.200
+So the first thing you do is you got to go here to before you get started.
+
+22:10.700 --> 22:12.600
+And it will bring up this NDG.
+
+22:13.340 --> 22:14.740
+You're going to launch this activity.
+
+22:16.480 --> 22:18.620
+And it says I'm not currently logged in.
+
+22:18.880 --> 22:20.640
+The first time you're going to have to register.
+
+22:22.240 --> 22:25.160
+And it's going to register your name, address, I mean, email address,
+
+22:25.220 --> 22:26.620
+your password and click register.
+
+22:27.140 --> 22:28.180
+It'll send you.
+
+22:28.360 --> 22:30.600
+A email to this email address.
+
+22:30.600 --> 22:35.080
+So make sure it's one that you monitor and can access the inbox too.
+
+22:35.920 --> 22:39.560
+Cause you'll have to do an email verification, send you an email.
+
+22:41.600 --> 22:41.980
+All right.
+
+22:42.200 --> 22:50.160
+And, but then once you have an account, you'll go in and you'll log in.
+
+22:52.020 --> 22:53.100
+I don't know why it doesn't come up.
+
+22:54.300 --> 22:58.180
+You log in and what I do, what I did is I created it with this.
+
+22:58.180 --> 23:01.240
+Same email address is a different password, but it's the same email
+
+23:01.240 --> 23:03.760
+address as my Cisco email address.
+
+23:03.760 --> 23:09.560
+You don't have to, but I do that just to keep it clean and know what it is.
+
+23:09.560 --> 23:09.940
+Okay.
+
+23:11.420 --> 23:16.960
+You have to log in in order to access the content.
+
+23:19.000 --> 23:19.300
+Okay.
+
+23:19.360 --> 23:20.980
+And then this is the wrong content.
+
+23:21.940 --> 23:26.500
+So I don't want chapter one, but this is where we are.
+
+23:27.580 --> 23:27.760
+Okay.
+
+23:27.760 --> 23:28.160
+Just so you know.
+
+23:28.180 --> 23:35.560
+How it works, um, you get on the left, you get the instructions and you
+
+23:35.560 --> 23:36.960
+can click next and read them.
+
+23:37.020 --> 23:37.600
+This is our book.
+
+23:37.600 --> 23:39.040
+You read it, you click next.
+
+23:39.560 --> 23:45.380
+And if it asks you to do something, you can try stuff out, like, um, get a
+
+23:45.380 --> 23:50.200
+directory listing or, you know, what's my present working directory, all that
+
+23:50.200 --> 23:57.340
+kind of stuff you can do that in the built in, um, Ubuntu.
+
+23:58.180 --> 24:00.400
+Um, interface.
+
+24:01.060 --> 24:01.480
+Okay.
+
+24:02.560 --> 24:03.820
+That's probably how it works.
+
+24:06.580 --> 24:06.860
+All right.
+
+24:07.160 --> 24:12.780
+Um, modules is going to say, this is meant by Cisco learning management system.
+
+24:12.880 --> 24:17.320
+Oh, please close this tab and return to Cisco network Academy and launch it from
+
+24:17.320 --> 24:17.660
+there.
+
+24:18.680 --> 24:18.980
+Okay.
+
+24:19.000 --> 24:20.060
+So that's part of the deal.
+
+24:20.060 --> 24:25.340
+It's kind of a pain, but so if I close this, I come back here.
+
+24:25.340 --> 24:46.340
+And I want to go back to, okay, oops, not my learning, my classes.
+
+24:49.020 --> 24:54.100
+And so for this week, you're going to read chapter 12.
+
+24:54.180 --> 24:55.280
+So you get on a chapter 12.
+
+24:55.280 --> 24:55.300
+Okay.
+
+24:55.300 --> 24:55.320
+Okay.
+
+24:55.320 --> 24:55.440
+So I'm going to go back to chapter 12.
+
+24:57.680 --> 24:58.120
+Okay.
+
+24:58.640 --> 24:59.880
+Understand computer hardware.
+
+25:01.180 --> 25:05.900
+I'm going to click on it and you're going to launch the activity.
+
+25:06.640 --> 25:08.820
+It should launch fine because I'm logged in.
+
+25:10.000 --> 25:10.440
+Okay.
+
+25:11.620 --> 25:13.480
+And then you just read the tabs.
+
+25:14.020 --> 25:17.040
+You can look at the objectives if you want to see what it says we're doing.
+
+25:19.280 --> 25:19.840
+All right.
+
+25:21.660 --> 25:22.540
+And then.
+
+25:22.540 --> 25:33.280
+We're also going to read, this is one thing I don't like, it doesn't save all
+
+25:33.280 --> 25:33.920
+your stuff.
+
+25:37.380 --> 25:41.560
+We're going to read chapter 13, works the same way.
+
+25:42.300 --> 25:45.660
+And then for homework, you're going to do lab 13.
+
+25:47.940 --> 25:48.420
+Okay.
+
+25:48.420 --> 25:50.800
+And then lab 13 has instructions.
+
+25:52.540 --> 25:55.040
+You're just going to do it through here.
+
+25:55.040 --> 25:55.540
+Okay.
+
+25:55.540 --> 26:07.220
+So here's what you're going to do in this lab before and following slash proc PS command.
+
+26:07.220 --> 26:12.760
+How do you manage process by starting, stopping, resuming them, viewing log files and managing
+
+26:12.760 --> 26:15.300
+the ability to load shared libraries.
+
+26:15.300 --> 26:16.300
+Okay.
+
+26:16.300 --> 26:17.300
+It's a lot of instructions.
+
+26:17.300 --> 26:19.300
+They're pretty fast.
+
+26:19.300 --> 26:21.940
+Each one is like one instruction per page.
+
+26:21.940 --> 26:26.760
+They talk about it so that you understand what it is before you do it.
+
+26:31.760 --> 26:45.700
+So step one, you'll examine some of the files contained in the slash proc directory, password, net lab, one, two, three, when prompted is SU enter.
+
+26:45.700 --> 26:47.180
+It's going to want to give you a password.
+
+26:50.060 --> 26:51.020
+I don't know if you can hear me typing.
+
+26:51.020 --> 26:51.940
+I just typed it in.
+
+26:51.940 --> 26:52.940
+The cursor didn't move.
+
+26:52.940 --> 26:53.940
+That's something about Linux.
+
+26:53.940 --> 27:01.860
+They're changing it in some, I think Ubuntu is changing it in version 25 to show that
+
+27:01.860 --> 27:04.860
+you're typing, but by default, it doesn't show anything.
+
+27:04.860 --> 27:09.000
+You have to type it in and hope you typed it in right and didn't enter.
+
+27:09.000 --> 27:12.720
+And now you notice I changed from sysadmin to root.
+
+27:12.720 --> 27:15.300
+So root is the super user.
+
+27:15.300 --> 27:19.760
+And now that means I can get into proc and show LS is listing.
+
+27:19.760 --> 27:21.760
+And I can see what's going on.
+
+27:21.760 --> 27:24.480
+I can see what all the stuff that's in proc.
+
+27:24.480 --> 27:25.320
+Okay.
+
+27:25.320 --> 27:28.320
+This is how you do your work in this environment.
+
+27:35.720 --> 27:36.560
+Okay.
+
+27:36.560 --> 27:37.560
+I'm not going to go over everything.
+
+27:37.560 --> 27:42.560
+And then the other part of stuff I want to mention is that, so that's the lab.
+
+27:49.800 --> 27:51.560
+Then you have to install Ubuntu server.
+
+27:51.560 --> 27:54.640
+The lab is 25 points.
+
+27:54.640 --> 27:59.880
+I have, if you're on windows, you follow this tutorial here.
+
+27:59.880 --> 28:06.800
+There are some modifications to it in that I have a video of where I did it, but I did
+
+28:06.800 --> 28:09.520
+it for another class.
+
+28:09.520 --> 28:14.120
+And the one thing I did that's that I don't want you to do.
+
+28:14.120 --> 28:15.120
+Okay.
+
+28:15.120 --> 28:16.120
+Is.
+
+28:16.120 --> 28:19.320
+It's telling me.
+
+28:19.320 --> 28:20.320
+Okay.
+
+28:20.320 --> 28:21.320
+Okay.
+
+28:21.320 --> 28:24.080
+I'm going to do server.
+
+28:24.080 --> 28:25.580
+Okay.
+
+28:25.580 --> 28:30.660
+When I, when I did it in this class, I use the unintended install and I don't want you
+
+28:30.660 --> 28:31.660
+to do that.
+
+28:31.660 --> 28:32.660
+Okay.
+
+28:32.660 --> 28:37.080
+It's good to use this unintended installation.
+
+28:37.080 --> 28:40.340
+You should go through all the steps.
+
+28:40.340 --> 28:47.660
+So when you're in, once you have, if you're on windows, you're using a virtual box and
+
+28:47.660 --> 28:49.320
+if you, you're going to create a new VM.
+
+28:49.320 --> 28:50.320
+Okay.
+
+28:50.320 --> 28:51.320
+Okay.
+
+28:51.320 --> 28:59.580
+And I'm not actually going to create it and you're going to have downloaded the ISO image
+
+28:59.580 --> 29:01.660
+for Ubuntu.
+
+29:01.660 --> 29:03.620
+Okay.
+
+29:03.620 --> 29:06.840
+Here's this set up with unattended proceed with unattended.
+
+29:06.840 --> 29:17.580
+You want to de-select that so that when you're going through, instead of username password,
+
+29:17.580 --> 29:19.580
+it's going to ask you all that stuff.
+
+29:19.580 --> 29:20.580
+Okay.
+
+29:20.580 --> 29:24.840
+So you're going to have to do that.
+
+29:24.840 --> 29:25.840
+Okay.
+
+29:25.840 --> 29:30.480
+The other part you're going to have to do later is if you want guest additions, you
+
+29:30.480 --> 29:31.960
+have to manually install guest additions.
+
+29:31.960 --> 29:32.960
+It's not difficult.
+
+29:32.960 --> 29:37.580
+Um, I don't know if it's in there, but you can run it without guest additions if you
+
+29:37.580 --> 29:38.580
+want to.
+
+29:38.580 --> 29:39.580
+Right.
+
+29:39.580 --> 29:43.580
+It's not that big of a deal whether you have guest additions or not.
+
+29:43.580 --> 29:44.580
+All right.
+
+29:44.580 --> 29:46.880
+You're going to set up your virtual hardware.
+
+29:46.880 --> 29:48.880
+Like how much, um, Ram you want to give it.
+
+29:48.880 --> 29:49.880
+Okay.
+
+29:49.880 --> 29:53.180
+You want to give it, how many CPUs you want to give it.
+
+29:53.180 --> 30:00.080
+I don't use EFI and then you specify hard disk size defaults to 25.
+
+30:00.080 --> 30:04.540
+You need more, or if you have a space, make it a little bit bigger.
+
+30:04.540 --> 30:13.720
+Just like if you have spare CPUs, you know, give yourself more rather than less.
+
+30:13.720 --> 30:15.640
+If you have them, it'll be much faster.
+
+30:15.640 --> 30:16.640
+Same with Ram.
+
+30:16.640 --> 30:19.140
+If you have it, it'll be faster if you give it more.
+
+30:19.140 --> 30:20.400
+All right.
+
+30:20.400 --> 30:34.200
+And then once you're done and you've built it, um, so I built this one today, when you
+
+30:34.200 --> 30:40.880
+start them up, and this is in virtual box, it's slightly different in UTM, but it's the
+
+30:40.880 --> 30:41.880
+same idea.
+
+30:41.880 --> 30:42.880
+Okay.
+
+30:42.880 --> 30:44.140
+It'll run through the startup sequence to connect.
+
+30:44.140 --> 30:45.140
+Okay.
+
+30:45.140 --> 30:46.140
+So I'm going to go ahead and do that.
+
+30:46.140 --> 30:47.140
+Okay.
+
+30:47.140 --> 30:48.140
+So I'm going to go ahead and do that.
+
+30:48.140 --> 30:49.140
+Okay.
+
+30:49.140 --> 30:52.820
+So I'm going to go ahead and create your VM and it'll just show up like this.
+
+30:52.820 --> 30:53.820
+Okay.
+
+30:53.820 --> 30:58.020
+And so you're going to log in with your, when you're doing it, you're going to create a
+
+30:58.020 --> 30:59.020
+username.
+
+30:59.020 --> 31:00.020
+Oops.
+
+31:00.020 --> 31:03.020
+I just screwed this up, but okay.
+
+31:03.020 --> 31:04.020
+Username.
+
+31:04.020 --> 31:10.140
+You're going to give it a password.
+
+31:10.140 --> 31:15.300
+And then you're going to go ahead and create your VM.
+
+31:15.300 --> 31:16.300
+Okay.
+
+31:16.300 --> 31:17.400
+And then you're going to go ahead and create your VM.
+
+31:17.400 --> 31:18.400
+Okay.
+
+31:19.140 --> 31:25.020
+And when you put them in right, it'll accept them and you'll come up to the prompt that
+
+31:25.020 --> 31:31.820
+has your username at the name of your server that you gave it.
+
+31:31.820 --> 31:39.060
+Now, one thing you shouldn't notice, um, during the install, it'll use DHCP to give you an
+
+31:39.060 --> 31:40.900
+IP address and that's fine.
+
+31:40.900 --> 31:44.860
+The IP address that I got was 10.0.2.15.
+
+31:44.860 --> 31:47.820
+Now that's not anywhere on my network.
+
+31:47.820 --> 31:48.820
+Okay.
+
+31:48.820 --> 31:52.180
+but it still works because what that is,
+
+31:52.180 --> 31:57.180
+is VirtualBox is giving my server an IP address, okay?
+
+32:03.180 --> 32:04.020
+And that's what it does.
+
+32:04.020 --> 32:09.020
+It gives every VM you create its own IP address, right?
+
+32:10.860 --> 32:14.960
+And then it NATs that IP address back to your,
+
+32:14.960 --> 32:17.220
+it works as a NAT box back
+
+32:17.220 --> 32:20.860
+to your physical internet connection.
+
+32:21.860 --> 32:22.700
+And because it shares it
+
+32:22.700 --> 32:26.300
+with everything else you're doing, okay?
+
+32:26.300 --> 32:28.360
+So if you get a number like that, don't worry about it.
+
+32:28.360 --> 32:31.600
+Even if it's not on your network, it'll still work.
+
+32:31.600 --> 32:35.600
+You know, I can still ping google.com, okay?
+
+32:41.440 --> 32:43.760
+In Windows, if you do a ping,
+
+32:43.760 --> 32:44.880
+it automatically defaults
+
+32:44.880 --> 32:47.220
+to four pings in Linux.
+
+32:47.220 --> 32:50.480
+If you do a ping, it'll continue forever.
+
+32:51.800 --> 32:55.880
+You can always do a ping dash C space,
+
+32:55.880 --> 32:59.380
+a number like four, okay?
+
+33:00.540 --> 33:02.660
+And then I can say google.com.
+
+33:02.660 --> 33:05.100
+And what that will do is it'll send four pings
+
+33:06.660 --> 33:08.220
+and then it'll quit.
+
+33:08.220 --> 33:10.560
+That's what the dash C is for a count
+
+33:10.560 --> 33:12.260
+of how many pings you wanna send.
+
+33:14.500 --> 33:14.620
+All right.
+
+33:14.620 --> 33:17.980
+So that's pretty much it.
+
+33:17.980 --> 33:20.220
+See clear, if you wanna clear your screen
+
+33:20.220 --> 33:25.220
+and if I want to set this down from the console,
+
+33:26.040 --> 33:27.960
+I gotta do a pseudo space power off
+
+33:28.960 --> 33:30.920
+and I'll have to put up my password.
+
+33:34.380 --> 33:37.880
+And if you do it right, it'll power it off and you're done.
+
+33:40.540 --> 33:41.380
+Okay.
+
+33:41.380 --> 33:42.220
+So that's,
+
+33:44.620 --> 33:46.620
+creating your own server.
+
+33:47.560 --> 33:50.000
+Like I said, all in here, there's,
+
+33:52.840 --> 33:53.680
+sorry.
+
+33:57.620 --> 34:00.620
+So in here, whether it's the Mac or the PC,
+
+34:04.900 --> 34:06.700
+there's a video, right?
+
+34:06.700 --> 34:11.120
+And the video covers both the hypervisor and Ubuntu.
+
+34:12.220 --> 34:13.780
+Okay. It's not just UTM.
+
+34:13.780 --> 34:14.620
+It's everything.
+
+34:14.620 --> 34:15.620
+It's the,
+
+34:15.620 --> 34:16.460
+I don't know.
+
+34:16.460 --> 34:18.320
+This is just UTM, sorry.
+
+34:18.320 --> 34:21.420
+And then it has the step-by-step instructions.
+
+34:22.700 --> 34:23.520
+And then there's,
+
+34:23.520 --> 34:27.640
+should be another video for installing Ubuntu server on UTM.
+
+34:27.640 --> 34:28.480
+Okay.
+
+34:31.840 --> 34:34.200
+And when you go through this,
+
+34:34.200 --> 34:35.660
+it matters what,
+
+34:37.560 --> 34:41.180
+distribution of Ubuntu server you download,
+
+34:41.180 --> 34:42.740
+because if you're on an M series Mac,
+
+34:42.740 --> 34:44.240
+you have to download the ARM 64 version.
+
+34:44.240 --> 34:46.540
+And in the video, it goes through that.
+
+34:46.540 --> 34:51.540
+And also it doesn't go through it in the,
+
+34:54.580 --> 34:56.760
+in terms of the downloads,
+
+34:56.760 --> 34:58.920
+but it does kind of give you on the download page,
+
+34:58.920 --> 35:01.880
+look for alternative architectures.
+
+35:01.880 --> 35:04.400
+You click on that and select ARM 64,
+
+35:04.400 --> 35:06.040
+and then you can download that one.
+
+35:07.880 --> 35:08.720
+Okay.
+
+35:10.220 --> 35:12.980
+The video, like I said, does installation on ARM,
+
+35:12.980 --> 35:14.240
+and then there's some other stuff.
+
+35:14.240 --> 35:20.720
+step-by-step instructions also that you could use on UTM if you don't watch the
+
+35:20.720 --> 35:38.740
+video all right and it doesn't really take that long to do this that's lab one
+
+35:38.740 --> 35:47.640
+to install there's a some screenshots to want you to take then you're gonna do
+
+35:47.640 --> 35:54.680
+on this out what I did is I did asterisk asterisk for homework so these are
+
+35:54.680 --> 36:02.320
+things you have to turn in or do read the lab what it says this is a boon to
+
+36:02.320 --> 36:08.520
+server install this is the chapter 13 lab and then this
+
+36:08.520 --> 36:08.720
+is the lab and then this is the lab and then this is the lab and then this is the
+
+36:08.720 --> 36:15.140
+discussion and then optional extra credit is this package management
+
+36:15.140 --> 36:29.500
+comparison where you go to Linux one course chapter 24 read that then do the
+
+36:29.500 --> 36:38.500
+comparison says write a comparison and give you a box to write it in write it in
+
+36:38.500 --> 36:50.800
+the box save as PDF and you know save everything so all nine pages or
+
+36:50.800 --> 37:01.060
+whatever it'll save everything but then you submit that PDF okay so anyway
+
+37:01.060 --> 37:04.860
+that's kind of an overview where we're at this week where the course is at
+
+37:04.860 --> 37:07.560
+remember next week is spring break
+
+37:08.500 --> 37:17.840
+so I put all the due dates as Sunday the day before spring break right March
+
+37:17.840 --> 37:18.840
+the 29th March the 29th
+
+37:18.840 --> 37:29.320
+your first discussion in the 26 the replies by the 29th and the credit by
+
+37:29.320 --> 37:34.120
+the 29th but if you do it by the 5th that's fine if you want to work over
+
+37:34.120 --> 37:38.080
+spring break that's fine but I put them there so you don't have to work over
+
+37:38.080 --> 37:43.840
+over spring break if you can get to it so that's what i got welcome to class hopefully
+
+37:43.840 --> 37:49.380
+we'll have a great semester together and like i said this week because we have all this startup
+
+37:49.380 --> 37:54.960
+it's a little bit longer than the other weeks so when you come back
+
+37:54.960 --> 37:58.920
+week two should shouldn't be quite so long
+
+37:58.920 --> 38:05.900
+all right so um glad to see you guys in class and
+
+38:05.900 --> 38:13.840
+we will look forward to seeing or hearing from you this week and
+
+38:13.840 --> 38:20.320
+if i don't talk to you have a great spring break next week bye
+
+`;
+
+  function timeToSeconds(t) {
+    if (!t) return 0;
+    var parts = t.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var cues = text.trim().split(/\n\n+/);
+    var result = [];
+    cues.forEach(function (block) {
+      if (!block.trim() || block.startsWith('WEBVTT')) return;
+      var lines = block.trim().split('\n');
+      var tLine = lines.find(function (l) { return l.indexOf('-->') !== -1; });
+      if (!tLine) return;
+      var parts = tLine.split(' --> ');
+      var textLines = lines.slice(lines.indexOf(tLine) + 1);
+      result.push({ start: timeToSeconds(parts[0]), end: timeToSeconds(parts[1]), text: textLines.join(' ').trim() });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById('transcript-container');
+    container.innerHTML = '';
+    parsedTranscript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    var now = player.getCurrentTime();
+    var lines = document.querySelectorAll('#transcript-container .transcript-line');
+    lines.forEach(function (line) {
+      var s = parseFloat(line.dataset.start), e = parseFloat(line.dataset.end);
+      if (now >= s && now < e) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = document.querySelector('#transcript-container .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var mq = window.matchMedia('(min-width: 768px)');
+    var vc = document.getElementById('video-container');
+    var tc = document.getElementById('transcript-container');
+    if (!vc || !tc) return;
+    tc.style.maxHeight = mq.matches ? vc.offsetHeight + 'px' : '24rem';
+  }
+
+  function onStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('youtube-player', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    parsedTranscript = parseVtt(vttContent);
+    populateTranscript();
+    setTimeout(syncHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+}());
+</script>
 </body>
 </html>
