@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSC 106 – Week 01 To-Do List</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark: #1e3a5f;
+    --blue-mid: #1e55a0;
+    --blue-light: #dbeafe;
+    --blue-border: #93c5fd;
+    --green-dark: #14532d;
+    --green-bg: #f0fdf4;
+    --green-border: #86efac;
+    --amber-dark: #78350f;
+    --amber-bg: #fffbeb;
+    --amber-border: #fcd34d;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --text: #111827;
+    --nav-h: 56px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: #ffffff;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--blue-dark);
+    border-bottom: 3px solid var(--blue-mid);
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: 0;
+    padding: 0 1rem;
+    white-space: nowrap;
+  }
+  nav ul li a {
+    display: block;
+    color: #e0eaff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  nav ul li a:hover,
+  nav ul li a:focus-visible {
+    background: var(--blue-mid);
+    color: #ffffff;
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .course-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    margin-bottom: 0.35rem;
+  }
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    line-height: 1.25;
+  }
+  .subtitle {
+    color: var(--gray-700);
+    margin-top: 0.4rem;
+    font-size: 0.9375rem;
+  }
+
+  /* ── SECTION ANCHORS (offset for sticky nav) ── */
+  .section-anchor {
+    display: block;
+    height: var(--nav-h);
+    margin-top: calc(-1 * var(--nav-h));
+    visibility: hidden;
+  }
+
+  /* ── ACCORDION ── */
+  .accordion {
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .accordion-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--blue-dark);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    transition: background 0.15s;
+  }
+  .accordion-trigger:hover {
+    background: #163050;
+  }
+  .accordion-trigger:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: -3px;
+  }
+  .accordion-trigger .icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .accordion-trigger[aria-expanded="false"] .icon {
+    transform: rotate(-90deg);
+  }
+  .accordion-body {
+    padding: 1.5rem 1.25rem;
+    background: #ffffff;
+  }
+  .accordion-body[hidden] { display: none; }
+
+  /* ── INTRO SECTION ── */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 560px) {
+    .intro-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .stat-card {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+  }
+  .stat-card dt {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    margin-bottom: 0.2rem;
+  }
+  .stat-card dd {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+  }
+  .intro-text {
+    margin-top: 1rem;
+    color: var(--gray-800);
+  }
+  .intro-text p + p { margin-top: 0.75rem; }
+
+  /* ── TASK LIST ── */
+  .task-list {
+    list-style: none;
+    counter-reset: task-counter;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .task-list li {
+    counter-increment: task-counter;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 0.875rem 1rem;
+    position: relative;
+  }
+  .task-list li::before {
+    content: counter(task-counter);
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: var(--blue-dark);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    margin-top: 0.1rem;
+  }
+  .task-content { flex: 1; }
+  .task-content strong {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 0.2rem;
+  }
+  .task-content p,
+  .task-content .task-note {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    margin-top: 0.2rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+  .badge-pts {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+  }
+  .badge-due {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde047;
+  }
+
+  /* platform fork */
+  .platform-fork {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .platform-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+  .platform-label {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    margin-top: 0.05rem;
+  }
+  .win-label  { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .mac-label  { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+  /* ── SECTION HEADER INSIDE ACCORDION ── */
+  .section-intro {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.9375rem;
+  }
+  .points-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .pts-chip {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0.25em 0.75em;
+    border-radius: 9999px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    border: 1px solid var(--blue-border);
+  }
+
+  /* ── EXTRA CREDIT SECTION ── */
+  .ec-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .ec-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: 6px;
+    padding: 0.875rem 1rem;
+  }
+  .ec-icon {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: #f59e0b;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-top: 0.1rem;
+  }
+  .ec-content strong {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--amber-dark);
+    margin-bottom: 0.2rem;
+  }
+  .ec-content p {
+    font-size: 0.875rem;
+    color: #92400e;
+  }
+  .badge-ec {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+  }
+
+  .ec-note {
+    margin-bottom: 1.25rem;
+    padding: 0.875rem 1rem;
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--amber-dark);
+  }
+  .ec-note strong { color: #92400e; }
+
+  /* ── FOCUS STYLES ── */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #1e55a0;
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="Page navigation">
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#required-tasks">Required Tasks</a></li>
+    <li><a href="#extra-credit">Extra Credit</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="page-header">
+    <p class="course-label">CSC 106 – Introduction to Linux II</p>
+    <h1>Week 01 To-Do List</h1>
+    <p class="subtitle">Linux Installation and Package Management</p>
+  </header>
+
+  <!-- ── INTRODUCTION ── -->
+  <span id="intro" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="true"
+            aria-controls="intro-body"
+            id="intro-heading">
+      <span>Introduction &amp; Week Overview</span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="intro-body" role="region" aria-labelledby="intro-heading">
+
+      <dl class="intro-grid">
+        <div class="stat-card">
+          <dt>Week</dt>
+          <dd>Week 01 of 8</dd>
+        </div>
+        <div class="stat-card">
+          <dt>Topic</dt>
+          <dd>Linux Installation &amp; Package Management</dd>
+        </div>
+        <div class="stat-card">
+          <dt>Estimated Workload</dt>
+          <dd>~9 hours</dd>
+        </div>
+        <div class="stat-card">
+          <dt>Required Points Available</dt>
+          <dd>55 points</dd>
+        </div>
+      </dl>
+
+      <div class="intro-text">
+        <p>
+          Welcome to CSC 106! This week you will build the foundation for everything that follows
+          in this course. You will read about Linux hardware concepts and where system data is
+          stored, then put that knowledge to work by installing Ubuntu Server 24.04 LTS on a
+          virtual machine on your own computer. The VM you create this week is not a one-time
+          exercise — you will use it through Week 8.
+        </p>
+        <p>
+          Before you can install Linux, you need a <strong>hypervisor</strong>: VirtualBox if
+          you are on Windows, or UTM if you are on a Mac with Apple Silicon (M1/M2/M3/M4).
+          The task list below is ordered to walk you through setup in a logical sequence.
+          Complete the readings and the Cisco lab <em>before</em> installing your VM so you
+          arrive at the installation with the relevant concepts fresh in mind.
+        </p>
+        <p>
+          The reading load is heavier this week than most — plan for 7–8 hours on the two
+          assigned chapters alone. The hands-on installation and lab work add another 1–2 hours,
+          and the discussion rounds out the week at approximately 9 hours total.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── REQUIRED TASKS ── -->
+  <span id="required-tasks" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="true"
+            aria-controls="required-body"
+            id="required-heading">
+      <span>Required Tasks</span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="required-body" role="region" aria-labelledby="required-heading">
+
+      <div class="section-intro">
+        <p>Complete all 15 tasks below in the order listed. Tasks with a point value are graded
+        assignments. Point values are noted next to the task.</p>
+        <div class="points-summary" aria-label="Graded assignments this week">
+          <span class="pts-chip">Linux Essentials Ch. 13 Lab — 15 pts</span>
+          <span class="pts-chip">Ubuntu Server Install — 25 pts</span>
+          <span class="pts-chip">RSI Discussion 1 — 15 pts</span>
+          <span class="pts-chip">Week Total — 55 pts</span>
+        </div>
+      </div>
+
+      <ol class="task-list" aria-label="Required tasks in recommended order">
+
+        <li>
+          <div class="task-content">
+            <strong>Read the Week 01 Course Overview</strong>
+            <p>Open the Week 01 Course Overview page in Canvas. This page introduces the week's
+            topics, learning objectives, and how everything connects to the course as a whole.
+            Read it before doing anything else.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Watch the Course Orientation and apt Demo Video</strong>
+            <p>"Welcome to CSC 106 and Package Management with apt" — a combined course orientation
+            and live demo of <code>apt</code> commands. Watch this first to understand the
+            structure of the course and what you will be doing with the package manager after
+            your VM is installed. Approximately 12–15 minutes.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Register for Cisco Networking Academy</strong>
+            <p>Go to the Cisco Networking Academy registration page and create your account.
+            See the <strong>NetAcad Registration</strong> page in Canvas for step-by-step
+            instructions, including important guidance on which email address to use.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Enroll in the Required Course: Linux Essentials</strong>
+            <p>Use the invite link on the NetAcad Registration page to enroll in
+            <em>CSC106 Spring 2026 – Linux Essentials</em>. This is your required course
+            textbook and lab environment for CSC 106. The course opens March 23, 2026.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Link Your NetAcad Account to NDG Online</strong>
+            <p>Inside the Linux Essentials course, open the <em>Before You Get Started</em>
+            activity and follow the prompts to link your NDG account. You will need to create
+            an NDG account if you do not already have one, then verify your email address.
+            You must complete this step before you can access the Cisco labs.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Read Linux Essentials Chapter 12: Understanding Computer Hardware</strong>
+            <p>Complete the full chapter reading in NetAcad. This chapter covers the hardware
+            concepts that inform the decisions you will make when configuring your VM — CPU
+            type, RAM, storage, and why architecture (x86_64 vs. ARM64) matters when choosing
+            an ISO. Plan for approximately 3.5–4 hours.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Read Linux Essentials Chapter 13: Where Data is Stored</strong>
+            <p>Complete the full chapter reading in NetAcad. Chapter 13 covers
+            <code>/proc</code>, <code>/var</code>, <code>/etc</code>, package query commands,
+            and process information — exactly the territory you will explore in the Cisco lab
+            and on your own VM. Plan for approximately 3.5–4 hours.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Complete the Linux Essentials Chapter 13 Lab
+              <span class="badge badge-pts" aria-label="15 points">15 pts</span>
+            </strong>
+            <p>Launch the Chapter 13 lab in the Cisco VM environment (via NDG Online). You will
+            explore <code>/proc</code>, use <code>ps</code> to view running processes, and
+            practice package query commands including <code>dpkg -l</code> and
+            <code>dpkg -L</code>. Submit your lab completion in Canvas.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Watch the Hypervisor Setup Video for Your Platform</strong>
+            <p>Watch the video that matches your computer. Follow along as you watch — this is
+            a walkthrough you do alongside the video.</p>
+            <div class="platform-fork">
+              <div class="platform-option">
+                <span class="platform-label win-label" aria-label="Windows">Windows</span>
+                <span>"Download and Install VirtualBox on Windows" — covers downloading
+                VirtualBox, running the installer, and verifying that virtualization (VT-x/AMD-V)
+                is enabled in your BIOS.</span>
+              </div>
+              <div class="platform-option">
+                <span class="platform-label mac-label" aria-label="Mac Apple Silicon">Mac (M-series)</span>
+                <span>"Download and Install UTM on M-series Mac" — covers downloading UTM
+                and completing initial setup on Apple Silicon hardware.</span>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Watch the Ubuntu Server Installation Video for Your Platform</strong>
+            <p>Watch the video that matches your hypervisor before you begin the installation.
+            It narrates all key decision points: partitioning, user setup, enabling OpenSSH,
+            and network configuration.</p>
+            <div class="platform-fork">
+              <div class="platform-option">
+                <span class="platform-label win-label" aria-label="Windows">Windows</span>
+                <span>"Download and Install Ubuntu Server 24.04 on VirtualBox" — uses the
+                standard x86_64 (amd64) ISO.</span>
+              </div>
+              <div class="platform-option">
+                <span class="platform-label mac-label" aria-label="Mac Apple Silicon">Mac (M-series)</span>
+                <span>"Download and Install Ubuntu Server 24.04 – ARM on UTM" — uses the
+                ARM64 ISO. The two ISOs are not interchangeable.</span>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Install Your Hypervisor and Create a Virtual Machine</strong>
+            <p>Install VirtualBox (Windows) or UTM (Mac) on your computer, then create a new VM
+            configured for a 64-bit Linux guest. Allocate at least 2 CPU cores, 2 GB RAM, and
+            20 GB of virtual disk space. If you run into trouble with VirtualBox and
+            virtualization, the setup video covers the common BIOS fix. Post in the course Q&amp;A
+            forum early rather than waiting.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Download and Install Ubuntu Server 24.04 LTS on Your VM</strong>
+            <p>Download the correct ISO for your platform (amd64 for VirtualBox/Windows;
+            arm64 for UTM/Mac). Walk through the Ubuntu Server installer, making deliberate
+            choices at each step: hostname, timezone, partitioning, initial user account, and
+            enabling OpenSSH. There is no graphical desktop — a text-only login is normal and
+            expected.</p>
+            <p class="task-note">
+              <strong>Keep this VM.</strong> You will use it through Week 8. After installation,
+              confirm it is working by running <code>uname -a</code> and checking network
+              connectivity.
+            </p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Submit the Ubuntu Server Install Assignment
+              <span class="badge badge-pts" aria-label="25 points">25 pts</span>
+            </strong>
+            <p>In Canvas, submit screenshots of your key installation steps (partitioning screen,
+            user creation, and first login at the command line) plus a short write-up that
+            explains the choices you made and why. Include terminal output showing
+            <code>uname -a</code> and <code>apt update</code>.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Post Your RSI Discussion 1 Original Post
+              <span class="badge badge-pts" aria-label="15 points, part of Discussion 1">15 pts</span>
+              <span class="badge badge-due" aria-label="Due Wednesday">Due Wednesday</span>
+            </strong>
+            <p>In Canvas, respond to the Discussion 1 prompt: "Choosing and Installing Linux."
+            Your original post must be at least 150 words and include at least one specific
+            detail from your own installation experience. Post by Wednesday of this week.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="task-content">
+            <strong>Reply to at Least Two Classmates in Discussion 1
+              <span class="badge badge-due" aria-label="Due Sunday">Due Sunday</span>
+            </strong>
+            <p>Return to Discussion 1 and post two substantive replies to classmates before
+            Sunday. Each reply should add a new idea, ask a follow-up question, or offer a
+            constructive alternative — not just "I agree." These replies are part of your
+            Discussion 1 grade.</p>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+  </div>
+
+  <!-- ── EXTRA CREDIT ── -->
+  <span id="extra-credit" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="false"
+            aria-controls="ec-body"
+            id="ec-heading"
+            style="background: #78350f;">
+      <span>Extra Credit Opportunities <span class="badge badge-ec" aria-label="Optional">Optional</span></span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="ec-body" role="region" aria-labelledby="ec-heading" hidden>
+
+      <div class="ec-note">
+        <strong>These tasks are completely optional.</strong> None of the items below are
+        required to succeed in this course. Extra credit points are added on top of your
+        earned base points. The maximum extra credit available in Week 01 is
+        <strong>5 points</strong>.
+      </div>
+
+      <ul class="ec-list" aria-label="Optional extra credit tasks">
+
+        <li>
+          <div class="ec-icon" aria-hidden="true">★</div>
+          <div class="ec-content">
+            <strong>Enroll in Linux 1 and/or Linux 2 on NetAcad
+              <span class="badge badge-ec">Optional</span>
+            </strong>
+            <p>These courses go deeper than Linux Essentials and align with the LPIC-1
+            certification. Enrolling now gives you access to additional reading and
+            lab resources that support extra credit activities in later weeks.
+            Use the invite links on the NetAcad Registration page in Canvas to enroll.
+            No points are awarded for enrollment alone — extra credit is earned by completing
+            the specific activities tied to these courses in each week.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="ec-icon" aria-hidden="true">★</div>
+          <div class="ec-content">
+            <strong>Read Linux 1 Chapter 24: Package Management
+              <span class="badge badge-ec">Optional</span>
+            </strong>
+            <p>This chapter covers <code>dpkg</code> and <code>apt-cache</code> in more depth
+            and introduces RPM-based package management workflows (<code>yum</code> /
+            <code>dnf</code>) used on Red Hat, Fedora, and CentOS systems. It provides useful
+            context for the extra credit assignment below.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="ec-icon" aria-hidden="true">★</div>
+          <div class="ec-content">
+            <strong>Submit the apt vs. yum/dnf Comparison
+              <span class="badge badge-ec" aria-label="5 extra credit points">+5 pts EC</span>
+            </strong>
+            <p>After reading Linux 1 Chapter 24, write a one-page comparison of
+            <code>apt</code> (Debian/Ubuntu) vs. <code>yum</code>/<code>dnf</code>
+            (Red Hat/Fedora) package management workflows. Submit in Canvas as the
+            "apt vs. yum/dnf Comparison (Extra Credit)" assignment.</p>
+          </div>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+  document.querySelectorAll('.accordion-trigger').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var bodyId = this.getAttribute('aria-controls');
+      var body = document.getElementById(bodyId);
+      if (expanded) {
+        this.setAttribute('aria-expanded', 'false');
+        body.hidden = true;
+      } else {
+        this.setAttribute('aria-expanded', 'true');
+        body.hidden = false;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
