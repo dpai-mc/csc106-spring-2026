@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSC 106 – NetAcad Registration Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark: #1e3a5f;
+    --blue-mid: #1e55a0;
+    --blue-light: #dbeafe;
+    --blue-border: #93c5fd;
+    --green-dark: #14532d;
+    --green-bg: #f0fdf4;
+    --green-border: #86efac;
+    --green-mid: #15803d;
+    --amber-dark: #78350f;
+    --amber-bg: #fffbeb;
+    --amber-border: #fcd34d;
+    --red-bg: #fef2f2;
+    --red-border: #fca5a5;
+    --red-dark: #991b1b;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --text: #111827;
+    --nav-h: 56px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: #ffffff;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--blue-dark);
+    border-bottom: 3px solid var(--blue-mid);
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: 0;
+    padding: 0 1rem;
+    white-space: nowrap;
+  }
+  nav ul li a {
+    display: block;
+    color: #e0eaff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  nav ul li a:hover,
+  nav ul li a:focus-visible {
+    background: var(--blue-mid);
+    color: #ffffff;
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .course-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    margin-bottom: 0.35rem;
+  }
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    line-height: 1.25;
+  }
+  .subtitle {
+    color: var(--gray-700);
+    margin-top: 0.4rem;
+    font-size: 0.9375rem;
+  }
+
+  /* ── SECTION ANCHORS (offset for sticky nav) ── */
+  .section-anchor {
+    display: block;
+    height: var(--nav-h);
+    margin-top: calc(-1 * var(--nav-h));
+    visibility: hidden;
+  }
+
+  /* ── ACCORDION ── */
+  .accordion {
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .accordion-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--blue-dark);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    transition: background 0.15s;
+  }
+  .accordion-trigger:hover { background: #163050; }
+  .accordion-trigger:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: -3px;
+  }
+  .accordion-trigger .icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .accordion-trigger[aria-expanded="false"] .icon { transform: rotate(-90deg); }
+  .accordion-body {
+    padding: 1.5rem 1.25rem;
+    background: #ffffff;
+  }
+  .accordion-body[hidden] { display: none; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+  .badge-req  { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+  .badge-opt  { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+  .badge-ec   { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+  /* ── INTRO ── */
+  .intro-text p + p { margin-top: 0.75rem; }
+  .intro-text { color: var(--gray-800); }
+
+  .tool-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 580px) {
+    .tool-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  .tool-card {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .tool-card h3 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    margin-bottom: 0.35rem;
+  }
+  .tool-card p {
+    font-size: 0.8125rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+  .tool-card .tool-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.1em 0.45em;
+    border-radius: 3px;
+    margin-bottom: 0.4rem;
+  }
+  .label-req { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+  .label-opt { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+
+  /* ── NUMBERED STEPS ── */
+  .step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    counter-reset: step-counter;
+  }
+  .step-list li {
+    counter-increment: step-counter;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    background: var(--blue-dark);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-top: 0.1rem;
+  }
+  .step-content { flex: 1; }
+  .step-content strong {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 0.25rem;
+  }
+  .step-content p {
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    line-height: 1.6;
+  }
+  .step-content p + p { margin-top: 0.5rem; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-radius: 6px;
+    padding: 0.875rem 1rem 0.875rem 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-top: 0.75rem;
+    border-left-width: 4px;
+    border-left-style: solid;
+  }
+  .callout-warn {
+    background: var(--red-bg);
+    border-left-color: #ef4444;
+    border: 1px solid var(--red-border);
+    border-left: 4px solid #ef4444;
+    color: var(--red-dark);
+  }
+  .callout-tip {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    border-left: 4px solid var(--green-mid);
+    color: var(--green-dark);
+  }
+  .callout-info {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    border-left: 4px solid var(--blue-mid);
+    color: var(--blue-dark);
+  }
+  .callout strong { font-weight: 700; }
+
+  /* ── ENROLL BUTTON ── */
+  .enroll-block {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+  }
+  .enroll-block .course-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    margin-bottom: 0.25rem;
+  }
+  .enroll-block .course-meta {
+    font-size: 0.8125rem;
+    color: var(--gray-700);
+    margin-bottom: 0.85rem;
+  }
+  .enroll-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--blue-mid);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .enroll-link:hover { background: var(--blue-dark); }
+  .enroll-link:focus-visible {
+    outline: 3px solid var(--blue-dark);
+    outline-offset: 2px;
+  }
+  .enroll-link .link-icon { font-size: 0.8rem; }
+
+  /* ── OPTIONAL COURSES ── */
+  .opt-course {
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .opt-course:last-child { margin-bottom: 0; }
+  .opt-course .course-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--amber-dark);
+    margin-bottom: 0.2rem;
+  }
+  .opt-course .course-meta {
+    font-size: 0.8125rem;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+  }
+  .opt-course p {
+    font-size: 0.875rem;
+    color: #92400e;
+    margin-bottom: 0.85rem;
+    line-height: 1.6;
+  }
+  .enroll-link-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #d97706;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .enroll-link-opt:hover { background: #b45309; }
+  .enroll-link-opt:focus-visible {
+    outline: 3px solid #78350f;
+    outline-offset: 2px;
+  }
+
+  /* ── NOTES SECTION ── */
+  .notes-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .notes-list li {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    font-size: 0.9rem;
+    color: var(--gray-800);
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 0.875rem 1rem;
+  }
+  .note-icon {
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
+  }
+
+  /* ── NDG STEPS (sub-steps) ── */
+  .sub-step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+    padding-left: 0.25rem;
+  }
+  .sub-step-list li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.875rem;
+    color: var(--gray-700);
+  }
+  .sub-step-list li::before {
+    content: "→";
+    flex-shrink: 0;
+    color: var(--blue-mid);
+    font-weight: 700;
+    margin-top: 0.05rem;
+  }
+
+  /* ── SECTION INTRO TEXT ── */
+  .section-intro {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.9375rem;
+  }
+
+  /* ── FOCUS ── */
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid #1e55a0;
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="Page navigation">
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#create-account">Create Account</a></li>
+    <li><a href="#required-course">Required Course</a></li>
+    <li><a href="#ndg-setup">NDG Setup</a></li>
+    <li><a href="#optional-courses">Extra Credit Courses</a></li>
+    <li><a href="#account-notes">Account Notes</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="page-header">
+    <p class="course-label">CSC 106 – Introduction to Linux II · Week 01</p>
+    <h1>Cisco Networking Academy Registration Guide</h1>
+    <p class="subtitle">Setting up your NetAcad and NDG accounts for the course</p>
+  </header>
+
+  <!-- ── INTRODUCTION ── -->
+  <span id="intro" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="true"
+            aria-controls="intro-body"
+            id="intro-heading">
+      <span>Introduction – Why Cisco Networking Academy?</span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="intro-body" role="region" aria-labelledby="intro-heading">
+
+      <div class="intro-text">
+        <p>
+          CSC 106 uses the <strong>Cisco Networking Academy (NetAcad)</strong> platform as its
+          primary textbook and lab environment. NetAcad provides structured, chapter-based
+          reading, interactive exercises, and hands-on lab environments — all at no cost to
+          you as a student at Mendocino College, which is a Cisco Academy member institution.
+        </p>
+        <p>
+          You will use NetAcad every week for readings and Cisco-hosted lab work. Setting up
+          your account now, before the readings begin, ensures you will not lose time when
+          lab assignments open.
+        </p>
+      </div>
+
+      <div class="tool-grid" role="list" aria-label="NetAcad course resources">
+
+        <div class="tool-card" role="listitem">
+          <span class="tool-label label-req" aria-label="Required">Required</span>
+          <h3>Linux Essentials</h3>
+          <p>Your primary textbook for CSC 106. Covers 8 chapters across the semester.
+          Chapters 12 and 13 are assigned in Week 1.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+          <span class="tool-label label-opt" aria-label="Optional – extra credit">Optional</span>
+          <h3>Linux 1 (LPIC-1)</h3>
+          <p>Supplemental course aligned with the LPIC-1 certification. Used for extra
+          credit reading and activities in several weeks.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+          <span class="tool-label label-opt" aria-label="Optional – extra credit">Optional</span>
+          <h3>Linux 2 (LPIC-1)</h3>
+          <p>Advanced supplemental course. Used for extra credit activities later in
+          the semester (Weeks 3, 6, 7, and 8).</p>
+        </div>
+
+      </div>
+
+      <div class="callout callout-info" style="margin-top:1.25rem;">
+        <strong>NDG Online</strong> is the lab hosting platform linked to your NetAcad
+        account. When you access Cisco labs, they run inside the NDG environment. You will
+        need to link these two accounts — the steps below walk you through the process.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STEP 1: CREATE ACCOUNT ── -->
+  <span id="create-account" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="true"
+            aria-controls="account-body"
+            id="account-heading">
+      <span>Step 1: Create Your Cisco Networking Academy Account
+        <span class="badge badge-req" aria-label="Required">Required</span>
+      </span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="account-body" role="region" aria-labelledby="account-heading">
+
+      <div class="section-intro">
+        <p>If you already have a Cisco Networking Academy account, you can skip to
+        <strong>Step 2</strong> and use your existing account to enroll in the course.</p>
+      </div>
+
+      <div class="callout callout-warn" style="margin-bottom:1.5rem;">
+        <strong>Important — use a personal email address, not your college email.</strong>
+        Cisco keeps all of your course completions and certification records tied to the
+        email address you register with. Once you graduate, your college email account is
+        deactivated and you will lose access to your NetAcad history. Use a personal email
+        address (Gmail, iCloud, etc.) that you expect to have long-term.
+      </div>
+
+      <ol class="step-list" aria-label="Account creation steps">
+
+        <li>
+          <div class="step-num" aria-hidden="true">1</div>
+          <div class="step-content">
+            <strong>Go to the Cisco Networking Academy website</strong>
+            <p>Open your browser and navigate to
+            <a href="https://www.netacad.com/" target="_blank" rel="noopener noreferrer">
+              netacad.com
+            </a>.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">2</div>
+          <div class="step-content">
+            <strong>Click the "Login" button</strong>
+            <p>The Login button is in the upper-right corner of the page.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">3</div>
+          <div class="step-content">
+            <strong>Choose "Sign Up" to create a new account</strong>
+            <p>Below the login form, look for the link that reads
+            <em>"Don't have an account? Sign Up"</em> and click it. If you already have
+            an account, enter your email and password to log in instead.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">4</div>
+          <div class="step-content">
+            <strong>Fill in your registration information</strong>
+            <p>Enter your name, your personal email address (see the warning above),
+            and create a password. Complete any verification steps Cisco requires
+            (such as email confirmation) before proceeding.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">5</div>
+          <div class="step-content">
+            <strong>Confirm you can log in</strong>
+            <p>Log in to your new account and confirm you can access your NetAcad
+            dashboard before moving on to Step 2.</p>
+            <div class="callout callout-tip" style="margin-top:0.6rem;">
+              <strong>Tip:</strong> Save your NetAcad login credentials somewhere safe.
+              You will use this account every week of the course and in future Cisco
+              courses.
+            </div>
+          </div>
+        </li>
+
+      </ol>
+
+    </div>
+  </div>
+
+  <!-- ── STEP 2: REQUIRED COURSE ── -->
+  <span id="required-course" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="false"
+            aria-controls="required-course-body"
+            id="required-course-heading">
+      <span>Step 2: Enroll in the Required Course – Linux Essentials
+        <span class="badge badge-req" aria-label="Required">Required</span>
+      </span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="required-course-body" role="region" aria-labelledby="required-course-heading" hidden>
+
+      <div class="section-intro">
+        <p>All students must enroll in Linux Essentials. This is the primary reading and lab
+        resource for CSC 106. Enrolling via the invite link below places you in the correct
+        section tied to this course.</p>
+      </div>
+
+      <div class="enroll-block">
+        <p class="course-name">
+          CSC106 Spring 2026 – Linux Essentials
+          <span class="badge badge-req" aria-label="Required">Required</span>
+        </p>
+        <p class="course-meta">
+          Opens: March 23, 2026 &nbsp;·&nbsp; Closes: May 23, 2026
+        </p>
+        <a href="https://www.netacad.com/courses/linux-essentials?courseLang=en-US&instance_id=5d8226bd-ff70-4c5e-9131-02cd0934e4ac"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="enroll-link"
+           aria-label="Enroll in CSC106 Spring 2026 Linux Essentials on Cisco Networking Academy (opens in new tab)">
+          Enroll in Linux Essentials
+          <span class="link-icon" aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <div class="callout callout-info" style="margin-top:1.25rem;">
+        <strong>What this course covers:</strong> Linux Essentials is an 18-chapter curriculum.
+        CSC 106 assigns 8 specific chapters across the 8 weeks. In Week 1 you will read
+        Chapters 12 and 13. You do not need to read the entire course — only the chapters
+        assigned each week.
+      </div>
+
+      <div class="callout callout-tip" style="margin-top:0.75rem;">
+        <strong>After enrolling:</strong> Verify you can see the course in your NetAcad
+        dashboard before moving on. If the course shows as "not yet open," that is expected —
+        it opens on March 23, 2026. You can still explore the course navigation and complete
+        the NDG account linking step below before the course opens.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STEP 3: NDG SETUP ── -->
+  <span id="ndg-setup" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="false"
+            aria-controls="ndg-body"
+            id="ndg-heading">
+      <span>Step 3: Link Your NDG Online Account
+        <span class="badge badge-req" aria-label="Required">Required</span>
+      </span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="ndg-body" role="region" aria-labelledby="ndg-heading" hidden>
+
+      <div class="section-intro">
+        <p>NDG Online is the virtual lab environment where Cisco labs run. Your NetAcad account
+        and your NDG account must be linked before you can launch any lab. The process below
+        walks you through the first-time link.</p>
+      </div>
+
+      <div class="callout callout-warn" style="margin-bottom:1.5rem;">
+        <strong>Use the same email address</strong> for your NDG account that you used for
+        your Cisco Networking Academy account. You will need to verify the email address you
+        choose, so make sure you have access to the inbox.
+      </div>
+
+      <ol class="step-list" aria-label="NDG account linking steps">
+
+        <li>
+          <div class="step-num" aria-hidden="true">1</div>
+          <div class="step-content">
+            <strong>Open the Linux Essentials course in NetAcad</strong>
+            <p>From your NetAcad dashboard, click on
+            <em>CSC106 Spring 2026 – Linux Essentials</em> to enter the course.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">2</div>
+          <div class="step-content">
+            <strong>Find and launch "Before You Get Started"</strong>
+            <p>In the course table of contents, locate the activity titled
+            <em>Before You Get Started</em> and click <strong>Launch</strong>. This activity
+            is specifically designed to walk first-time users through the NDG linking process.</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">3</div>
+          <div class="step-content">
+            <strong>Link or create your NDG account</strong>
+            <p>The activity will prompt you to connect an NDG account to the Cisco course.</p>
+            <ul class="sub-step-list" aria-label="Sub-steps for NDG account">
+              <li>If you already have an NDG account, enter your NDG credentials to link it.</li>
+              <li>If you do not have an NDG account, select the option to create one. Use the
+              same email address as your NetAcad account.</li>
+            </ul>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">4</div>
+          <div class="step-content">
+            <strong>Verify your email address</strong>
+            <p>NDG will send a verification email to the address you provided. Open that email
+            and click the verification link. You must complete this step before labs will
+            work.</p>
+            <div class="callout callout-tip" style="margin-top:0.6rem;">
+              <strong>Did not receive the verification email?</strong> Check your spam or junk
+              folder. If it is not there after a few minutes, return to the NDG account creation
+              page and request a new verification email.
+            </div>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-num" aria-hidden="true">5</div>
+          <div class="step-content">
+            <strong>Confirm the link is working</strong>
+            <p>Return to the Linux Essentials course in NetAcad, navigate to the Chapter 13
+            lab, and verify that the Launch button opens the NDG lab environment without
+            errors. If it opens successfully, you are fully set up.</p>
+          </div>
+        </li>
+
+      </ol>
+
+    </div>
+  </div>
+
+  <!-- ── OPTIONAL COURSES ── -->
+  <span id="optional-courses" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="false"
+            aria-controls="optional-body"
+            id="optional-heading"
+            style="background: #78350f;">
+      <span>Optional: Extra Credit Courses – Linux 1 and Linux 2
+        <span class="badge badge-opt" aria-label="Optional">Optional</span>
+      </span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="optional-body" role="region" aria-labelledby="optional-heading" hidden>
+
+      <div class="section-intro" style="color: var(--amber-dark);">
+        <p><strong>These courses are not required.</strong> Enrolling in them now gives you access
+        to supplemental reading and lab material that supports extra credit activities offered
+        in several weeks throughout the semester. You will not fall behind or be penalized
+        for not enrolling. If you are interested in deeper Linux knowledge or the LPIC-1
+        certification path, these are worth exploring.</p>
+      </div>
+
+      <div class="opt-course">
+        <p class="course-name">
+          CSC106 – Linux 1 (LPIC-1)
+          <span class="badge badge-opt" aria-label="Optional – extra credit">Optional</span>
+        </p>
+        <p class="course-meta">Opens: March 23, 2026 &nbsp;·&nbsp; Closes: May 23, 2026</p>
+        <p>
+          Linux 1 goes deeper than Linux Essentials and aligns with the first half of the
+          LPIC-1 certification. In CSC 106, Linux 1 chapters are used for extra credit
+          activities in Weeks 1, 2, 3, 4, and 7. Specifically, the Week 1 extra credit
+          (apt vs. yum/dnf comparison) requires reading Linux 1 Chapter 24.
+        </p>
+        <a href="https://www.netacad.com/courses/linux-1?courseLang=en-US&instance_id=212bf9c9-9bb4-4e23-a9df-a2cd3357b2cd"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="enroll-link-opt"
+           aria-label="Enroll in CSC106 Linux 1 on Cisco Networking Academy (opens in new tab)">
+          Enroll in Linux 1
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <div class="opt-course">
+        <p class="course-name">
+          CSC106 – Linux 2 (LPIC-1)
+          <span class="badge badge-opt" aria-label="Optional – extra credit">Optional</span>
+        </p>
+        <p class="course-meta">Opens: March 23, 2026 &nbsp;·&nbsp; Closes: May 23, 2026</p>
+        <p>
+          Linux 2 covers advanced topics including shell scripting, network configuration,
+          host security, and encryption. It aligns with the second half of the LPIC-1
+          certification. In CSC 106, Linux 2 chapters support extra credit activities in
+          Weeks 3, 4, 5, 6, 7, and 8.
+        </p>
+        <a href="https://www.netacad.com/courses/linux-2?courseLang=en-US&instance_id=67bbb178-4570-42e6-9b84-cc3772cded4d"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="enroll-link-opt"
+           aria-label="Enroll in CSC106 Linux 2 on Cisco Networking Academy (opens in new tab)">
+          Enroll in Linux 2
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <div class="callout callout-info" style="margin-top:1.25rem;">
+        <strong>Enrolling in all three courses is recommended if you want maximum access</strong>
+        to extra credit opportunities throughout the semester. Enrollment takes only a few
+        minutes per course, and all three are free.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ACCOUNT NOTES ── -->
+  <span id="account-notes" class="section-anchor" aria-hidden="true"></span>
+  <div class="accordion">
+    <button class="accordion-trigger"
+            aria-expanded="false"
+            aria-controls="notes-body"
+            id="notes-heading">
+      <span>Important Notes on Your Accounts</span>
+      <span class="icon" aria-hidden="true">▾</span>
+    </button>
+    <div class="accordion-body" id="notes-body" role="region" aria-labelledby="notes-heading" hidden>
+
+      <ul class="notes-list" aria-label="Account notes">
+
+        <li>
+          <span class="note-icon" aria-hidden="true">💰</span>
+          <div>
+            <strong>Both accounts are free.</strong> Creating your Cisco Networking Academy
+            account is free. As a student at Mendocino College — a Cisco Academy member
+            institution — you have access to these course materials at no charge.
+          </div>
+        </li>
+
+        <li>
+          <span class="note-icon" aria-hidden="true">💰</span>
+          <div>
+            <strong>Your NDG account is also free.</strong> NDG does offer its own paid
+            courses and programs, but your Cisco Networking Academy enrollment grants you
+            access to the NDG lab environments at no additional cost. You do not need to
+            purchase anything on the NDG website.
+          </div>
+        </li>
+
+        <li>
+          <span class="note-icon" aria-hidden="true">📧</span>
+          <div>
+            <strong>Use a personal email address — not your college email.</strong> Cisco
+            stores your entire learning history (course completions, certifications, badges)
+            under your registered email. College email accounts are deactivated after
+            graduation. If you use your college address, you will lose access to your
+            NetAcad history when your account expires.
+          </div>
+        </li>
+
+        <li>
+          <span class="note-icon" aria-hidden="true">🔗</span>
+          <div>
+            <strong>Keep both accounts active throughout the semester.</strong> Your NetAcad
+            account and your NDG account must remain linked. If you ever have trouble
+            launching a lab, the most common cause is an expired NDG session or a broken
+            link between the two accounts. Revisiting the "Before You Get Started" activity
+            in NetAcad usually resolves linking issues.
+          </div>
+        </li>
+
+        <li>
+          <span class="note-icon" aria-hidden="true">🏆</span>
+          <div>
+            <strong>Your NetAcad account has value beyond this course.</strong> Any chapters
+            you complete, labs you pass, and certificates you earn are permanently recorded
+            under your account. The Linux Essentials certificate from this course is
+            recognized by employers and can be added to a resume or LinkedIn profile.
+          </div>
+        </li>
+
+      </ul>
+
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+  document.querySelectorAll('.accordion-trigger').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var bodyId = this.getAttribute('aria-controls');
+      var body = document.getElementById(bodyId);
+      if (expanded) {
+        this.setAttribute('aria-expanded', 'false');
+        body.hidden = true;
+      } else {
+        this.setAttribute('aria-expanded', 'true');
+        body.hidden = false;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
