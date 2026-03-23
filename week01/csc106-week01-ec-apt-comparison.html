@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extra Credit: apt vs. yum/dnf Comparison — CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1e3a5f;
+      --blue: #0056b3;
+      --blue-light: #e8f0fb;
+      --green: #2d6a2d;
+      --green-light: #e8f5e8;
+      --orange: #8a5500;
+      --orange-light: #fff8e6;
+      --amber: #78350f;
+      --amber-light: #fffbeb;
+      --amber-border: #fcd34d;
+      --amber-mid: #d97706;
+      --text: #1a1a1a;
+      --muted: #555;
+      --border: #cdd5e0;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --nav-h: 52px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 200;
+      border-radius: 0 0 4px 0;
+      font-size: .9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      overflow-x: auto;
+      height: var(--nav-h);
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    nav a {
+      color: #c8d8f0;
+      text-decoration: none;
+      font-size: .875rem;
+      padding: 6px 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    nav a:focus-visible { outline: none; border-color: #7bbfff; color: #fff; }
+    nav a.active { background: rgba(255,255,255,.2); color: #fff; font-weight: 600; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    [id] { scroll-margin-top: calc(var(--nav-h) + 12px); }
+
+    /* ── Header card ── */
+    .lab-header {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      border-left: 6px solid var(--amber-mid);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .lab-header h1 { font-size: 1.6rem; color: var(--navy); margin-bottom: 8px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .badge-blue { background: var(--blue-light); color: var(--navy); }
+    .badge-ec   { background: #fef3c7; color: #92400e; border: 1px solid var(--amber-border); }
+
+    .ec-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--amber-light);
+      border: 1px solid var(--amber-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: .9rem;
+      color: var(--amber);
+    }
+    .ec-banner .ec-star {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .section-card h2 {
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    .phase-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    h3 { font-size: 1rem; color: var(--navy); margin: 20px 0 8px; }
+    p { margin-bottom: 12px; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 12px; }
+    li { margin-bottom: 5px; }
+
+    /* ── Objectives list ── */
+    .obj-list { list-style: none; padding: 0; }
+    .obj-list li {
+      padding: 8px 12px 8px 36px;
+      position: relative;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: var(--blue-light);
+    }
+    .obj-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 11px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    /* ── Numbered step list ── */
+    .step-list { list-style: none; padding: 0; counter-reset: steps; }
+    .step-list > li {
+      counter-increment: steps;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: var(--navy);
+      color: #fff;
+      min-width: 30px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+      user-select: none;
+    }
+    .step-content { flex: 1; min-width: 0; }
+    .step-content h3 { margin-top: 0; }
+
+    /* ── Response fields ── */
+    .response-group { margin-top: 18px; }
+    .response-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .response-group .prompt-text {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: .9rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+      background: #fafcff;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,86,179,.12);
+    }
+
+    /* ── Collapsible hints ── */
+    details {
+      background: var(--green-light);
+      border-radius: 6px;
+      border-left: 4px solid var(--green);
+      margin: 14px 0;
+    }
+    details summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--green);
+      font-size: .9rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary .arrow {
+      display: inline-block;
+      font-size: .7rem;
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    details summary:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body { padding: 0 14px 14px; font-size: .9rem; }
+    .hint-body > *:first-child { margin-top: 0; }
+    .hint-body ul { margin-bottom: 0; }
+    .hint-body p + p { margin-top: 8px; }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--orange-light);
+      border-left: 4px solid #e6900a;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .9rem;
+    }
+    .callout strong { color: var(--orange); }
+
+    /* ── Inline code ── */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #eef1f7;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: .9em;
+    }
+
+    /* ── Comparison table ── */
+    .cmp-table-wrap { overflow-x: auto; margin: 12px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    thead th {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    thead th:first-child { border-radius: 4px 0 0 0; }
+    thead th:last-child  { border-radius: 0 4px 0 0; }
+    tbody tr:nth-child(odd)  { background: #f9fafb; }
+    tbody tr:nth-child(even) { background: #fff; }
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody td code {
+      background: #e8edf5;
+      white-space: nowrap;
+    }
+    .col-task  { color: var(--muted); font-style: italic; }
+    .col-apt   { color: #0056b3; }
+    .col-dnf   { color: #c0392b; }
+
+    /* ── Distribution tags ── */
+    .distro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    @media (max-width: 500px) { .distro-grid { grid-template-columns: 1fr; } }
+    .distro-card {
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .distro-card.apt-card  { background: var(--blue-light);  border-left: 4px solid var(--blue); }
+    .distro-card.dnf-card  { background: #fef2f2; border-left: 4px solid #ef4444; }
+    .distro-card h4 {
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .distro-card.apt-card h4 { color: var(--navy); }
+    .distro-card.dnf-card h4 { color: #991b1b; }
+    .distro-card ul {
+      padding-left: 1.2em;
+      margin: 0;
+      font-size: .85rem;
+    }
+    .distro-card.apt-card li { color: #1e3a5f; }
+    .distro-card.dnf-card li { color: #7f1d1d; }
+
+    /* ── Submission grid ── */
+    .submit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    @media (max-width: 580px) { .submit-grid { grid-template-columns: 1fr; } }
+    .submit-item {
+      background: var(--blue-light);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    .submit-item h3 { margin: 0 0 6px; font-size: .95rem; color: var(--navy); }
+    .submit-item p  { margin: 0; font-size: .875rem; color: var(--muted); }
+
+    /* ── PDF button ── */
+    .btn-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-pdf:hover { background: #152d4d; }
+    .btn-pdf:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    /* ── Rubric table ── */
+    .rubric-table { width: 100%; border-collapse: collapse; font-size: .875rem; margin-top: 12px; }
+    .rubric-table th {
+      background: var(--navy);
+      color: #fff;
+      padding: 9px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .rubric-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .rubric-table tr:nth-child(odd)  td { background: #f9fafb; }
+    .rubric-table tr:nth-child(even) td { background: #fff; }
+    .pts-cell {
+      font-weight: 700;
+      color: var(--navy);
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .section-card, .lab-header { padding: 20px 16px; }
+      .lab-header h1 { font-size: 1.35rem; }
+    }
+
+    /* ── Print / Save as PDF ── */
+    @media print {
+      nav, .btn-pdf { display: none !important; }
+      body { background: #fff; font-size: 11pt; }
+      main { padding: 0; }
+      .section-card, .lab-header {
+        box-shadow: none;
+        border: 1px solid #bbb;
+        break-inside: avoid;
+        margin-bottom: 16pt;
+        padding: 16pt;
+      }
+      textarea { display: none !important; }
+      .print-value {
+        display: block !important;
+        min-height: 48pt;
+        border: 1px solid #aaa;
+        border-radius: 3pt;
+        padding: 6pt 8pt;
+        background: #fafafa;
+        font-size: 9.5pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+      details { break-inside: avoid; }
+      details:not([open]) { display: none; }
+      .phase-label { color: #555; }
+      a { color: inherit; text-decoration: none; }
+      .ec-banner { border: 1px solid #aaa; }
+    }
+    .print-value { display: none; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav aria-label="Assignment sections">
+  <div class="nav-inner">
+    <a href="#context">Context</a>
+    <a href="#objectives">Objectives</a>
+    <a href="#background">Background</a>
+    <a href="#steps">The Assignment</a>
+    <a href="#write">Write</a>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Header ── -->
+  <header class="lab-header" id="top">
+    <p class="phase-label">CSC 106 — Week 1 · Extra Credit</p>
+    <h1>apt vs. yum/dnf: Package Management Comparison</h1>
+    <div class="meta-row">
+      <span><strong>Points:</strong> +5 Extra Credit</span>
+      <span><strong>Type:</strong> Written Comparison</span>
+      <span class="badge badge-blue">CSLO 1</span>
+      <span class="badge badge-ec">Extra Credit</span>
+    </div>
+    <div class="ec-banner" role="note" aria-label="Extra credit note">
+      <span class="ec-star" aria-hidden="true">★</span>
+      <span>
+        <strong>This assignment is completely optional.</strong> It does not affect your standing
+        if you skip it. If you complete it, 5 points are added on top of your earned base points
+        for the course. To be eligible, you must read <strong>Linux 1 Chapter 24</strong> in
+        Cisco Networking Academy before writing your comparison.
+      </span>
+    </div>
+  </header>
+
+  <!-- ── Context ── -->
+  <section class="section-card" id="context" aria-labelledby="context-h">
+    <h2 id="context-h">Context</h2>
+    <p>
+      This week you installed Ubuntu Server — a Debian-based distribution — and used
+      <code>apt</code> to refresh your package index. But Ubuntu is just one of many Linux
+      distributions in use today. In professional environments, you will encounter servers
+      running Red Hat Enterprise Linux, CentOS Stream, Fedora, Rocky Linux, and AlmaLinux —
+      all of which use a completely different package management system.
+    </p>
+    <p>
+      Understanding both ecosystems makes you a more versatile administrator. When you apply
+      for a Linux sysadmin or DevOps role, you will very likely be asked about the differences
+      between <code>apt</code> and <code>yum</code>/<code>dnf</code>. This extra credit
+      assignment gives you an early opportunity to build and document that knowledge.
+    </p>
+    <p>
+      Linux 1 Chapter 24 covers both package managers in depth, including their lower-level
+      counterparts (<code>dpkg</code> and <code>rpm</code>). Your task is to read that chapter
+      and then write a focused, one-page comparison that demonstrates you understand how the
+      two workflows differ in practice.
+    </p>
+  </section>
+
+  <!-- ── Objectives ── -->
+  <section class="section-card" id="objectives" aria-labelledby="obj-h">
+    <h2 id="obj-h">What You Will Demonstrate</h2>
+    <ul class="obj-list">
+      <li>Identify the package format and primary toolset for each distribution family (Debian/Ubuntu vs. Red Hat/Fedora).</li>
+      <li>Map equivalent commands between <code>apt</code> and <code>yum</code>/<code>dnf</code> for common tasks: installing, removing, searching, and updating packages.</li>
+      <li>Explain the relationship between high-level package managers (<code>apt</code>, <code>dnf</code>) and their low-level counterparts (<code>dpkg</code>, <code>rpm</code>).</li>
+      <li>Describe how repository configuration differs between the two ecosystems.</li>
+      <li>Articulate at least one meaningful difference in behavior, syntax, or workflow between the two systems.</li>
+    </ul>
+  </section>
+
+  <!-- ── Background ── -->
+  <section class="section-card" id="background" aria-labelledby="bg-h">
+    <h2 id="bg-h">Background: Two Package Management Families</h2>
+
+    <p>
+      Linux package managers fall into two dominant families, each with its own package format,
+      low-level tool, and high-level front-end. Read Chapter 24 for the full treatment; this
+      section is a quick orientation to help you get your bearings before you read.
+    </p>
+
+    <div class="distro-grid" aria-label="Two package management families">
+      <div class="distro-card apt-card">
+        <h4>Debian / Ubuntu Family</h4>
+        <ul>
+          <li>Package format: <code>.deb</code></li>
+          <li>Low-level tool: <code>dpkg</code></li>
+          <li>High-level front-end: <code>apt</code></li>
+          <li>Repo config: <code>/etc/apt/sources.list</code></li>
+          <li>Distributions: Debian, Ubuntu, Linux Mint, Kali</li>
+        </ul>
+      </div>
+      <div class="distro-card dnf-card">
+        <h4>Red Hat / Fedora Family</h4>
+        <ul>
+          <li>Package format: <code>.rpm</code></li>
+          <li>Low-level tool: <code>rpm</code></li>
+          <li>High-level front-end: <code>yum</code> (older) / <code>dnf</code> (current)</li>
+          <li>Repo config: <code>/etc/yum.repos.d/*.repo</code></li>
+          <li>Distributions: RHEL, CentOS, Fedora, Rocky, Alma</li>
+        </ul>
+      </div>
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Why does yum/dnf exist if rpm already works?</summary>
+      <div class="hint-body">
+        <p>
+          <code>rpm</code> can install a <code>.rpm</code> file directly, but it does not
+          automatically resolve dependencies. If package A requires packages B and C, you would
+          have to find and install B and C manually before A would work. This is tedious and
+          error-prone at scale.
+        </p>
+        <p>
+          <code>yum</code> (and its modern replacement <code>dnf</code>) sits on top of
+          <code>rpm</code> and adds automatic dependency resolution, repository management,
+          and transaction history. The same logic applies on the Debian side: <code>dpkg</code>
+          handles the low-level install/remove work, while <code>apt</code> manages dependencies
+          and repositories.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Quick command reference: apt vs. dnf side by side</summary>
+      <div class="hint-body">
+        <p>Use this table as a reference while you read and write. Chapter 24 explains each
+        command in detail.</p>
+        <div class="cmp-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-task">Task</th>
+                <th><span class="col-apt">apt</span> (Debian/Ubuntu)</th>
+                <th><span class="col-dnf">dnf / yum</span> (Red Hat/Fedora)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-task">Refresh package index</td>
+                <td><code>apt update</code></td>
+                <td><code>dnf check-update</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Upgrade all packages</td>
+                <td><code>apt upgrade</code></td>
+                <td><code>dnf upgrade</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Install a package</td>
+                <td><code>apt install &lt;pkg&gt;</code></td>
+                <td><code>dnf install &lt;pkg&gt;</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Remove a package</td>
+                <td><code>apt remove &lt;pkg&gt;</code></td>
+                <td><code>dnf remove &lt;pkg&gt;</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Remove + config files</td>
+                <td><code>apt purge &lt;pkg&gt;</code></td>
+                <td>(config files removed by default)</td>
+              </tr>
+              <tr>
+                <td class="col-task">Search for a package</td>
+                <td><code>apt search &lt;keyword&gt;</code></td>
+                <td><code>dnf search &lt;keyword&gt;</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Show package details</td>
+                <td><code>apt show &lt;pkg&gt;</code></td>
+                <td><code>dnf info &lt;pkg&gt;</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">List installed packages</td>
+                <td><code>dpkg -l</code></td>
+                <td><code>rpm -qa</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Files installed by a package</td>
+                <td><code>dpkg -L &lt;pkg&gt;</code></td>
+                <td><code>rpm -ql &lt;pkg&gt;</code></td>
+              </tr>
+              <tr>
+                <td class="col-task">Which package owns a file</td>
+                <td><code>dpkg -S &lt;file&gt;</code></td>
+                <td><code>rpm -qf &lt;file&gt;</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:8px;">
+          <strong>Note on yum vs. dnf:</strong> <code>dnf</code> is the current default on
+          Fedora and RHEL 8+. <code>yum</code> is still found on older CentOS 7 systems and
+          some documentation. The syntax is nearly identical — most <code>yum</code> commands
+          work as-is with <code>dnf</code>.
+        </p>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- ── The Assignment Steps ── -->
+  <section class="section-card" id="steps" aria-labelledby="steps-h">
+    <p class="phase-label">The Assignment</p>
+    <h2 id="steps-h">How to Complete This Extra Credit</h2>
+
+    <ol class="step-list" aria-label="Assignment steps">
+
+      <li>
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-content">
+          <h3>Read Linux 1 Chapter 24 in Cisco Networking Academy</h3>
+          <p>Log in to NetAcad, open <em>CSC106 – Linux 1 (LPIC-1)</em>, and navigate to
+          <strong>Chapter 24: Package Management</strong>. Read the full chapter. It covers
+          both the Debian (<code>dpkg</code>, <code>apt</code>) and Red Hat (<code>rpm</code>,
+          <code>yum</code>) sides of package management, and it is the required source for
+          this assignment.</p>
+
+          <div class="callout">
+            <strong>Enrollment required:</strong> You must be enrolled in the Linux 1 course
+            on NetAcad to access Chapter 24. If you have not enrolled yet, use the invite
+            link on the NetAcad Registration page in Canvas. Enrollment is free and takes
+            only a few minutes.
+          </div>
+
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> What to focus on as you read</summary>
+            <div class="hint-body">
+              <ul>
+                <li>How <code>dpkg</code> and <code>apt</code> relate to each other — and the parallel relationship between <code>rpm</code> and <code>dnf</code>/<code>yum</code></li>
+                <li>The commands for the most common tasks on each system (install, remove, search, update)</li>
+                <li>How each system stores its package database and repository configuration</li>
+                <li>Any behavioral differences the chapter highlights — for example, how each handles leftover configuration files after removing a package</li>
+              </ul>
+            </div>
+          </details>
+
+          <div class="response-group">
+            <label for="resp-read">Reading notes (optional — for your own use)</label>
+            <p class="prompt-text">Use this space to jot down key points as you read. This
+            field is for your benefit; it is not submitted or graded.</p>
+            <textarea id="resp-read" name="resp-read" rows="5" placeholder="Key points from Chapter 24..."></textarea>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-content">
+          <h3>Plan your comparison</h3>
+          <p>Before writing, decide how you will organize your one-page comparison. A
+          well-structured comparison is easier to read and earns more credit than a list
+          of commands with no explanation. Choose one of the structures below, or use your
+          own.</p>
+
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Suggested structure options</summary>
+            <div class="hint-body">
+              <p><strong>Option A — Side by side by topic</strong></p>
+              <ul>
+                <li>Introduction: the two package families and where each is used</li>
+                <li>Package formats: .deb vs. .rpm</li>
+                <li>Tool stack: low-level (dpkg / rpm) and high-level (apt / dnf)</li>
+                <li>Common commands: install, remove, search, update — shown as a table or paired examples</li>
+                <li>Repository configuration: where each system stores repo info</li>
+                <li>One notable difference or practical observation</li>
+              </ul>
+              <p><strong>Option B — Narrative paragraphs</strong></p>
+              <ul>
+                <li>Paragraph 1: Overview of the two families and what distributions each covers</li>
+                <li>Paragraph 2: How packages are structured and installed at the low level</li>
+                <li>Paragraph 3: How the high-level tools (apt and dnf) add dependency resolution and repository management on top</li>
+                <li>Paragraph 4: Practical differences — command syntax, config file locations, or behavioral differences you noticed</li>
+              </ul>
+            </div>
+          </details>
+
+          <div class="response-group">
+            <label for="resp-plan">Your outline or plan (optional — for your own use)</label>
+            <p class="prompt-text">Sketch out your structure here before you start writing. Not submitted or graded.</p>
+            <textarea id="resp-plan" name="resp-plan" rows="5" placeholder="Outline or plan..."></textarea>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-num" aria-hidden="true">3</div>
+        <div class="step-content">
+          <h3>Write your comparison in the section below</h3>
+          <p>Move to the <strong>Write</strong> section of this page and compose your
+          one-page comparison. Target approximately 400–600 words. Focus on clarity and
+          accuracy — you are demonstrating that you understand how the two systems work,
+          not just that you can list commands.</p>
+
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Grading criteria</summary>
+            <div class="hint-body">
+              <table class="rubric-table" aria-label="Grading rubric">
+                <thead>
+                  <tr>
+                    <th>Criterion</th>
+                    <th>What earns full credit</th>
+                    <th class="pts-cell">Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Coverage</strong></td>
+                    <td>Addresses both package families — tools, package formats, and repository configuration</td>
+                    <td class="pts-cell">2</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Command accuracy</strong></td>
+                    <td>Commands cited are correct and clearly paired with their equivalent on the other system</td>
+                    <td class="pts-cell">1</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Analysis</strong></td>
+                    <td>At least one meaningful difference is explained in your own words, not just listed</td>
+                    <td class="pts-cell">1</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Clarity</strong></td>
+                    <td>Writing is organized, on topic, and approximately one page in length</td>
+                    <td class="pts-cell">1</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </li>
+
+    </ol>
+  </section>
+
+  <!-- ── Write ── -->
+  <section class="section-card" id="write" aria-labelledby="write-h">
+    <h2 id="write-h">Write Your Comparison</h2>
+    <p>
+      Compose your one-page comparison here. When you are satisfied with it, use the
+      <strong>Save as PDF</strong> button in the Submit section to export this page — your
+      typed text will appear in the PDF. Upload the PDF to Canvas.
+    </p>
+    <p>
+      Target length: <strong>400–600 words</strong>. Use the optional outline tools above
+      to organize your ideas before drafting.
+    </p>
+
+    <div class="response-group">
+      <label for="resp-comparison">apt vs. yum/dnf Comparison</label>
+      <p class="prompt-text">
+        Write your full comparison here. Include: the two package families and where each is
+        used; the package formats (.deb and .rpm); the high-level and low-level tool stack on
+        each side; equivalent commands for common tasks; repository configuration; and at least
+        one meaningful difference explained in your own words.
+      </p>
+      <textarea id="resp-comparison" name="resp-comparison" rows="22"
+        placeholder="Begin your comparison here...
+
+Example opening: Linux distributions use two major package management systems. Debian-based systems (Ubuntu, Debian, Linux Mint) use .deb packages managed by dpkg at the low level and apt as the high-level front-end. Red Hat-based systems (RHEL, Fedora, Rocky Linux) use .rpm packages managed by rpm at the low level and dnf (formerly yum) as the high-level front-end. Both systems solve the same core problem — installing, updating, and removing software along with its dependencies — but differ in their syntax, repository configuration, and some behavioral details..."></textarea>
+    </div>
+
+    <details>
+      <summary><span class="arrow" aria-hidden="true">&#9654;</span> Prompts to help if you get stuck</summary>
+      <div class="hint-body">
+        <ul>
+          <li>How would you install the <code>nginx</code> web server on Ubuntu vs. on Fedora? Write out both commands.</li>
+          <li>If you removed a package on Ubuntu and wanted to also delete its configuration files, which command would you use? What happens on the dnf side?</li>
+          <li>Where does each system store its repository list? What does a typical entry in each file look like?</li>
+          <li>If you wanted to find out which installed package owns the file <code>/usr/bin/python3</code>, what command would you run on each system?</li>
+          <li>In your own opinion, which command interface feels more intuitive, and why?</li>
+        </ul>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="section-card" id="submission" aria-labelledby="submission-h">
+    <h2 id="submission-h">Deliverables and Submission</h2>
+    <p>
+      This extra credit assignment is worth <strong>+5 points</strong> added to your course
+      total. It assesses <strong>CSLO 1</strong> (Install and configure a Linux operating
+      system). Submit your completed comparison to Canvas as the
+      <strong>"apt vs. yum/dnf Comparison (Extra Credit)"</strong> assignment.
+    </p>
+
+    <div class="submit-grid">
+      <div class="submit-item">
+        <h3>Format</h3>
+        <p>Submit as a PDF, Word document (.docx), or plain-text file. The Save as PDF
+        button below exports this page with your typed comparison included.</p>
+      </div>
+      <div class="submit-item">
+        <h3>Length</h3>
+        <p>Approximately one page, or 400–600 words. Concise and accurate earns more credit
+        than lengthy but vague.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Before saving:</strong> Scroll up to the Write section and confirm your
+      comparison is complete. Your typed text will appear in the PDF export. The reading
+      notes and outline fields are included in the export but are not graded — include or
+      omit them as you prefer.
+    </div>
+
+    <button class="btn-pdf" onclick="saveAsPDF()" type="button">
+      &#128461;&nbsp; Save as PDF
+    </button>
+  </section>
+
+</main>
+
+<script>
+  // Scroll-spy: highlight active nav link
+  (function () {
+    var sections = ['context', 'objectives', 'background', 'steps', 'write', 'submission'];
+    var links = {};
+    sections.forEach(function (id) {
+      var a = document.querySelector('nav a[href="#' + id + '"]');
+      if (a) links[id] = a;
+    });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && links[entry.target.id]) {
+          Object.values(links).forEach(function (a) { a.classList.remove('active'); });
+          links[entry.target.id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    sections.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  })();
+
+  // Save as PDF
+  function saveAsPDF() {
+    document.querySelectorAll('textarea').forEach(function (ta) {
+      var pv = ta.parentNode.querySelector('.print-value');
+      if (!pv) {
+        pv = document.createElement('div');
+        pv.className = 'print-value';
+        ta.parentNode.insertBefore(pv, ta.nextSibling);
+      }
+      pv.textContent = ta.value.trim() || '(No response entered)';
+    });
+
+    var closed = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      closed.push(d);
+      d.setAttribute('open', '');
+    });
+
+    window.print();
+
+    window.addEventListener('afterprint', function restore() {
+      closed.forEach(function (d) { d.removeAttribute('open'); });
+      window.removeEventListener('afterprint', restore);
+    });
+  }
+</script>
+
+</body>
+</html>
