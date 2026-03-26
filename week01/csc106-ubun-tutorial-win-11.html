@@ -288,6 +288,7 @@ code {
 
 <nav class="top-nav" aria-label="Page sections">
   <a href="#intro">Introduction</a>
+  <a href="#video-walkthrough">Video Walkthrough</a>
   <a href="#hypervisor">Task 1: VirtualBox</a>
   <a href="#ubuntu-server">Task 2: Ubuntu Server</a>
 </nav>
@@ -299,9 +300,33 @@ code {
     <p class="page-label">CSC 106 · Week 1 · Windows 11</p>
     <h1 id="page-heading">Setting Up Your Linux Environment</h1>
     <p>This tutorial prepares your Windows 11 computer for <strong>Lab 1</strong>. You will complete two tasks: install VirtualBox (a hypervisor that lets you run Linux inside a window on your PC), then use it to install Ubuntu Server 24.04 LTS as a virtual machine.</p>
-    <p>Each task includes a short video walkthrough and written step-by-step instructions. Use whichever works best for you — many students find it helpful to follow the written steps alongside the video.</p>
+    <p>The tutorial is organized as follows: a single video walkthrough covers the entire process from start to finish, followed by two written task sections you can use alongside the video or on their own.</p>
     <div class="intro-note" role="note">
       <strong>On an older Intel-based Mac?</strong> Intel Macs use the same x86_64 processor architecture as Windows PCs. You can follow this guide and download VirtualBox for macOS (Intel) instead of the Windows version — all other steps are the same.
+    </div>
+  </section>
+
+  <!-- ── Video Walkthrough ───────────────────────────────────────────── -->
+  <section id="video-walkthrough" aria-labelledby="video-heading">
+    <h2 id="video-heading" style="font-size:1.2rem;color:#1e293b;margin-bottom:0.5rem;">Video Walkthrough</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">This video walks through the complete setup process: downloading and installing VirtualBox and the Extension Pack, downloading and verifying the Ubuntu Server ISO, creating the virtual machine, running through the Ubuntu installer, and logging in for the first time. Use the transcript panel on the right to follow along or jump to any part of the video.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/aAI0Kj4vW24?si=_cdCXrTGzB7Yh3Md&enablejsapi=1"
+                  title="Installing VirtualBox and Ubuntu Server on Windows 11 — Complete Walkthrough"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for complete walkthrough video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -329,43 +354,22 @@ code {
       <h3>Download VirtualBox</h3>
       <div class="download-box">
         <div>Official download page: <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer">virtualbox.org/wiki/Downloads</a></div>
-        <div class="verify">&#10003; Download both items from this page: the <strong>Windows hosts</strong> installer and the <strong>VirtualBox Extension Pack</strong> (listed in a separate section just below the installer).</div>
-        <div class="verify">&#10003; Installer filename starts with <code>VirtualBox-</code> and ends in <code>-Win.exe</code> (~120&nbsp;MB). The Extension Pack file ends in <code>.vbox-extpack</code>.</div>
-      </div>
-
-      <h3>Video: Download and Install VirtualBox on Windows</h3>
-      <div class="video-wrap">
-        <div class="video-col">
-          <div class="video-container" id="vc-1">
-            <iframe id="yt-1"
-                    src="https://www.youtube.com/embed/IGdJpmcc1U8?enablejsapi=1"
-                    title="Download and Install VirtualBox on Windows"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen>
-            </iframe>
-          </div>
-        </div>
-        <div class="transcript-col">
-          <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for VirtualBox install video">
-            <p class="loading">Loading transcript&hellip;</p>
-          </div>
-        </div>
+        <div class="verify">&#10003; Search for "Oracle VirtualBox download" and go to <strong>virtualbox.org</strong>. Download both: the <strong>Windows hosts</strong> installer and the <strong>VirtualBox Extension Pack</strong> (listed just below the platform installers).</div>
+        <div class="verify">&#10003; Installer filename starts with <code>VirtualBox-</code> and ends in <code>-Win.exe</code>. The Extension Pack file ends in <code>.vbox-extpack</code>.</div>
       </div>
 
       <h3>Written step-by-step instructions</h3>
       <ol class="steps">
-        <li>Open your browser and go to <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer">virtualbox.org/wiki/Downloads</a>.</li>
-        <li>Under <strong>VirtualBox platform packages</strong>, click <strong>Windows hosts</strong> to download the installer. Save it to your Downloads folder.</li>
-        <li>On the same page, scroll down to the <strong>VirtualBox Extension Pack</strong> section and click <strong>All supported platforms</strong> to download it. Save it to the same Downloads folder.</li>
-        <li>Open your Downloads folder and double-click the VirtualBox installer (filename starts with <code>VirtualBox-</code>).</li>
-        <li>Click through the installer accepting all default settings. If Windows shows a User Account Control prompt, click <strong>Yes</strong>.</li>
-        <li>A warning about network interfaces being briefly interrupted is normal — click <strong>Yes</strong> to proceed.</li>
-        <li>Click <strong>Install</strong> and wait about 1–2 minutes for the installation to complete.</li>
-        <li>When prompted to start VirtualBox at the end, leave the checkbox <strong>unchecked</strong> and click <strong>Finish</strong>.</li>
-        <li>Return to your Downloads folder and double-click the Extension Pack file (ends in <code>.vbox-extpack</code>). VirtualBox opens automatically.</li>
-        <li>In the Extension Pack installation dialog, scroll down to read the license agreement, then click <strong>I Agree</strong>. Wait about 30 seconds for the install to finish.</li>
-        <li>To verify: in VirtualBox, click <strong>Tools</strong> in the left sidebar, then click <strong>Extensions</strong>. The Oracle VM VirtualBox Extension Pack should appear in the list and show as enabled.</li>
+        <li>Open your browser, search for <strong>Oracle VirtualBox download</strong>, and go to <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="noopener noreferrer">virtualbox.org/wiki/Downloads</a>.</li>
+        <li>Under <strong>VirtualBox platform packages</strong>, click <strong>Windows hosts</strong> to start the download. Save it to your Downloads folder.</li>
+        <li>On the same page, scroll down to the <strong>VirtualBox Extension Pack</strong> section. Click the extension pack link (labeled with the version number, e.g., <code>7.x.x</code>) and accept the license to download it. Save it to the same Downloads folder.</li>
+        <li>Open your Downloads folder. Double-click the VirtualBox installer (the <code>.exe</code> file) to launch it.</li>
+        <li>Click through the installer accepting all default settings and locations. If Windows asks about disk space or shortcuts, leave the defaults and continue.</li>
+        <li>A warning about your network connection being briefly interrupted may appear — this is normal. Click <strong>Yes</strong> to proceed.</li>
+        <li>Click <strong>Install</strong>. If a User Account Control prompt appears, click <strong>Yes</strong>. Wait about 1–2 minutes for the installation to complete, then click <strong>Finish</strong>.</li>
+        <li>Return to your Downloads folder and double-click the Extension Pack file (the <code>.vbox-extpack</code> file). VirtualBox opens automatically and prompts you to install the pack.</li>
+        <li>In the Extension Pack dialog, scroll down to the bottom of the license text, then click <strong>I Agree</strong>. Wait about 30 seconds for the install to complete.</li>
+        <li><strong>Verify the Extension Pack is installed:</strong> In VirtualBox, go to <strong>Tools</strong> in the left sidebar and click <strong>Extensions</strong>. The Oracle VM VirtualBox Extension Pack should appear in the list with a checkmark showing it is enabled. Check the version number matches the one you downloaded.</li>
       </ol>
 
     </div><!-- /hypervisor-content -->
@@ -395,89 +399,71 @@ code {
       <h3>Download Ubuntu Server 24.04 LTS</h3>
       <div class="download-box">
         <div>Official download page: <a href="https://ubuntu.com/download/server" target="_blank" rel="noopener noreferrer">ubuntu.com/download/server</a></div>
-        <div class="verify">&#10003; Click <strong>Download Ubuntu Server 24.04 LTS</strong>. This is the correct x86_64 (amd64) version for Windows / VirtualBox.</div>
-        <div class="verify">&#10003; Filename looks like <code>ubuntu-24.04.X-live-server-amd64.iso</code> — approximately 2.7&nbsp;GB. The download may take several minutes depending on your connection.</div>
-      </div>
-
-      <h3>Video: Download and Install Ubuntu Server 24.04 on VirtualBox</h3>
-      <div class="video-wrap">
-        <div class="video-col">
-          <div class="video-container" id="vc-2">
-            <iframe id="yt-2"
-                    src="https://www.youtube.com/embed/MwNIDLzy0DA?enablejsapi=1"
-                    title="Download and Install Ubuntu Server 24.04 on VirtualBox"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen>
-            </iframe>
-          </div>
-        </div>
-        <div class="transcript-col">
-          <div id="tc-2" class="transcript-container" role="region" aria-label="Transcript for Ubuntu Server install video">
-            <p class="loading">Loading transcript&hellip;</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="tip-box">
-        <strong>Note about the video:</strong> The video uses VirtualBox's <em>Unattended Installation</em> shortcut to speed up the demo. For Lab 1, follow the written steps below instead — they walk you through the installer manually so you can make deliberate choices and capture the screenshots required by the assignment.
+        <div class="verify">&#10003; Go to the Ubuntu Server download page and click <strong>Option 2: Manual server installation</strong>, then download <strong>Ubuntu Server 24.04.x LTS</strong>. This is the correct x86_64 (amd64) version for Windows / VirtualBox.</div>
+        <div class="verify">&#10003; Filename looks like <code>ubuntu-24.04.X-live-server-amd64.iso</code> — approximately 2.7–3.3&nbsp;GB. The download may take several minutes; Ubuntu's servers can be slow.</div>
+        <div class="verify">&#10003; <strong>Optional — Verify your download:</strong> On the download page, click <strong>verify your download</strong> to get the SHA-256 checksum. On Windows, use a free tool such as <strong>HashCalc</strong> (or <code>certutil -hashfile &lt;filename&gt; SHA256</code> in PowerShell) to generate a hash of the downloaded ISO and compare the first and last few characters to the expected value.</div>
       </div>
 
       <h3>Written step-by-step instructions</h3>
 
       <h4>Part A — Create the Virtual Machine</h4>
       <ol class="steps">
-        <li>Open VirtualBox. Click the <strong>New</strong> button (blue star icon in the toolbar) to open the new VM wizard.</li>
-        <li>Enter a name for your VM, for example <code>Ubuntu Server</code>.</li>
-        <li>Under <strong>ISO Image</strong>, click the dropdown and choose <strong>Other&hellip;</strong>. Browse to your Downloads folder and select the Ubuntu Server ISO file (<code>ubuntu-24.04.X-live-server-amd64.iso</code>).</li>
-        <li><strong>Important:</strong> Check the box labeled <strong>Skip Unattended Installation</strong>. This lets you walk through every installer screen yourself, which is required for the Lab 1 screenshots.</li>
+        <li>Open VirtualBox. Click the <strong>New</strong> button (blue star icon) to open the new VM wizard.</li>
+        <li>Enter a name for your VM, for example <code>CSC106-Ubuntu</code>.</li>
+        <li>Leave the default storage location as is (or change it if you prefer a different drive).</li>
+        <li>Under <strong>ISO Image</strong>, click the dropdown and choose <strong>Other&hellip;</strong>. Browse to your Downloads folder and select the Ubuntu Server ISO file (<code>ubuntu-24.04.X-live-server-amd64.iso</code>). Click <strong>Open</strong>.</li>
+        <li>VirtualBox will auto-detect the type as <strong>Linux / Ubuntu (64-bit)</strong>. Check the box labeled <strong>Skip Unattended Installation</strong> so you can walk through every screen yourself.</li>
         <li>Click <strong>Next</strong>. On the Hardware screen:
           <ul>
-            <li><strong>Base Memory:</strong> at least 2048&nbsp;MB (2&nbsp;GB); 4096&nbsp;MB (4&nbsp;GB) is recommended if your PC has the RAM.</li>
-            <li><strong>Processors:</strong> 1 or 2 CPUs.</li>
+            <li><strong>Base Memory:</strong> 4096&nbsp;MB (4&nbsp;GB) is recommended for a smooth install. Use at least 2048&nbsp;MB if RAM is limited.</li>
+            <li><strong>Processors:</strong> 2 CPUs recommended; 4 if you want a faster install experience.</li>
           </ul>
         </li>
-        <li>Click <strong>Next</strong>. On the Hard Disk screen, set the virtual disk size to at least <strong>25&nbsp;GB</strong>. 50&nbsp;GB is a comfortable size if you have the space.</li>
-        <li>Click <strong>Next</strong>, review the summary, then click <strong>Finish</strong>. VirtualBox creates the VM and boots it automatically into the Ubuntu installer.</li>
+        <li>Click <strong>Next</strong>. On the Hard Disk screen, set the virtual disk size to <strong>25&nbsp;GB</strong> (the default). This is sufficient for this course.</li>
+        <li>Click <strong>Next</strong>, review the summary, then click <strong>Finish</strong>.</li>
+        <li><strong>Fix the boot order before starting:</strong> With the new VM selected, click <strong>Settings &rarr; System</strong>. Under the <strong>Boot Order</strong> list, uncheck <strong>Floppy</strong> and move <strong>Hard Disk</strong> to the top of the list (above Optical). Click <strong>OK</strong>. This ensures the VM boots from the hard disk after Ubuntu is installed, and falls back to the ISO during the first install.</li>
+        <li>Click <strong>Start</strong> to power on the VM. The Ubuntu installer will boot from the ISO.</li>
       </ol>
 
       <h4>Part B — Walk Through the Ubuntu Installer</h4>
       <p style="font-size:0.92rem;">Use the <strong>arrow keys</strong> and <strong>Enter</strong> to navigate the installer. Steps marked <strong>&#128247; Screenshot</strong> are required for the Lab 1 submission.</p>
       <ol class="steps">
+        <li>At the boot menu, select <strong>Try or Install Ubuntu Server</strong> and press Enter.</li>
         <li><strong>Language:</strong> Select <strong>English</strong> and press Enter.</li>
         <li><strong>Installer update:</strong> Choose <strong>Continue without updating</strong>.</li>
         <li><strong>Keyboard layout:</strong> Leave as <strong>English (US)</strong> and select Done.</li>
-        <li><strong>Installation type:</strong> Leave the default <strong>Ubuntu Server</strong> selected and choose Done.</li>
-        <li><strong>Network:</strong> The installer configures your network via DHCP automatically. Select Done.</li>
+        <li><strong>Installation type:</strong> Leave the default <strong>Ubuntu Server</strong> selected and choose Done. Do not select minimized.</li>
+        <li><strong>Network:</strong> VirtualBox assigns a <code>10.0.2.x</code> address automatically via NAT. Select Done when the address appears.</li>
         <li><strong>Proxy:</strong> Leave blank and select Done.</li>
-        <li><strong>Mirror:</strong> Wait a moment for the installer to test the package mirror. When it shows OK, select Done.</li>
-        <li><strong>Storage &#128247; Screenshot:</strong> Choose <strong>Use an entire disk</strong>. Select Done, then review the filesystem summary and select Done again. Confirm with <strong>Continue</strong>.</li>
-        <li><strong>Profile &#128247; Screenshot:</strong> Fill in the following fields, then select Done:
+        <li><strong>Mirror:</strong> Wait for the installer to test the package mirror. When you see <em>mirror location passed test</em>, select Done.</li>
+        <li><strong>Storage &#128247; Screenshot:</strong> Choose <strong>Use an entire disk</strong>. Use the down arrow to scroll to Done and press Enter. Review the filesystem summary (look for your 25&nbsp;GB VirtualBox hard disk split into three partitions), then select Done. Confirm with <strong>Continue</strong>.</li>
+        <li><strong>Profile &#128247; Screenshot:</strong> Fill in the following fields using Tab to move between them, then select Done:
           <ul>
             <li><strong>Your name:</strong> Your real name or a course alias.</li>
-            <li><strong>Server's hostname:</strong> A short lowercase name with no spaces, e.g., <code>ubuntu-server</code>.</li>
+            <li><strong>Server's hostname:</strong> A short lowercase name, e.g., <code>ubuntu-csc106</code>. No spaces or capital letters.</li>
             <li><strong>Username:</strong> A lowercase username you will remember — this is the account you will use all semester.</li>
-            <li><strong>Password:</strong> Choose a strong password and write it down somewhere safe. You will type it frequently.</li>
+            <li><strong>Password:</strong> Choose a password and type it twice. Write it down somewhere safe — you will type it frequently.</li>
           </ul>
         </li>
-        <li><strong>Ubuntu Pro:</strong> Select <strong>Skip for now</strong>.</li>
-        <li><strong>OpenSSH:</strong> Move the cursor to <strong>Install OpenSSH server</strong> and press <strong>Space</strong> to enable it. Select Done. OpenSSH allows you to connect to your VM from a terminal window later in the course.</li>
-        <li><strong>Snaps:</strong> Do not select any optional packages. Select Done.</li>
-        <li>Wait for the installation to finish — approximately 5–10 minutes. When you see <strong>Reboot Now</strong>, select it and press Enter.</li>
+        <li><strong>Ubuntu Pro:</strong> Select <strong>Skip for now</strong> and press Enter to continue.</li>
+        <li><strong>OpenSSH:</strong> You may skip installing OpenSSH server for now — if you need it later in the course, it can always be installed with <code>sudo apt install openssh-server</code>. Select Done.</li>
+        <li><strong>Snaps:</strong> Do not select any optional featured server snaps. Use the down arrow to reach Done and press Enter.</li>
+        <li>Wait for the installation to finish — approximately 5–15 minutes depending on your hardware. A spinning cursor at the bottom of the screen means it is still working. When you see <strong>Reboot Now</strong> at the bottom, select it and press Enter.</li>
       </ol>
 
       <h4>Part C — First Login and Verification</h4>
       <ol class="steps">
-        <li>If the system appears to hang after rebooting, go to the VirtualBox menu bar: <strong>Devices &rarr; Optical Drives &rarr; Remove disk from virtual drive</strong>, then press Enter in the VM window to continue booting.</li>
-        <li><strong>&#128247; Screenshot:</strong> At the login prompt, type your username and press Enter, then type your password and press Enter. The password will not appear on screen as you type — this is normal for Linux.</li>
-        <li>Once logged in, run the following command to confirm the system is working:<br><code>uname -a</code></li>
-        <li><strong>&#128247; Screenshot:</strong> The output should show the Linux kernel version and end with <code>x86_64 GNU/Linux</code>.</li>
-        <li>Confirm network connectivity (you will need this for <code>apt</code> later):<br><code>ip a</code><br>You should see an IP address on one of the listed network interfaces.</li>
-        <li>To shut down the VM cleanly when you are done:<br><code>sudo shutdown now</code><br>Enter your password when prompted.</li>
+        <li>After rebooting, if you see an error about failing to unmount the installation media, that is normal. Check <strong>Settings &rarr; Storage</strong> in VirtualBox — the optical drive should now show as empty. If it does not, click the optical drive entry and remove the ISO. Then press Enter (or use <strong>Input &rarr; Keyboard &rarr; Send Ctrl+Alt+Del</strong>) to continue the boot.</li>
+        <li>Wait for the login prompt. It will show your server's hostname followed by <code>login:</code>.</li>
+        <li><strong>&#128247; Screenshot:</strong> Type your username and press Enter, then type your password and press Enter. The password will not appear on screen as you type — this is normal for Linux.</li>
+        <li>Once logged in you will see a brief system summary. This text-only interface is the normal Ubuntu Server environment — there is no graphical desktop. Servers are designed to be managed via the command line.</li>
+        <li>Confirm network connectivity by pinging a public address:<br><code>ping 8.8.8.8</code><br>Press <strong>Ctrl+C</strong> to stop. You should see replies, confirming internet access through VirtualBox's NAT network.</li>
+        <li>Update the package list to make sure everything is current:<br><code>sudo apt update</code><br>Enter your password when prompted. You may see a list of packages that can be upgraded — that is fine for now.</li>
+        <li>To shut down the VM cleanly from inside the server:<br><code>sudo poweroff</code><br>Enter your password when prompted. The VM will shut down.</li>
       </ol>
 
       <div class="tip-box">
-        <strong>Tip — VM reboots back into the installer?</strong> This means the ISO image was not ejected automatically. In VirtualBox, open <strong>Settings &rarr; Storage</strong> for the VM, click the optical drive entry showing the ISO, and remove it. Then start the VM again and it will boot normally into the installed system.
+        <strong>Tip — VM performance during install is slow?</strong> If the installation takes a very long time, try increasing RAM and CPU cores: power off the VM, go to <strong>Settings &rarr; System</strong>, and raise Memory to 8192&nbsp;MB and Processors to 4. Then restart the install. As shown in the video, doubling resources can dramatically reduce install time.
       </div>
 
     </div><!-- /ubuntu-content -->
@@ -500,238 +486,1121 @@ code {
   });
 
   /* ── VTT content ──────────────────────────────────────────────────── */
-  var VTT = [
-    /* 0: Install VirtualBox on Windows */
-    `WEBVTT
+  /* REPLACE YOUTUBE_VIDEO_ID_PLACEHOLDER in the iframe src above with the real YouTube video ID once the video is published. */
+  var VTT_CONTENT = `WEBVTT
 
-00:00.640 --> 00:07.320
-Aloha so in this video I'm going to talk about how to install VirtualBox on
+00:00.160 --> 00:00.800
+Aloha.
 
-00:07.320 --> 00:16.200
-Windows so you're gonna go to this URL https www.virtualbox.org
+00:02.020 --> 00:12.560
+Hey, it came to my attention that my instructions for Lab 1 are less than stellar when it comes to the Ubuntu installation tutorial.
 
-00:16.200 --> 00:23.100
-slash wiki slash downloads and there'll be a link on the instruction page for
+00:13.280 --> 00:22.000
+So what I thought, since I got called out on it, and rightfully so, I thought what I would do was create a one specific to this course.
 
-00:23.100 --> 00:27.360
-this you're gonna select the Windows host to
+00:23.000 --> 00:27.160
+Okay, so I'm going to do everything. I'm going to, I'm on my Windows machine for this one.
 
-00:27.360 --> 00:37.440
-download it and we're gonna download it to downloads and save it okay and then
+00:27.160 --> 00:30.240
+I'm going to install the hypervisor. I'm going to download and install the hypervisor.
 
-00:37.440 --> 00:45.660
-also over here we're gonna download the VirtualBox extension pack so we're
+00:30.640 --> 00:36.460
+And then I'll download and install the Ubuntu server the proper way with all the steps.
 
-00:45.660 --> 00:49.260
-gonna have to accept the license and download it again I'll download it to
+00:37.480 --> 00:43.980
+Okay, so the first thing I'm going to do is I'm going to look for Oracle VirtualBox.
 
-00:49.260 --> 00:57.340
-the same place all right and that's all we need to do to get
+00:45.640 --> 00:48.580
+I'm going to search for Oracle VirtualBox download.
 
-00:57.340 --> 01:04.120
-ready to go so let's open that location and we're gonna install VirtualBox by
+00:49.300 --> 00:52.100
+And the one I want is at virtualbox.org.
 
-01:04.120 --> 01:09.960
-double-clicking on it and we'll run the installer I'm just gonna accept all the
+00:52.720 --> 00:54.280
+I'm on a Windows machine.
 
-01:09.960 --> 01:16.840
-defaults okay so I'm not gonna change the position I'm gonna leave it in the
+00:54.920 --> 00:57.100
+And you could use this for your Mac.
 
-01:16.840 --> 01:20.500
-same place proceed with installation I'm missing
+00:57.160 --> 01:06.400
+As well, I prefer UTM on my Mac, on my Silicon Mac, but you could use VirtualBox as well.
 
-01:20.500 --> 01:25.420
-some dependencies so it's gonna install them
+01:07.360 --> 01:12.100
+All right, so I'm going to click the Windows host one to start the download.
 
-01:27.340 --> 01:31.960
-shortcut on the quick launch register all I'll keep them all and I want to
+01:12.380 --> 01:15.920
+And then I'm going to get the extension pack 726.
 
-01:31.960 --> 01:40.720
-install it okay and it doesn't take too long to install so we will not
+01:16.920 --> 01:20.140
+So I'm going to accept and download that one as well.
 
-01:40.720 --> 01:45.280
-start VirtualBox we're just gonna finish and then we're gonna double click on the
+01:20.140 --> 01:27.040
+And then hopefully, you can see I have both of these.
 
-01:45.280 --> 01:51.700
-extension pack to install it and it will open up VirtualBox automatically and
+01:27.160 --> 01:28.140
+Let me open that folder.
 
-01:51.700 --> 01:57.120
-I'll reinstall since I installed it before you have to scroll down and then
+01:31.620 --> 01:32.100
+Oops.
 
-01:57.340 --> 02:02.140
-read all this VirtualBox license if you want to be safe scroll to the
+01:33.440 --> 01:35.540
+The folder is in the wrong window.
 
-02:02.140 --> 02:07.780
-bottom click I agree and let it finish installing it'll take a little bit of
+01:38.960 --> 01:39.860
+Let's go here.
 
-02:07.780 --> 02:14.160
-time to install and it may look like this when you're done
+01:44.560 --> 01:45.940
+Let's see here.
 
-02:14.160 --> 02:19.220
-okay and all you need to do is click on the tools go to extensions you'll see
+01:53.360 --> 01:55.240
+I don't want that.
 
-02:19.220 --> 02:24.620
-that the extensions are installed okay and the extensions do
+01:57.160 --> 02:01.400
+Okay, sorry about that.
 
-02:24.620 --> 02:27.160
-things like make it easier for your keyboard your
+02:01.760 --> 02:02.480
+So here it is.
 
-02:27.160 --> 02:32.680
-mouse and other devices to connect to VirtualBox okay so we'll go back to
+02:03.380 --> 02:06.560
+I have VirtualBox and VirtualBox extension.
 
-02:32.680 --> 02:37.660
-welcome because this is our normal place where we start and that's the whole
+02:06.560 --> 02:13.980
+So I'm going to install VirtualBox by double clicking and following the installer.
 
-02:37.660 --> 02:43.780
-thing to downloading and installing VirtualBox on Windows catch you on the
+02:16.540 --> 02:17.560
+Basic installer.
 
-02:43.780 --> 02:46.240
-next video`,
+02:17.740 --> 02:21.820
+I'm going to install it in the default location.
 
-    /* 1: Install Ubuntu Server on VirtualBox (Windows) */
-    `WEBVTT
+02:22.260 --> 02:23.500
+But let me check my disk space.
 
-00:00.000 --> 00:08.640
-Aloha so in this video I'm going to download and install Ubuntu server on
+02:24.360 --> 02:27.120
+So I have a lot of available space, 700 gigs.
 
-00:08.640 --> 00:15.080
-Windows on VirtualBox for Windows okay so before we start what we need to do is
+02:27.500 --> 02:32.920
+So I will leave it in the place.
 
-00:15.080 --> 00:24.800
-go to the Ubuntu server download so I did a search for Ubuntu
+02:32.980 --> 02:34.980
+It's going to say maybe you'll get disconnected.
 
-00:24.800 --> 00:35.540
-server download okay and I take the Ubuntu one okay and since I'm doing on
+02:35.180 --> 02:37.360
+I've never actually been disconnected, but maybe you will.
 
-00:35.540 --> 00:41.820
-Windows all I want to do is click download 24.04 version at the
+02:40.420 --> 02:42.660
+And I'm going to have all those things, yes.
 
-00:41.820 --> 00:48.120
-time of this is the latest version you could download and you're going to save
+02:43.260 --> 02:43.500
+Okay.
 
-00:48.120 --> 00:54.780
-it once it starts now I've already downloaded it because it is about three gigabytes
+02:44.520 --> 02:45.740
+And then I'll install it.
 
-00:54.780 --> 01:01.400
-all right so I saved it in downloads
+02:46.080 --> 02:54.180
+And of course, all this goes depending upon how fast your computer is, how much RAM you have, how fast your network is, all that kind of stuff.
 
-01:04.220 --> 01:11.640
-I saved it in downloads it's right here ubuntu live server 24.04.1 right so
+02:54.940 --> 02:55.200
+Okay.
 
-01:11.640 --> 01:16.200
-that's what we want and then we will go to VirtualBox
+02:55.560 --> 02:56.560
+So it's installed.
 
-01:16.200 --> 01:44.300
-once VirtualBox is open I'm going to create a new virtual machine
+02:56.640 --> 02:57.140
+And I'm going to start.
 
-01:44.300 --> 01:54.240
-I'm gonna create a new virtual machine okay and give it a name
+02:57.140 --> 03:02.400
+Now, just before this, I did remove it.
 
-01:54.360 --> 02:08.420
-I'm gonna store it in the default location I'm gonna select the ISO
+03:03.120 --> 03:07.180
+And so I have some VMs that are there from before.
 
-02:08.420 --> 02:19.000
-here's the Ubuntu server and I'll say open okay so it already fills in the type and subtype for me
+03:07.540 --> 03:11.840
+But let me go to extensions because the first thing you really want to do, you may not have any.
 
-02:19.000 --> 02:34.940
-then I could skip unattended install and walk through all the install but I'm gonna use the unattended install
+03:11.960 --> 03:14.480
+I have a bunch of virtual machines here.
 
-02:34.940 --> 02:48.120
-the unattended install meaning it already has some predetermined settings it creates a default user
+03:15.260 --> 03:21.280
+You want to go to extensions and you want to see that the VirtualBox extension pack is installed.
 
-02:49.000 --> 02:56.980
-it creates a user the password is changeme okay so that's gonna be the default user and password
+03:21.440 --> 03:22.080
+It's checked.
 
-02:56.980 --> 03:08.500
-now we want to do hardware it defaults to two gigs of RAM and one CPU
+03:22.080 --> 03:25.080
+And you look at the version 726.
 
-03:08.500 --> 03:25.240
-I'm gonna go to 4096 MB and instead of one CPU I'm gonna give it two
+03:27.140 --> 03:31.840
+R172322 or something like that.
 
-03:25.240 --> 03:45.720
-and then the hard disk I'm gonna make it 50 GB but you need at least 25 gigs free space
+03:32.400 --> 03:36.780
+And I want to grab my downloads again and look.
 
-03:47.760 --> 03:52.920
-right and then once I'm okay with that I'm not gonna change anything else
+03:37.340 --> 03:44.060
+And I have 7.268-172322.
 
-03:52.920 --> 04:03.480
-I'm gonna click finish and now it's gonna try to open up
+03:44.760 --> 03:46.480
+I think those are the same ones.
 
-04:38.820 --> 04:46.020
-now it's gonna power up because now I gave it a unique name
+03:46.920 --> 03:51.020
+So I'm not going to quibble about whether they are or aren't.
 
-04:47.380 --> 04:56.720
-default is to do the install and so we should just wait for it
+03:51.020 --> 03:53.660
+But if you're unsure, you could.
 
-04:56.720 --> 05:16.520
-to install it takes a little bit but it should work out and I'll come back once it's ready
+03:53.660 --> 03:59.860
+Uninstall the extension pack.
 
-05:17.380 --> 05:33.900
-let's take a few minutes to finish all that installation and now it's rebooting
+04:00.480 --> 04:04.720
+And then go install and then grab the one you just downloaded.
 
-05:33.900 --> 05:46.260
-it should just come up with a command prompt for us to login okay
+04:06.600 --> 04:07.300
+Okay.
 
-05:47.380 --> 06:17.200
-[installation in progress]
+04:07.560 --> 04:11.100
+And open that and install that.
 
-07:35.560 --> 07:38.260
-OK, so I'm logged in.
+04:12.640 --> 04:13.500
+All right.
 
-07:43.420 --> 07:47.080
-So you can always close the VM window. The command for shutdown is
+04:13.740 --> 04:17.240
+This is how you would install the extension pack if it wasn't automatically installed.
 
-07:47.200 --> 07:52.060
-sudo shutdown now.
+04:17.900 --> 04:18.720
+All right.
 
-07:54.680 --> 07:56.360
-Enter your password.
+04:18.960 --> 04:20.780
+So that's what you do.
 
-08:05.440 --> 08:07.060
-OK, and it'll shut down.
+04:21.380 --> 04:23.640
+Now, I want to create a new extension pack.
 
-08:08.560 --> 08:12.600
-One of the things to check — in settings
+04:23.640 --> 04:26.440
+I want to create a new virtual machine.
 
-08:13.500 --> 08:17.160
-in storage you can see the optical drive.
+04:26.440 --> 04:30.580
+But before I do that, I need to make sure I have Ubuntu server.
 
-08:17.200 --> 08:20.320
-If it says empty that's where the
+04:31.640 --> 04:34.260
+So now I'm going to go and download Ubuntu server.
 
-08:24.880 --> 08:27.880
-ISO image was connected.
+04:36.460 --> 04:36.820
+Let's see.
 
-08:31.400 --> 08:35.960
-The first time through it didn't eject itself so it made a little error and then it ejected itself.
+04:36.820 --> 04:38.480
+You got, you saw that there.
 
-08:37.440 --> 08:41.840
-If you have problems check that to make sure after you've installed it that the ISO image is gone.
+04:41.380 --> 04:41.660
+Okay.
 
-08:43.840 --> 08:52.120
-All right that's all there really is to installing Ubuntu server on VirtualBox.
+04:41.720 --> 04:42.940
+Let's go to Ubuntu.
 
-08:52.120 --> 09:00.040
-One of the things you can do in VirtualBox is create groups to organize your VMs.
+04:44.320 --> 04:48.820
+We'll go straight to download, not to the desktop download because I don't want desktop.
 
-09:00.040 --> 09:12.200
-You can right click on a VM and move it to a group which is a nice way to manage things
+04:49.520 --> 04:50.780
+I want server.
 
-09:12.200 --> 09:50.400
-if you have a lot of VMs — you could group by class and things like that. It's kind of nice.
+04:51.200 --> 04:51.520
+Okay.
 
-09:51.400 --> 09:55.200
-Thanks for watching.`
-  ];
+04:51.580 --> 04:53.000
+So get Ubuntu server.
 
-  /* ── YouTube multi-player setup ───────────────────────────────────── */
-  var PLAYER_IDS      = ['yt-1',  'yt-2'];
-  var CONTAINER_IDS   = ['vc-1',  'vc-2'];
-  var TRANSCRIPT_IDS  = ['tc-1',  'tc-2'];
+04:53.640 --> 04:56.880
+All right, we're going to do a manual installation.
 
-  var players    = [null, null];
-  var timers     = [null, null];
-  var transcripts = [[], []];
+04:57.780 --> 05:00.300
+I'm going to just on my windows machine.
+
+05:01.080 --> 05:05.160
+I will download this 24.04.4 LTS.
+
+05:05.380 --> 05:06.540
+It's about three gigabytes.
+
+05:06.960 --> 05:07.800
+That's when I download.
+
+05:09.640 --> 05:09.840
+Okay.
+
+05:09.840 --> 05:11.020
+There's a cheat sheet.
+
+05:11.220 --> 05:14.340
+You don't have to do this.
+
+05:14.340 --> 05:16.680
+If you don't want to verify, you can verify.
+
+05:17.640 --> 05:23.460
+Um, it's going to take a little bit because it's three gigs and.
+
+05:23.640 --> 05:25.940
+The Ubuntu servers tend to be a little slow.
+
+05:27.240 --> 05:30.900
+So I will be back when this completes.
+
+05:41.880 --> 05:42.420
+Okay.
+
+05:42.420 --> 05:45.000
+So I took a, I don't know, four or five minutes or so.
+
+05:45.660 --> 05:52.360
+And so I'm back and so I downloaded Ubuntu server.
+
+05:53.880 --> 05:54.180
+Okay.
+
+05:54.180 --> 05:55.500
+You can see it right here.
+
+05:55.860 --> 05:59.620
+Oh, let me right here.
+
+05:59.640 --> 06:00.900
+You can see it right here.
+
+06:00.960 --> 06:04.440
+It's 3.325 gigabytes.
+
+06:06.120 --> 06:09.300
+Now what you should always do, you should verify your downloads to make sure,
+
+06:09.300 --> 06:12.940
+especially when they're large, to make sure you actually got everything that it
+
+06:12.940 --> 06:17.100
+didn't lose a bit somewhere or something funny happened.
+
+06:17.600 --> 06:22.920
+And so how you verify your downloads on windows, you can click, verify your download.
+
+06:22.920 --> 06:22.980
+Okay.
+
+06:23.520 --> 06:27.660
+And there's a command here that doesn't work on windows.
+
+06:27.720 --> 06:31.680
+It works on Linux, but the key here, see this echo right here.
+
+06:31.680 --> 06:38.880
+This right here, this number right here, what we're going to do is we're going to
+
+06:38.880 --> 06:43.980
+copy that and I'm going to open a text editor.
+
+06:44.780 --> 06:47.340
+Let me go a file, new file.
+
+06:48.180 --> 06:49.860
+Let me paste that in there.
+
+06:49.860 --> 06:52.920
+We'll blow it up a little bit.
+
+06:53.040 --> 06:53.400
+Okay.
+
+06:53.460 --> 07:00.780
+So this is the Shaw 256 number for that ISO E907D92EEEC.
+
+07:00.940 --> 07:01.260
+Okay.
+
+07:01.380 --> 07:03.300
+Long number, hard to tell.
+
+07:04.320 --> 07:10.300
+So what we're going to do, I have a hash calculator that I downloaded software.
+
+07:10.860 --> 07:11.560
+You can look for it.
+
+07:11.560 --> 07:14.460
+If you want, I use this one called hash calc.
+
+07:16.140 --> 07:16.440
+Okay.
+
+07:16.660 --> 07:19.440
+You can search for it on the internet and what you do.
+
+07:19.860 --> 07:25.680
+Is you select, it's a little, if I'm in, you select what it is you want.
+
+07:25.680 --> 07:30.540
+I want to go file and I'm going to click here and I'm going to go downloads.
+
+07:30.540 --> 07:35.640
+I'm going to grab my Ubuntu server and I'm going to open that and then I want
+
+07:35.640 --> 07:40.020
+Shaw 256 checked and then I'm going to say calculate, it's going to take a while.
+
+07:41.640 --> 07:43.680
+But it'll calculate a number.
+
+07:45.420 --> 07:45.780
+Okay.
+
+07:45.780 --> 07:49.140
+And when I get that number, I want to compare it to this E907D92EEEC.
+
+07:49.140 --> 07:49.440
+Okay.
+
+07:49.440 --> 07:51.120
+And I rarely try to read them all.
+
+07:51.120 --> 07:59.460
+I look at the first few E907D92EE and then I go to the end, right, ends in 38433, 38433.
+
+07:59.460 --> 08:06.120
+So it's probably the same one, okay, which when they match, it means you have a perfect
+
+08:06.120 --> 08:08.520
+bit for bit representation of what you're supposed to have.
+
+08:09.000 --> 08:15.120
+So you got the entire file, you know, what's good, you know, what's bad, you know, what's
+
+08:15.120 --> 08:20.220
+not good. You can use it.
+
+08:22.320 --> 08:22.740
+All right.
+
+08:22.860 --> 08:29.340
+So I downloaded Ubuntu, got that, it's right here.
+
+08:29.460 --> 08:32.640
+So now I'm going to go over here and create a new virtual machine.
+
+08:33.180 --> 08:34.380
+I'll give it a name.
+
+08:40.740 --> 08:46.440
+I'm going to call mine CSC102, I don't know, 102, this is 106, 106.
+
+08:47.400 --> 08:47.700
+Okay.
+
+08:47.700 --> 08:51.800
+I'll store it in the default location.
+
+08:52.020 --> 08:53.000
+You can move it if you want.
+
+08:53.560 --> 08:55.440
+ISO image, I have to select it.
+
+08:56.040 --> 08:57.260
+So I'm going to grab this.
+
+08:57.480 --> 09:01.460
+It's not one of the ones that I've recently used.
+
+09:02.880 --> 09:11.900
+So I want to go to my downloads folder and grab the one I just downloaded, 24.04.4.
+
+09:12.920 --> 09:13.760
+They open.
+
+09:14.880 --> 09:15.800
+So I have that.
+
+09:15.800 --> 09:17.340
+I'm going to unselect.
+
+09:17.700 --> 09:18.720
+Unattended.
+
+09:19.660 --> 09:21.060
+It picks the default.
+
+09:21.060 --> 09:22.200
+It tries to pick what it is.
+
+09:22.200 --> 09:24.360
+Linux, Ubuntu, Ubuntu 64.
+
+09:24.520 --> 09:25.080
+Excellent.
+
+09:25.500 --> 09:28.320
+I skipped the setup unattended because I'm not using that.
+
+09:29.040 --> 09:32.100
+Special, specified virtual hardware.
+
+09:32.760 --> 09:36.420
+Here's where you got to look at how much memory you have on your system.
+
+09:36.840 --> 09:40.320
+How many things you're going to try to run at once or how much you want.
+
+09:41.040 --> 09:42.600
+I want this to happen fast.
+
+09:42.600 --> 09:43.740
+So I'm going to grab eight gigs.
+
+09:44.340 --> 09:47.040
+Typically you're going to use four, which is 4096.
+
+09:47.040 --> 09:47.260
+Okay.
+
+09:47.260 --> 09:54.280
+Most people, I have a lot of RAM, so I can easily use eight gigs.
+
+09:55.360 --> 09:55.660
+Okay.
+
+09:55.660 --> 09:56.620
+The same with CPUs.
+
+09:56.620 --> 09:59.560
+Typically you're going to use one or two, typically two.
+
+10:00.340 --> 10:05.200
+Um, I'm going to use four just so my, everything happens faster.
+
+10:06.440 --> 10:06.760
+All right.
+
+10:06.780 --> 10:08.800
+And then you specify your hard disk size.
+
+10:09.160 --> 10:13.500
+25 is the default, which is fine for this class.
+
+10:13.500 --> 10:15.320
+25 is probably perfectly fine.
+
+10:15.940 --> 10:17.220
+I'll leave it at 25 gigs.
+
+10:17.920 --> 10:18.940
+And then click finish.
+
+10:20.680 --> 10:27.940
+And now it's ready for us to start it and do the install.
+
+10:28.760 --> 10:29.140
+Okay.
+
+10:29.200 --> 10:31.600
+Actually, there's one thing we should fix first.
+
+10:32.660 --> 10:33.880
+So let's go to settings.
+
+10:34.500 --> 10:36.320
+So I have this one selected.
+
+10:36.520 --> 10:38.120
+This is the one we're working on the new one.
+
+10:38.620 --> 10:43.060
+Let's go to settings and we're going to scroll down just a little bit where a
+
+10:43.060 --> 10:46.420
+system says floppy optical hard disk.
+
+10:46.660 --> 10:47.140
+What we're going to do.
+
+10:47.140 --> 10:49.600
+Do is first, we're going to de-select floppy.
+
+10:49.720 --> 10:53.860
+We don't need a floppy and we're going to select hard disk and move it to the top.
+
+10:55.900 --> 10:56.260
+Okay.
+
+10:56.380 --> 11:01.180
+What that means with these checkbox means is that it's first going to try to boot off
+
+11:01.180 --> 11:04.960
+this hard disk, which right now we don't have anything installed on it.
+
+11:04.960 --> 11:06.880
+We have an empty 25 gig hard disk.
+
+11:07.840 --> 11:10.360
+If not, it doesn't find a boot loader there.
+
+11:10.380 --> 11:14.980
+You know, a piece of software that says, Hey, run off of this hard disk.
+
+11:15.020 --> 11:16.760
+It's going to try to run off the CD.
+
+11:18.140 --> 11:18.520
+Okay.
+
+11:18.700 --> 11:22.580
+So then it should call up that CD that we attached that ISO image that we
+
+11:22.580 --> 11:25.600
+attach, and that will let us run installer.
+
+11:26.200 --> 11:29.900
+And after we're done installing, when we come back and run again, it should just
+
+11:29.900 --> 11:33.460
+boot off the hard disk, no matter whether we have that installer disk in there or
+
+11:33.460 --> 11:34.480
+not, it shouldn't see it.
+
+11:35.640 --> 11:35.960
+All right.
+
+11:35.980 --> 11:42.900
+So then we'll say, okay, and now we'll start it, go up here, go start when it's
+
+11:42.900 --> 11:46.060
+selected, go start and it'll.
+
+11:47.140 --> 11:57.160
+Start running on the side, and I know this is difficult to see, but the top one is try or install Ubuntu server.
+
+11:57.160 --> 11:58.180
+That's the one we want.
+
+11:58.720 --> 12:04.760
+If you want to look at the rest, you can use your up and down keys to move up and down, but we'll take the try
+
+12:04.760 --> 12:06.760
+and just hit enter to start it.
+
+12:08.900 --> 12:09.220
+Okay.
+
+12:09.320 --> 12:11.020
+And then we'll start installing.
+
+12:17.140 --> 12:34.120
+I'm going to see if I can change this display here, virtual, let's try one 75, something.
+
+12:34.120 --> 12:35.440
+Maybe it's a little easier to read.
+
+12:36.340 --> 12:44.440
+You can play with these view, view virtual screen, I got a 200, maybe that's better.
+
+12:45.640 --> 12:45.940
+Okay.
+
+12:46.060 --> 12:46.760
+So we're here now.
+
+12:46.760 --> 12:47.100
+Okay.
+
+12:47.680 --> 12:50.620
+Up, down to enter are the three keys you're going to use English.
+
+12:50.620 --> 12:51.140
+Yes.
+
+12:51.220 --> 12:55.060
+Hit enter keyboard.
+
+12:55.900 --> 12:58.780
+Since I picked English, it's picking an English us keyboard.
+
+12:59.240 --> 12:59.740
+Excellent.
+
+12:59.800 --> 13:01.480
+I'll hit enter to take done.
+
+13:02.640 --> 13:05.560
+Choose what French station we're going to install Ubuntu server.
+
+13:05.800 --> 13:07.240
+We're not going to install minimized.
+
+13:08.420 --> 13:08.840
+Okay.
+
+13:08.920 --> 13:10.760
+We're not going to search for third-party drivers.
+
+13:10.880 --> 13:12.040
+We're just going to install this one.
+
+13:12.620 --> 13:14.020
+Hit enter for done.
+
+13:15.020 --> 13:15.320
+Okay.
+
+13:15.320 --> 13:16.460
+Now it's going to.
+
+13:17.140 --> 13:28.380
+I'm trying to automatically connect to the internet through my computer's internet connection.
+
+13:28.720 --> 13:35.680
+And so you'll get, you should get a 10 dot zero dot two dot something number, and this is virtual box.
+
+13:37.020 --> 13:37.240
+Okay.
+
+13:37.240 --> 13:46.680
+Acting as a, a router and all its VMs get these numbers that it gives out numbers and every VM gets a number.
+
+13:46.680 --> 13:47.020
+Okay.
+
+13:47.020 --> 14:07.600
+And then that number, um, is used by virtual box to, um, figure out which VMs want to do what, and then if you need to get to the internet, it attaches, it changes the number, but it touches a little, a note to it basically that says, Hey, this goes to two dot 15, 10 dot zero dot two dot 15.
+
+14:07.600 --> 14:14.700
+And so when that message come back, that notes come, note comes back with it and it says, Oh, I can add a sentence to this VM.
+
+14:14.700 --> 14:14.900
+Okay.
+
+14:14.900 --> 14:15.900
+That's natural.
+
+14:15.900 --> 14:16.140
+Okay.
+
+14:16.140 --> 14:16.640
+That's natural.
+
+14:16.640 --> 14:17.420
+That's natting.
+
+14:17.420 --> 14:21.140
+And it's, we may get into that when we get into networking.
+
+14:22.700 --> 14:23.060
+All right.
+
+14:23.140 --> 14:27.020
+So it's like done because it looks good proxy.
+
+14:27.640 --> 14:30.560
+We don't want to add anything to sit done, leave it empty.
+
+14:31.620 --> 14:32.120
+Okay.
+
+14:32.300 --> 14:37.520
+You get to this archive mirror configuration is going to test.
+
+14:37.660 --> 14:45.980
+And then once it's done testing, if you saw that, but there was a little test, um, let me see if I, nope.
+
+14:46.640 --> 14:50.120
+And just above the square, it says the mirror location pass test.
+
+14:50.120 --> 14:53.360
+When you get that message there, then you should hit enter for done.
+
+14:55.820 --> 14:56.060
+Okay.
+
+14:56.060 --> 14:57.980
+Configure startup guides layout.
+
+14:58.020 --> 14:59.840
+We're going to use the entire disc.
+
+15:01.040 --> 15:01.520
+Okay.
+
+15:01.880 --> 15:05.120
+And you've got to move it up and down, set up disc on the, on an LVM group.
+
+15:05.120 --> 15:05.700
+Yes.
+
+15:05.840 --> 15:06.360
+Encrypted.
+
+15:06.360 --> 15:09.140
+No, um, custom storage layout.
+
+15:09.140 --> 15:13.880
+No, just use your down arrow to get all the way down to done.
+
+15:14.420 --> 15:15.020
+It enter.
+
+15:21.180 --> 15:24.680
+I, I say the best way to look at this summary is you look at the very bottom.
+
+15:25.920 --> 15:29.920
+Of all the things that it says the last line says partition three right above,
+
+15:29.920 --> 15:33.060
+it's partitioned to you right above his partition one and right
+
+15:33.060 --> 15:34.840
+above it is V-Box hard disk.
+
+15:35.620 --> 15:37.400
+So that's the 25 gig hard drive.
+
+15:37.420 --> 15:41.320
+If you look at four rows up from the bottom and it's
+
+15:41.320 --> 15:42.820
+split into three partitions.
+
+15:42.820 --> 15:46.480
+The first partition is a bio scrub spacer.
+
+15:46.480 --> 15:46.620
+Okay.
+
+15:46.640 --> 15:55.220
+one megabyte the next partition is the it's formatted as ext4 okay mounted at slash boot
+
+15:55.220 --> 16:05.200
+it's like your boot device stuff and then the next partition is the volume which is 22.997 or
+
+16:05.200 --> 16:12.120
+23 gigs that will end up being your actual ubuntu server space okay you're going to install it on
+
+16:12.120 --> 16:20.360
+there and use it there okay it's all good hit done okay now it's always been set up thinking
+
+16:20.360 --> 16:26.460
+you're installing on physical hardware and this is just a check to make sure do you really want
+
+16:26.460 --> 16:33.560
+to you said you have a 25 gig hard drive or 25 gig usb drive or 25 gig drive that you want this
+
+16:33.560 --> 16:38.520
+installed installed on do you really want to do it are you sure because when you do it everything
+
+16:38.520 --> 16:41.820
+is going to get wiped out on there it's going to get wiped out okay
+
+16:42.100 --> 16:47.060
+we definitely want to wipe out that 25 gigs because that's where our ubuntu server is going to be
+
+16:47.060 --> 16:55.000
+so you just mouse down to continue and hit enter okay then you put in your name or whatever you
+
+16:55.000 --> 17:02.920
+want to use you can hit tab to go to the next tab now you want to give it your computer a name
+
+17:02.920 --> 17:07.880
+and it's the name on the network that other computers can use to connect to it
+
+17:16.980 --> 17:23.060
+ubuntu csc106 is what i call pick a username and give yourself a password
+
+17:25.860 --> 17:32.100
+type it in twice so that it knows you know your password go down to done and hit enter
+
+17:33.860 --> 17:38.340
+okay skip for now on upgrade to ubuntu pro we don't want to do that we're going to skip for now
+
+17:38.340 --> 17:41.060
+so we'll just leave it alone and hit enter for continue
+
+17:42.100 --> 17:47.700
+we could install open ssh server but we're not going to if we need it we'll do it later
+
+17:47.700 --> 17:50.360
+that's always a good task to do
+
+17:50.360 --> 17:55.540
+okay so we'll just use the down arrow keys to get to done and hit enter
+
+17:56.980 --> 18:03.840
+here these are some other popular server things that we can install and we're not going to install any of them
+
+18:04.960 --> 18:13.220
+Done, you know use down arrow get out to done enter and now it's installing the system
+
+18:13.680 --> 18:15.680
+Okay, and this will take a little bit of time
+
+18:17.220 --> 18:22.720
+Depending again on your computer and everything else and we'll be back when this is done
+
+18:23.280 --> 18:26.300
+But basically it's just gonna go through and you're gonna see a message
+
+18:27.340 --> 18:28.840
+It's gonna
+
+18:28.840 --> 18:30.840
+Sometimes seem like it's stopped forever
+
+18:30.840 --> 18:37.380
+I'm usually it isn't there's a little cursor blinking cursor at the bottom. That's going around in a circle
+
+18:38.200 --> 18:40.200
+Albeit sometimes very slowly
+
+18:40.300 --> 18:42.300
+But that's telling you it's still working
+
+18:45.980 --> 18:51.900
+Okay, so I finished and you know, I'm finished because at the very bottom we have a at the very top
+
+18:51.900 --> 18:55.680
+It says installation complete and at the very bottom we have a new
+
+18:57.880 --> 18:59.880
+Item called reboot now, so we're gonna move
+
+19:03.620 --> 19:10.800
+Pick in there and then we're gonna use the arrow keys to get down to reboot now and hit enter to reboot
+
+19:12.140 --> 19:14.140
+Now you might get an error
+
+19:14.680 --> 19:21.540
+Often I get errors here at this point and if we do like this one failed unmounting, please remove failed
+
+19:22.720 --> 19:24.720
+unmounting
+
+19:25.300 --> 19:27.300
+All right, so what we could do
+
+19:27.800 --> 19:30.540
+What it's trying to do and it's saying where we're failing is
+
+19:31.240 --> 19:35.880
+It's trying to eject that CD ROM. That's the boot ROM
+
+19:36.640 --> 19:39.540
+Okay, so we could go into
+
+19:40.940 --> 19:42.940
+Virtual box
+
+19:43.000 --> 19:47.640
+into settings we go into settings and we're gonna look at storage and
+
+19:49.360 --> 19:51.560
+That thing's been ejected it's not there anymore
+
+19:52.800 --> 19:54.340
+Okay
+
+19:54.340 --> 19:59.080
+So what we could try is up here. We could just try to hit enter to see if it'll boot
+
+20:00.840 --> 20:02.240
+and
+
+20:02.240 --> 20:03.300
+If it will boot
+
+20:25.300 --> 20:28.560
+okay, well you could do is you could also try input
+
+20:28.560 --> 20:30.660
+keyboard and send the control out delete
+
+20:30.660 --> 20:34.240
+we'll be able to log in with our username and our password.
+
+20:34.240 --> 20:35.880
+There we are.
+
+20:35.880 --> 20:37.780
+Okay, this looks different maybe to a lot of you,
+
+20:37.780 --> 20:42.080
+but a server doesn't have a GUI, it's all text-based.
+
+20:42.080 --> 20:45.160
+You have one window basically,
+
+20:47.500 --> 20:48.980
+and you type username,
+
+20:50.540 --> 20:52.120
+type your password, your password,
+
+20:52.120 --> 20:54.960
+the cursor never moves while you're typing your password.
+
+20:55.900 --> 20:58.460
+And if you got it correct, which I didn't,
+
+21:00.660 --> 21:05.660
+it will log in and say,
+
+21:06.780 --> 21:08.500
+hey, this is what you did, everything's here.
+
+21:08.500 --> 21:13.500
+Now, the first thing you should do is a pseudo,
+
+21:13.780 --> 21:15.600
+which is, you know,
+
+21:15.600 --> 21:20.320
+give me temporary administrator rights,
+
+21:20.320 --> 21:25.320
+sudo apt-update to update everything that is installed,
+
+21:27.160 --> 21:30.000
+so everything's up to date, okay?
+
+21:30.660 --> 21:31.900
+And whenever you use sudo,
+
+21:31.900 --> 21:33.700
+you have to include your password.
+
+21:37.040 --> 21:38.780
+Oh, that was wrong.
+
+21:48.040 --> 21:48.860
+Okay.
+
+21:51.960 --> 21:55.160
+So you put your password in and it'll go through
+
+21:55.160 --> 21:59.780
+and do the updates of everything that is installed.
+
+21:59.780 --> 22:02.860
+it will probably say there's some upgradable things.
+
+22:02.960 --> 22:04.060
+10 packages can be upgraded.
+
+22:04.600 --> 22:07.020
+I could upgrade, but I'm not going to right now.
+
+22:07.500 --> 22:09.100
+But if you want it to upgrade,
+
+22:09.940 --> 22:13.480
+the command is sudo abt upgrade.
+
+22:15.700 --> 22:17.800
+Okay, and I'll often just put a dash Y.
+
+22:18.300 --> 22:21.800
+And what the dash Y does is when you do upgrade,
+
+22:22.400 --> 22:23.340
+it'll list everything.
+
+22:23.440 --> 22:24.480
+It'll say how much memory,
+
+22:24.700 --> 22:26.340
+how much hard disk space is it going to take?
+
+22:26.820 --> 22:28.540
+And it'll ask you, do you want to continue?
+
+22:28.540 --> 22:30.620
+And you have to say yes or no.
+
+22:30.960 --> 22:32.780
+If you put a dash Y at the end,
+
+22:33.000 --> 22:34.980
+that's the same as saying yes.
+
+22:35.560 --> 22:37.060
+So it'll just go to that question
+
+22:37.060 --> 22:38.480
+and it'll take the dash Y and say,
+
+22:38.540 --> 22:39.600
+oh, you answered yes already.
+
+22:39.840 --> 22:41.300
+So I'll move on.
+
+22:42.160 --> 22:43.300
+All right, that's it.
+
+22:44.220 --> 22:45.140
+The only other thing,
+
+22:45.420 --> 22:48.560
+the only other two commands I'll show you right now
+
+22:48.560 --> 22:54.220
+is clear to clear the screen and start with a blank one
+
+22:54.220 --> 22:57.620
+and sudo power off.
+
+22:57.960 --> 22:58.520
+If you want to do that,
+
+22:58.540 --> 23:04.380
+you want to shut down from inside your server instance,
+
+23:04.560 --> 23:05.640
+your server VM instance.
+
+23:06.980 --> 23:09.780
+Okay, it did not ask me that time.
+
+23:09.800 --> 23:11.640
+If you notice, it did not ask me for my password.
+
+23:12.280 --> 23:16.580
+That's because typically the timeout is actually 15 minutes.
+
+23:16.680 --> 23:18.420
+I think the default timeout is 15 minutes.
+
+23:18.600 --> 23:21.520
+So when you put in your password for sudo,
+
+23:22.020 --> 23:23.760
+you should be good for 15 minutes
+
+23:23.760 --> 23:26.300
+and then you'll have to put it in again every 15 minutes.
+
+23:27.300 --> 23:28.320
+All right, that's it.
+
+23:28.520 --> 23:33.160
+That's all there is to installing Ubuntu server on Windows
+
+23:33.160 --> 23:34.820
+using Oracle VirtualBox.
+
+23:36.440 --> 23:39.040
+And hopefully this was more clear than the last one.`;
+
+  /* ── YouTube single-player setup ──────────────────────────────────── */
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
 
   function timeToSeconds(s) {
     if (!s) return 0;
@@ -761,10 +1630,10 @@ Thanks for watching.`
     return result;
   }
 
-  function populateTranscript(n) {
-    var container = document.getElementById(TRANSCRIPT_IDS[n]);
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
     container.innerHTML = '';
-    transcripts[n].forEach(function (cue) {
+    transcript.forEach(function (cue) {
       var el = document.createElement('div');
       el.className = 'transcript-line';
       el.dataset.start = cue.start;
@@ -773,8 +1642,7 @@ Thanks for watching.`
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
       function seek() {
-        var p = players[n];
-        if (p && p.seekTo) { p.seekTo(cue.start, true); p.playVideo(); }
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
       }
       el.addEventListener('click', seek);
       el.addEventListener('keydown', function (e) {
@@ -784,11 +1652,10 @@ Thanks for watching.`
     });
   }
 
-  function highlightLine(n) {
-    var p = players[n];
-    if (!p || !p.getCurrentTime) return;
-    var t = p.getCurrentTime();
-    var container = document.getElementById(TRANSCRIPT_IDS[n]);
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
     container.querySelectorAll('.transcript-line').forEach(function (line) {
       var start = parseFloat(line.dataset.start);
       var end   = parseFloat(line.dataset.end);
@@ -797,7 +1664,6 @@ Thanks for watching.`
           var prev = container.querySelector('.active-transcript-line');
           if (prev) prev.classList.remove('active-transcript-line');
           line.classList.add('active-transcript-line');
-          /* Scroll within the container only */
           container.scrollTop = line.offsetTop - container.clientHeight / 3;
         }
       } else {
@@ -806,9 +1672,9 @@ Thanks for watching.`
     });
   }
 
-  function syncHeight(n) {
-    var vc = document.getElementById(CONTAINER_IDS[n]);
-    var tc = document.getElementById(TRANSCRIPT_IDS[n]);
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
     if (!vc || !tc) return;
     if (window.matchMedia('(min-width: 860px)').matches) {
       tc.style.maxHeight = vc.offsetHeight + 'px';
@@ -817,27 +1683,23 @@ Thanks for watching.`
     }
   }
 
-  function onStateChange(event, n) {
-    clearInterval(timers[n]);
-    if (event.data === YT.PlayerState.PLAYING) {
-      timers[n] = setInterval(function () { highlightLine(n); }, 300);
-    }
-  }
-
   window.onYouTubeIframeAPIReady = function () {
-    PLAYER_IDS.forEach(function (id, n) {
-      players[n] = new YT.Player(id, {
-        events: { onStateChange: function (e) { onStateChange(e, n); } }
-      });
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
     });
   };
 
   document.addEventListener('DOMContentLoaded', function () {
-    VTT.forEach(function (vtt, n) {
-      transcripts[n] = parseVtt(vtt);
-      populateTranscript(n);
-      setTimeout(function () { syncHeight(n); }, 150);
-    });
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
 
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
       var tag = document.createElement('script');
@@ -851,7 +1713,7 @@ Thanks for watching.`
   var resizeTimer;
   window.addEventListener('resize', function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () { syncHeight(0); syncHeight(1); }, 250);
+    resizeTimer = setTimeout(syncHeight, 250);
   });
 
 }());
