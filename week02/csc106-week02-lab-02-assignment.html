@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 2: Hardware, Kernel, and Boot Exploration - CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1e3a5f;
+      --blue: #0056b3;
+      --blue-light: #e8f0fb;
+      --green: #2d6a2d;
+      --green-light: #e8f5e8;
+      --orange: #8a5500;
+      --orange-light: #fff8e6;
+      --purple: #5c2d91;
+      --purple-light: #f3eeff;
+      --text: #1a1a1a;
+      --muted: #555;
+      --border: #cdd5e0;
+      --bg: #f5f7fa;
+      --white: #fff;
+      --nav-h: 52px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 200;
+      border-radius: 0 0 4px 0;
+      font-size: .9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      overflow-x: auto;
+      height: var(--nav-h);
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    nav a {
+      color: #c8d8f0;
+      text-decoration: none;
+      font-size: .875rem;
+      padding: 6px 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: background .15s, color .15s;
+    }
+    nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    nav a:focus-visible { outline: none; border-color: #7bbfff; color: #fff; }
+    nav a.active { background: rgba(255,255,255,.2); color: #fff; font-weight: 600; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    [id] { scroll-margin-top: calc(var(--nav-h) + 12px); }
+
+    /* ── Header card ── */
+    .lab-header {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      border-left: 6px solid var(--navy);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .lab-header h1 { font-size: 1.6rem; color: var(--navy); margin-bottom: 8px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--navy);
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .section-card h2 {
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    .ec-card { border-left: 6px solid var(--purple); }
+
+    .phase-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+    .phase-label.ec { color: var(--purple); }
+
+    h3 { font-size: 1rem; color: var(--navy); margin: 20px 0 8px; }
+    p { margin-bottom: 12px; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 12px; }
+    li { margin-bottom: 5px; }
+
+    kbd {
+      background: #eef1f7;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .85em;
+    }
+
+    /* ── Objectives list ── */
+    .obj-list { list-style: none; padding: 0; }
+    .obj-list li {
+      padding: 8px 12px 8px 36px;
+      position: relative;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: var(--blue-light);
+    }
+    .obj-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 11px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    /* ── Numbered step list ── */
+    .step-list { list-style: none; padding: 0; }
+    .step-list > li {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: var(--navy);
+      color: #fff;
+      min-width: 30px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+      user-select: none;
+    }
+    .step-content { flex: 1; min-width: 0; }
+    .step-content h3 { margin-top: 0; }
+
+    /* ── Response fields ── */
+    .response-group { margin-top: 18px; }
+    .response-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .response-group .prompt-text {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: .9rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+      background: #fafcff;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,86,179,.12);
+    }
+    .code-ta {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .85rem;
+      background: #f3f4f6;
+    }
+    .code-ta:focus { background: #f9fafb; }
+
+    /* ── Collapsible hints ── */
+    details {
+      background: var(--green-light);
+      border-radius: 6px;
+      border-left: 4px solid var(--green);
+      margin: 14px 0;
+    }
+    details summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--green);
+      font-size: .9rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary .arrow {
+      display: inline-block;
+      font-size: .7rem;
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+    details[open] summary .arrow { transform: rotate(90deg); }
+    details summary:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body { padding: 0 14px 14px; font-size: .9rem; }
+    .hint-body > *:first-child { margin-top: 0; }
+    .hint-body ul { margin-bottom: 0; }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--orange-light);
+      border-left: 4px solid #e6900a;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .9rem;
+    }
+    .callout strong { color: var(--orange); }
+
+    /* ── Inline code and command blocks ── */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #eef1f7;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: .9em;
+    }
+    .cmd-block {
+      background: #1e2a3a;
+      color: #d4e8ff;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .9rem;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+    .cmd-block .prompt { color: #7bbfff; }
+
+    /* ── Screenshot checklist ── */
+    .ss-list { list-style: none; padding: 0; }
+    .ss-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      font-size: .9rem;
+    }
+    .ss-list input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .ss-list label { cursor: pointer; }
+
+    /* ── Submission grid ── */
+    .submit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    @media (max-width: 580px) { .submit-grid { grid-template-columns: 1fr; } }
+    .submit-item {
+      background: var(--blue-light);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    .submit-item h3 { margin: 0 0 6px; font-size: .95rem; color: var(--navy); }
+    .submit-item p { margin: 0; font-size: .875rem; color: var(--muted); }
+
+    /* ── PDF button ── */
+    .btn-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-pdf:hover { background: #152d4d; }
+    .btn-pdf:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .section-card, .lab-header { padding: 20px 16px; }
+      .lab-header h1 { font-size: 1.35rem; }
+    }
+
+    /* ── Print / Save as PDF ── */
+    @media print {
+      nav, .btn-pdf { display: none !important; }
+      body { background: #fff; font-size: 11pt; }
+      main { padding: 0; }
+      .section-card, .lab-header {
+        box-shadow: none;
+        border: 1px solid #bbb;
+        break-inside: avoid;
+        margin-bottom: 16pt;
+        padding: 16pt;
+      }
+      textarea { display: none !important; }
+      .print-value {
+        display: block !important;
+        min-height: 48pt;
+        border: 1px solid #aaa;
+        border-radius: 3pt;
+        padding: 6pt 8pt;
+        background: #fafafa;
+        font-size: 9.5pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+      .code-ta + .print-value {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 9pt;
+      }
+      details { break-inside: avoid; }
+      details:not([open]) { display: none; }
+      .phase-label { color: #555; }
+      a { color: inherit; text-decoration: none; }
+    }
+    .print-value { display: none; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav aria-label="Lab sections">
+  <div class="nav-inner">
+    <a href="#scenario">Scenario</a>
+    <a href="#objectives">Objectives</a>
+    <a href="#part-a">Part A</a>
+    <a href="#part-b">Part B</a>
+    <a href="#extra-credit">Extra Credit</a>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Header ── -->
+  <header class="lab-header" id="top">
+    <p class="phase-label">CSC 106 - Week 2</p>
+    <h1>Lab 2: Hardware, Kernel, and Boot Exploration</h1>
+    <div class="meta-row">
+      <span><strong>Points:</strong> 35 (+ 5 extra credit)</span>
+      <span><strong>Type:</strong> Hands-on Assignment</span>
+      <span class="badge">CSLO 1</span>
+      <span class="badge">CSLO 3</span>
+    </div>
+  </header>
+
+  <!-- ── Scenario ── -->
+  <section class="section-card" id="scenario" aria-labelledby="scenario-h">
+    <h2 id="scenario-h">Scenario and Context</h2>
+    <p>You have your Ubuntu Server up and running from Lab 1 - the nonprofit has a server, and it is connected to the internet. But before you start adding services and users, your manager asks a reasonable question: <em>"Do you actually know what is inside that server?"</em></p>
+    <p>In a professional environment, understanding the hardware your software runs on is not optional. Mismatched drivers, unsupported hardware, and mysterious boot failures are real problems administrators deal with. More importantly, knowing how a Linux system starts up - from the moment the power button is pressed to the login prompt - is what separates someone who can recover a broken server from someone who has to reinstall it.</p>
+    <p>This week you will look under the hood. You will inspect the server's hardware using command-line tools, explore how the kernel manages devices through loadable modules, read the messages the system logged during boot, and trace the full boot sequence from firmware through GRUB to systemd. Everything you do here runs on the Ubuntu Server VM you built in Lab 1.</p>
+    <p><strong>Note on virtual hardware:</strong> Your server is a virtual machine, so the "hardware" you see is emulated by the hypervisor. This is expected and normal. The commands work exactly the same way as on physical hardware, and the output is still informative - the hypervisor presents standard virtual devices to the guest OS, and those are what you will be inspecting.</p>
+  </section>
+
+  <!-- ── Objectives ── -->
+  <section class="section-card" id="objectives" aria-labelledby="obj-h">
+    <h2 id="obj-h">What You Will Demonstrate</h2>
+    <ul class="obj-list">
+      <li>Use <code>uname</code>, <code>lscpu</code>, <code>lsblk</code>, <code>lspci</code>, and <code>lsmod</code> to inspect hardware and kernel information from the command line.</li>
+      <li>Explain what kernel modules are and identify specific modules loaded on your running system using <code>modinfo</code>.</li>
+      <li>Read and interpret early kernel boot messages from the ring buffer using <code>dmesg</code>.</li>
+      <li>Examine GRUB bootloader configuration files and explain what key settings control.</li>
+      <li>Use <code>journalctl -b</code> and related tools to review the system boot log and answer targeted questions about what happened during startup.</li>
+    </ul>
+  </section>
+
+  <!-- ── Part A ── -->
+  <section class="section-card" id="part-a" aria-labelledby="part-a-h">
+    <p class="phase-label">Part A of 2</p>
+    <h2 id="part-a-h">Hardware and Kernel Exploration</h2>
+
+    <p>Run the six commands below on your Ubuntu Server VM. After pasting each command's output, answer the follow-up question or annotation prompt. Work through the steps in order - each one builds on the previous.</p>
+
+    <div class="callout">
+      <strong>Annotation requirement:</strong> Across all six commands in Part A, you must annotate at least five specific lines of terminal output. Each annotation should identify a specific line and explain in your own words what it means. The prompts below guide you toward this - answering each one thoroughly will meet the requirement.
+    </div>
+
+    <ol class="step-list" aria-label="Part A steps">
+
+      <!-- Step 1 -->
+      <li>
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-content">
+          <h3>Identify the running kernel - <code>uname -a</code></h3>
+          <p>This command prints a single summary line describing the running kernel and system. You ran it in Lab 1 to verify your installation - this time you will read and interpret every field.</p>
+          <div class="cmd-block"><span class="prompt">$</span> uname -a</div>
+          <div class="response-group">
+            <label for="resp-uname-out">uname -a output</label>
+            <p class="prompt-text">Paste the complete output line below.</p>
+            <textarea id="resp-uname-out" name="resp-uname-out" class="code-ta" rows="3" placeholder="Linux hostname 6.8.0-xx-generic #xx-Ubuntu SMP ... x86_64 GNU/Linux"></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-uname-ann">Annotation</label>
+            <p class="prompt-text">Identify and explain three fields from your output: (1) the kernel version number - what do the parts separated by dots and dashes mean? (2) the hostname - does it match what you set in Lab 1? (3) the CPU architecture - do you see <code>x86_64</code> (VirtualBox on Intel/AMD) or <code>aarch64</code> (UTM on Apple Silicon), and what does each mean?</p>
+            <textarea id="resp-uname-ann" name="resp-uname-ann" rows="6" placeholder="1. Kernel version: ...&#10;2. Hostname: ...&#10;3. Architecture: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> How to read uname -a output</summary>
+            <div class="hint-body">
+              <p>Example: <code>Linux myserver 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC ... x86_64 GNU/Linux</code></p>
+              <ul>
+                <li><strong>Linux</strong> - kernel name</li>
+                <li><strong>myserver</strong> - hostname set during installation</li>
+                <li><strong>6.8.0-45-generic</strong> - kernel version: major (6), minor (8), patch (0), ABI number (45), flavor (generic)</li>
+                <li><strong>#45-Ubuntu SMP ...</strong> - build number and compile timestamp</li>
+                <li><strong>x86_64</strong> - CPU instruction set architecture (64-bit Intel/AMD)</li>
+                <li><strong>GNU/Linux</strong> - operating system</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 2 -->
+      <li>
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-content">
+          <h3>Inspect CPU information - <code>lscpu</code></h3>
+          <p>This command displays a structured overview of the CPU as the kernel sees it - architecture, core count, model, and information about the virtualization environment.</p>
+          <div class="cmd-block"><span class="prompt">$</span> lscpu</div>
+          <div class="response-group">
+            <label for="resp-lscpu-out">lscpu output</label>
+            <p class="prompt-text">Paste the full output below.</p>
+            <textarea id="resp-lscpu-out" name="resp-lscpu-out" class="code-ta" rows="16" placeholder="Architecture:            x86_64&#10;  CPU op-mode(s):        32-bit, 64-bit&#10;CPU(s):                  2&#10;Model name:              ...&#10;Hypervisor vendor:       ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-lscpu-ann">Annotation</label>
+            <p class="prompt-text">From your output, identify: (1) the number of CPUs your VM is configured with, (2) the CPU model name shown, and (3) whether a <code>Hypervisor vendor</code> line appears and what value it shows. What does the presence of that line tell you about the environment your OS is running in?</p>
+            <textarea id="resp-lscpu-ann" name="resp-lscpu-ann" rows="6" placeholder="1. CPU(s): ...&#10;2. Model name: ...&#10;3. Hypervisor vendor line: ...&#10;What it tells you: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> What lscpu shows on a virtual machine</summary>
+            <div class="hint-body">
+              <p>On a VM, <code>lscpu</code> typically shows a <code>Hypervisor vendor</code> line (for example, <code>KVM</code> or <code>VirtualBox</code>) and <code>Virtualization type: full</code>. This tells you the kernel knows it is running inside a hypervisor rather than on bare metal. The CPU model may reflect your actual host CPU or a generic virtual CPU, depending on your hypervisor's settings. The number of CPUs shown matches the virtual CPU count you allocated when creating the VM, not your physical CPU count.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 3 -->
+      <li>
+        <div class="step-num" aria-hidden="true">3</div>
+        <div class="step-content">
+          <h3>List block devices - <code>lsblk</code></h3>
+          <p>Block devices are storage devices - hard disks, SSDs, and their partitions. This command shows the block devices the kernel has detected and how they are partitioned and mounted.</p>
+          <div class="cmd-block"><span class="prompt">$</span> lsblk</div>
+          <div class="response-group">
+            <label for="resp-lsblk-out">lsblk output</label>
+            <p class="prompt-text">Paste the full output below.</p>
+            <textarea id="resp-lsblk-out" name="resp-lsblk-out" class="code-ta" rows="10" placeholder="NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS&#10;sda      8:0    0   20G  0 disk&#10;├─sda1   ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-lsblk-ann">Annotation</label>
+            <p class="prompt-text">Identify your main disk device (it will be named something like <code>sda</code>, <code>vda</code>, or <code>nvme0n1</code>). How many partitions does it show? Which partition is mounted as the root filesystem (<code>/</code>)? How does the partition layout you see here compare to the partitioning you chose or accepted during the Lab 1 installation?</p>
+            <textarea id="resp-lsblk-ann" name="resp-lsblk-ann" rows="6" placeholder="Main disk device name: ...&#10;Number of partitions: ...&#10;Root filesystem partition: ...&#10;Comparison to Lab 1 install: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Reading lsblk output</summary>
+            <div class="hint-body">
+              <p>The key columns:</p>
+              <ul>
+                <li><strong>NAME</strong> - device name (the full path is <code>/dev/</code> + this name, e.g., <code>/dev/sda</code>)</li>
+                <li><strong>SIZE</strong> - total size of the device or partition</li>
+                <li><strong>TYPE</strong> - <code>disk</code> for a full drive, <code>part</code> for a partition</li>
+                <li><strong>MOUNTPOINTS</strong> - where the partition is mounted in the filesystem (<code>/</code>, <code>/boot/efi</code>, etc.); blank means not currently mounted</li>
+              </ul>
+              <p>On VirtualBox VMs the disk is typically named <code>sda</code>. Some VMs using VirtIO storage show <code>vda</code>. The partition names append a number: <code>sda1</code>, <code>sda2</code>, etc.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 4 -->
+      <li>
+        <div class="step-num" aria-hidden="true">4</div>
+        <div class="step-content">
+          <h3>List PCI devices - <code>lspci</code></h3>
+          <p>PCI is the standard bus through which the CPU communicates with most hardware: network adapters, storage controllers, display adapters, and other devices. This command lists everything the kernel sees on the PCI bus.</p>
+          <div class="cmd-block"><span class="prompt">$</span> lspci</div>
+          <div class="response-group">
+            <label for="resp-lspci-out">lspci output</label>
+            <p class="prompt-text">Paste the full output below.</p>
+            <textarea id="resp-lspci-out" name="resp-lspci-out" class="code-ta" rows="10" placeholder="00:00.0 Host bridge: Intel Corporation ...&#10;00:01.0 PCI bridge: ...&#10;00:03.0 Ethernet controller: ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-lspci-ann">Annotation</label>
+            <p class="prompt-text">Pick two devices from your <code>lspci</code> output. For each, write the device category (the part before the colon, e.g., "Ethernet controller") and the device name. Do either of them look like emulated or virtual hardware based on the name? How can you tell?</p>
+            <textarea id="resp-lspci-ann" name="resp-lspci-ann" rows="6" placeholder="Device 1 - Category: ...  Name: ...&#10;Device 2 - Category: ...  Name: ...&#10;&#10;Virtual/emulated hardware? How can you tell: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Why VMs show emulated hardware in lspci</summary>
+            <div class="hint-body">
+              <p>Hypervisors emulate standard, well-supported PCI devices so guest operating systems can use existing drivers without modification. Common virtual hardware you may see:</p>
+              <ul>
+                <li><strong>Intel 82540EM</strong> or <strong>Intel PRO/1000 MT</strong> - emulated network adapter (VirtualBox default)</li>
+                <li><strong>VirtIO</strong> network or block devices - paravirtualized; faster than full emulation</li>
+                <li><strong>PIIX4</strong> or <strong>ICH9</strong> - emulated chipset and storage controller</li>
+                <li><strong>VirtualBox Graphics Adapter</strong> or <strong>VMware SVGA</strong> - virtual display adapter</li>
+              </ul>
+              <p>Seeing these entries means the kernel successfully detected and can communicate with the hardware the hypervisor is presenting - even though none of it is physically installed in your computer.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 5 -->
+      <li>
+        <div class="step-num" aria-hidden="true">5</div>
+        <div class="step-content">
+          <h3>Examine loaded kernel modules - <code>lsmod</code> and <code>modinfo</code></h3>
+          <p>The Linux kernel is modular: drivers and features are compiled as separate modules and loaded into memory on demand, rather than all being baked into the kernel image. This keeps the kernel lean and allows drivers to be added or removed without rebooting.</p>
+          <p>First, list all currently loaded modules:</p>
+          <div class="cmd-block"><span class="prompt">$</span> lsmod</div>
+          <div class="response-group">
+            <label for="resp-lsmod-out">lsmod output</label>
+            <p class="prompt-text">Paste the full output below. The list may be long - that is expected.</p>
+            <textarea id="resp-lsmod-out" name="resp-lsmod-out" class="code-ta" rows="14" placeholder="Module                  Size  Used by&#10;..."></textarea>
+          </div>
+          <p>Now pick one module from your list and run <code>modinfo</code> on it to see its details. Good candidates include network drivers (such as <code>e1000</code> or <code>virtio_net</code>) or filesystem modules (such as <code>ext4</code>). Replace <code>&lt;module-name&gt;</code> with the actual module name:</p>
+          <div class="cmd-block"><span class="prompt">$</span> modinfo &lt;module-name&gt;</div>
+          <div class="response-group">
+            <label for="resp-modinfo-out">modinfo output</label>
+            <p class="prompt-text">Paste the full output of <code>modinfo</code> for the module you chose.</p>
+            <textarea id="resp-modinfo-out" name="resp-modinfo-out" class="code-ta" rows="12" placeholder="filename:       /lib/modules/.../...ko.zst&#10;description:    ...&#10;author:         ...&#10;depends:        ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-lsmod-ann">Annotation</label>
+            <p class="prompt-text">Answer these questions about the module you investigated: (1) What is the module's name? (2) What does the <code>description</code> field say it does? (3) What does the <code>depends</code> field show - are there other modules this one relies on? (4) Based on the device type it supports, why do you think this module is currently loaded on your system?</p>
+            <textarea id="resp-lsmod-ann" name="resp-lsmod-ann" rows="7" placeholder="1. Module name: ...&#10;2. Description: ...&#10;3. Depends: ...&#10;4. Why it is loaded: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> What to look for with lsmod and modinfo</summary>
+            <div class="hint-body">
+              <p>The three columns in <code>lsmod</code>:</p>
+              <ul>
+                <li><strong>Module</strong> - module name (also the filename without <code>.ko</code>)</li>
+                <li><strong>Size</strong> - memory the module currently occupies, in bytes</li>
+                <li><strong>Used by</strong> - how many other modules or processes depend on this one; <code>0</code> means nothing depends on it</li>
+              </ul>
+              <p>In <code>modinfo</code> output, the <code>depends</code> field lists prerequisite modules that must be loaded first. If empty, the module has no dependencies. The <code>filename</code> field shows where the module file lives on disk under <code>/lib/modules/</code>.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 6 -->
+      <li>
+        <div class="step-num" aria-hidden="true">6</div>
+        <div class="step-content">
+          <h3>Read early boot messages - <code>dmesg</code></h3>
+          <p>The kernel maintains a ring buffer of messages logged since it started - hardware detection, driver loading, filesystem mounting, and ongoing hardware events. This buffer is what <code>dmesg</code> reads. Limiting output to the first 50 lines shows the earliest boot events: the very first things the kernel reported after it began running.</p>
+          <div class="cmd-block"><span class="prompt">$</span> sudo dmesg | head -50</div>
+          <p>On some Ubuntu versions, reading the full ring buffer requires <code>sudo</code>. If the command runs without it, that is fine too - try without <code>sudo</code> first.</p>
+          <div class="response-group">
+            <label for="resp-dmesg-out">dmesg | head -50 output</label>
+            <p class="prompt-text">Paste the output below.</p>
+            <textarea id="resp-dmesg-out" name="resp-dmesg-out" class="code-ta" rows="16" placeholder="[    0.000000] Linux version 6.8.0-xx-generic (buildd@...) ...&#10;[    0.000000] Command line: ...&#10;[    0.000000] BIOS-provided physical RAM map:&#10;..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-dmesg-ann">Annotation</label>
+            <p class="prompt-text">Pick two specific lines from your <code>dmesg</code> output and explain what each one is reporting. Include the timestamp (the number in brackets) when quoting a line. Look for lines about the kernel version, CPU detection, memory, or a device being recognized.</p>
+            <textarea id="resp-dmesg-ann" name="resp-dmesg-ann" rows="8" placeholder="Line 1 - timestamp [    x.xxxxxx]:&#10;Quote the line: ...&#10;What it means: ...&#10;&#10;Line 2 - timestamp [    x.xxxxxx]:&#10;Quote the line: ...&#10;What it means: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Reading dmesg timestamps and filtering output</summary>
+            <div class="hint-body">
+              <p>Each line begins with a timestamp like <code>[    0.000000]</code> - seconds elapsed since the kernel started. Lines at or near <code>0.000000</code> are the very first kernel actions: printing its version string, mapping memory, and detecting the CPU. Later timestamps show drivers initializing and devices coming online.</p>
+              <p>Useful ways to search dmesg output:</p>
+              <ul>
+                <li><code>sudo dmesg | grep -i cpu</code> - CPU-related messages</li>
+                <li><code>sudo dmesg | grep -i "eth\|net"</code> - network initialization</li>
+                <li><code>sudo dmesg | grep -i "error\|fail"</code> - errors or failures</li>
+              </ul>
+              <p>You can also pipe the full output through <code>less</code> to scroll: <code>sudo dmesg | less</code> (press <kbd>q</kbd> to quit).</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+    </ol>
+  </section>
+
+  <!-- ── Part B ── -->
+  <section class="section-card" id="part-b" aria-labelledby="part-b-h">
+    <p class="phase-label">Part B of 2</p>
+    <h2 id="part-b-h">Boot Process and GRUB Configuration</h2>
+
+    <p>In this part you will examine the bootloader configuration and review the full boot log from the current session. The goal is to connect the boot sequence you read about - firmware, GRUB, kernel initialization, systemd - to what actually happened on your own VM.</p>
+
+    <ol class="step-list" aria-label="Part B steps">
+
+      <!-- Step 1: GRUB config -->
+      <li>
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-content">
+          <h3>Examine the GRUB configuration</h3>
+          <p>GRUB2 uses a two-file design: <code>/etc/default/grub</code> is the human-editable settings file, and <code>/boot/grub/grub.cfg</code> is the actual boot configuration - generated from it. Read the editable source:</p>
+          <div class="cmd-block"><span class="prompt">$</span> cat /etc/default/grub</div>
+          <div class="response-group">
+            <label for="resp-grub-out">/etc/default/grub output</label>
+            <p class="prompt-text">Paste the full output below.</p>
+            <textarea id="resp-grub-out" name="resp-grub-out" class="code-ta" rows="14" placeholder="# If you change this file, run 'update-grub' afterwards to update&#10;# /boot/grub/grub.cfg.&#10;GRUB_DEFAULT=0&#10;GRUB_TIMEOUT_STYLE=hidden&#10;GRUB_TIMEOUT=0&#10;GRUB_CMDLINE_LINUX_DEFAULT=&quot;quiet splash&quot;&#10;..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-grub-q1">Question 1 - GRUB_TIMEOUT</label>
+            <p class="prompt-text">What is the current value of <code>GRUB_TIMEOUT</code>? What does this setting control? Based on this value, would a user see the GRUB menu when the VM boots? What would happen if the value were set to <code>5</code> instead?</p>
+            <textarea id="resp-grub-q1" name="resp-grub-q1" rows="5" placeholder="Current GRUB_TIMEOUT value: ...&#10;What it controls: ...&#10;Effect at current value: ...&#10;Effect if set to 5: ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-grub-q2">Question 2 - GRUB_CMDLINE_LINUX_DEFAULT</label>
+            <p class="prompt-text">What options appear in <code>GRUB_CMDLINE_LINUX_DEFAULT</code>? These are kernel command-line parameters passed to the kernel at every boot. Explain what the options you see do. (If the value is <code>"quiet splash"</code>, explain what each of those two options tells the kernel to do.)</p>
+            <textarea id="resp-grub-q2" name="resp-grub-q2" rows="5" placeholder="GRUB_CMDLINE_LINUX_DEFAULT value: ...&#10;What the options do: ..."></textarea>
+          </div>
+          <div class="response-group">
+            <label for="resp-grub-q3">Question 3 - Two-file design</label>
+            <p class="prompt-text">The comment at the top of <code>/etc/default/grub</code> says to run <code>update-grub</code> after making changes. This is because <code>/boot/grub/grub.cfg</code> is generated - you are not supposed to edit it directly. Why do you think GRUB uses this two-file design (a simple editable source and a generated config) instead of one file you edit directly?</p>
+            <textarea id="resp-grub-q3" name="resp-grub-q3" rows="5" placeholder="Your explanation of why this design makes sense: ..."></textarea>
+          </div>
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> The /etc/default/grub and grub.cfg relationship</summary>
+            <div class="hint-body">
+              <p><code>/etc/default/grub</code> is a short, readable settings file with a handful of variables. After you edit it, running <code>sudo update-grub</code> (or <code>sudo grub-mkconfig -o /boot/grub/grub.cfg</code>) regenerates the full <code>/boot/grub/grub.cfg</code>.</p>
+              <p><code>/boot/grub/grub.cfg</code> is a complex, automatically generated file. It contains an entry for every installed kernel version (current, older backups, recovery modes) and is re-created whenever a kernel is installed or removed. If you edited it directly, your changes would be silently overwritten the next time the kernel updates. The two-file design keeps human-editable settings separate from machine-generated output.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <!-- Step 2: journalctl -->
+      <li>
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-content">
+          <h3>Review the boot log and answer guided questions</h3>
+          <p><code>journalctl -b</code> displays all log entries from the current boot session - from kernel startup through every service that launched. Start by viewing the opening lines of the log, then use targeted follow-up commands to answer each question below.</p>
+          <div class="cmd-block"><span class="prompt">$</span> journalctl -b --no-pager | head -30</div>
+          <div class="response-group">
+            <label for="resp-journal-top">First 30 lines of boot log</label>
+            <p class="prompt-text">Paste the output of the command above.</p>
+            <textarea id="resp-journal-top" name="resp-journal-top" class="code-ta" rows="14" placeholder="-- Boot 8f3abc... --&#10;Apr 05 ... kernel: Linux version 6.8.0-xx-generic ...&#10;..."></textarea>
+          </div>
+
+          <h3>Guided Questions</h3>
+
+          <div class="response-group">
+            <label for="resp-bq1">Question 1 - Kernel version</label>
+            <p class="prompt-text">What kernel version loaded during this boot? Find the line in the log that contains <code>Linux version</code> and paste it here. Does the version match what <code>uname -a</code> showed you in Part A?</p>
+            <textarea id="resp-bq1" name="resp-bq1" rows="4" placeholder="Kernel line from boot log: ...&#10;Does it match uname -a output from Part A? ..."></textarea>
+          </div>
+
+          <div class="response-group">
+            <label for="resp-bq2">Question 2 - Boot time</label>
+            <p class="prompt-text">How long did this boot take? While you could search through the <code>journalctl -b</code> output for timing information, <code>systemd-analyze</code> is a dedicated tool that reads systemd's internal records and gives you a clean one-line summary instead. It breaks total startup time into three phases: firmware (time before the bootloader), bootloader (GRUB loading the kernel), and userspace (systemd starting services). Run it, paste the output, and explain in your own words what each phase represents.</p>
+            <div class="cmd-block"><span class="prompt">$</span> systemd-analyze</div>
+            <textarea id="resp-bq2" name="resp-bq2" class="code-ta" rows="5" placeholder="Paste systemd-analyze output here...&#10;&#10;Explanation: ..."></textarea>
+          </div>
+
+          <div class="response-group">
+            <label for="resp-bq3">Question 3 - Last service to start</label>
+            <p class="prompt-text">What was the last major service to start before the system was ready? Search the boot log for service start events and look at the ones near the end:</p>
+            <div class="cmd-block"><span class="prompt">$</span> journalctl -b --no-pager | grep "Started" | tail -10</div>
+            <p class="prompt-text" style="margin-top: 8px;">Paste the output and identify what the last service was. Also run the command below and paste its output - which service took the longest to start?</p>
+            <div class="cmd-block"><span class="prompt">$</span> systemd-analyze blame | head -10</div>
+            <textarea id="resp-bq3" name="resp-bq3" class="code-ta" rows="12" placeholder="journalctl | grep 'Started' | tail output:&#10;...&#10;&#10;Last service to start: ...&#10;&#10;systemd-analyze blame output:&#10;...&#10;&#10;Slowest service: ..."></textarea>
+          </div>
+
+          <div class="response-group">
+            <label for="resp-bq4">Question 4 - Errors and warnings</label>
+            <p class="prompt-text">Did the boot log contain any errors? Run the command below to filter for error-level messages and paste the output. If nothing appears, note that and explain what it means for the health of your system.</p>
+            <div class="cmd-block"><span class="prompt">$</span> journalctl -b -p err --no-pager</div>
+            <textarea id="resp-bq4" name="resp-bq4" class="code-ta" rows="7" placeholder="Paste output here (or note if empty)...&#10;&#10;What does this tell you about your system: ..."></textarea>
+          </div>
+
+          <div class="response-group">
+            <label for="resp-bq5">Question 5 - PID 1</label>
+            <p class="prompt-text">PID 1 is the first user-space process the kernel starts after it finishes initializing. Every other process on the system is a descendant of it. Run the command below, paste its output, and explain: what is PID 1 on your system, and what does that tell you about how services are managed?</p>
+            <div class="cmd-block"><span class="prompt">$</span> ps -p 1</div>
+            <textarea id="resp-bq5" name="resp-bq5" class="code-ta" rows="6" placeholder="Paste ps -p 1 output here...&#10;&#10;What is PID 1, and what role does it play: ..."></textarea>
+          </div>
+
+          <details>
+            <summary><span class="arrow" aria-hidden="true">&#9654;</span> Navigating the journalctl -b log</summary>
+            <div class="hint-body">
+              <p>The full boot log can be hundreds of lines. Useful ways to explore it:</p>
+              <ul>
+                <li><code>journalctl -b | less</code> - scroll interactively; press <kbd>q</kbd> to quit, <kbd>G</kbd> to jump to the end</li>
+                <li><code>journalctl -b | grep "kernel:"</code> - show only kernel messages</li>
+                <li><code>journalctl -b | grep "Started\|Reached"</code> - show service start and target events</li>
+                <li><code>journalctl -b -p warning</code> - show warnings and above</li>
+              </ul>
+              <p><code>systemd-analyze</code> gives a quick summary of boot time broken into firmware, bootloader, and userspace phases. <code>systemd-analyze blame</code> ranks individual services by how long each took to initialize - useful for diagnosing a slow boot.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+    </ol>
+  </section>
+
+  <!-- ── Extra Credit ── -->
+  <section class="section-card ec-card" id="extra-credit" aria-labelledby="ec-h">
+    <p class="phase-label ec">Extra Credit - 5 Points - CSLO 3</p>
+    <h2 id="ec-h">GRUB Modification</h2>
+
+    <div class="callout">
+      <strong>This section is optional.</strong> Completing it can add up to 5 points to your Lab 2 score.
+    </div>
+
+    <p>In Part B you read the GRUB configuration file - now you will change it. Your task is to modify the <code>GRUB_TIMEOUT</code> value in <code>/etc/default/grub</code>, apply the change by regenerating the GRUB config, reboot your VM, and observe whether the boot behavior changed as expected. Document the process with screenshots and a short written explanation, then restore the original setting.</p>
+
+    <div class="callout">
+      <strong>Reference materials are in Canvas.</strong> The step-by-step resources for editing GRUB settings and regenerating the configuration are linked in this week's Canvas module under "Week 2 Extra Credit Resources." Work through those materials before making any changes. Reading the documentation first is part of the skill being assessed here - figuring out how to do something from official sources, not just following a recipe.
+    </div>
+
+    <h3>Screenshot Checklist</h3>
+    <p>Capture these screenshots as you work. Submit them alongside your completed lab PDF in Canvas.</p>
+    <ul class="ss-list" role="list">
+      <li>
+        <input type="checkbox" id="ec-ss1">
+        <label for="ec-ss1">Terminal showing <code>/etc/default/grub</code> <strong>before</strong> your change, with the original <code>GRUB_TIMEOUT</code> value visible</label>
+      </li>
+      <li>
+        <input type="checkbox" id="ec-ss2">
+        <label for="ec-ss2">Terminal output of the command used to apply the change (e.g., <code>sudo update-grub</code>)</label>
+      </li>
+      <li>
+        <input type="checkbox" id="ec-ss3">
+        <label for="ec-ss3">Terminal showing <code>/etc/default/grub</code> <strong>after</strong> your change, confirming the new value</label>
+      </li>
+    </ul>
+
+    <div class="response-group">
+      <label for="resp-ec-change">What change did you make?</label>
+      <p class="prompt-text">What was the original value of <code>GRUB_TIMEOUT</code>, and what did you change it to? Why did you choose that new value?</p>
+      <textarea id="resp-ec-change" name="resp-ec-change" rows="4" placeholder="Original value: ...&#10;New value: ...&#10;Reason for choosing that value: ..."></textarea>
+    </div>
+
+    <div class="response-group">
+      <label for="resp-ec-commands">Commands used</label>
+      <p class="prompt-text">List every command you ran to make and apply the change, in the order you ran them - from opening the file to editor, to regenerating the config, to rebooting.</p>
+      <textarea id="resp-ec-commands" name="resp-ec-commands" class="code-ta" rows="6" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+    </div>
+
+    <div class="response-group">
+      <label for="resp-ec-observe">What did you observe after rebooting?</label>
+      <p class="prompt-text">Describe what happened when the VM rebooted. Did the GRUB behavior change as you expected based on the value you set? If anything was unexpected, explain what happened and how you resolved it.</p>
+      <textarea id="resp-ec-observe" name="resp-ec-observe" rows="5" placeholder="After rebooting, I observed..."></textarea>
+    </div>
+
+    <div class="response-group">
+      <label for="resp-ec-restore">Restoring the original setting</label>
+      <p class="prompt-text">After confirming your change worked, did you restore the original <code>GRUB_TIMEOUT</code> value? Briefly describe what you did. Then answer this: what would happen if you accidentally set <code>GRUB_TIMEOUT=0</code> along with <code>GRUB_TIMEOUT_STYLE=hidden</code> - and you needed to access the GRUB menu to recover from a boot problem? How would you get into the GRUB menu in that situation?</p>
+      <textarea id="resp-ec-restore" name="resp-ec-restore" rows="6" placeholder="Restore steps: ...&#10;&#10;How to access GRUB if timeout is 0 and hidden: ..."></textarea>
+    </div>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="section-card" id="submission" aria-labelledby="submission-h">
+    <h2 id="submission-h">Deliverables and Submission</h2>
+    <p>This assignment is worth <strong>35 points</strong> and assesses <strong>CSLO 1</strong> (Install and configure a Linux operating system) and <strong>CSLO 3</strong> (Describe Linux runlevels and startup scripts). Submit the following to the Lab 2 assignment in Canvas:</p>
+
+    <div class="submit-grid">
+      <div class="submit-item">
+        <h3>Completed lab (PDF)</h3>
+        <p>Use the Save as PDF button below to export this page with all your typed responses. Upload the resulting PDF to Canvas.</p>
+      </div>
+      <div class="submit-item">
+        <h3>Extra credit screenshots (if applicable)</h3>
+        <p>If you completed the GRUB Modification section, include your three before/after screenshots as image files (.png or .jpg) or combined into the PDF.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Before saving:</strong> Scroll back through Parts A and B and confirm: (1) all six command outputs are pasted in Part A and each annotation prompt is answered; (2) you have annotated at least five specific lines across Part A; (3) all five guided questions in Part B are answered, including the boot log excerpt and the GRUB config questions. Your typed responses will appear in the exported PDF.
+    </div>
+
+    <button class="btn-pdf" onclick="saveAsPDF()" type="button">
+      &#128461;&nbsp; Save as PDF
+    </button>
+  </section>
+
+</main>
+
+<script>
+  // Scroll-spy: highlight active nav link
+  (function () {
+    var sections = ['scenario', 'objectives', 'part-a', 'part-b', 'extra-credit', 'submission'];
+    var links = {};
+    sections.forEach(function (id) {
+      var a = document.querySelector('nav a[href="#' + id + '"]');
+      if (a) links[id] = a;
+    });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && links[entry.target.id]) {
+          Object.values(links).forEach(function (a) { a.classList.remove('active'); });
+          links[entry.target.id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    sections.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  })();
+
+  // Save as PDF: sync textarea values to print divs, open hints, print, restore
+  function saveAsPDF() {
+    document.querySelectorAll('textarea').forEach(function (ta) {
+      var pv = ta.parentNode.querySelector('.print-value');
+      if (!pv) {
+        pv = document.createElement('div');
+        pv.className = 'print-value' + (ta.classList.contains('code-ta') ? ' code-ta' : '');
+        ta.parentNode.insertBefore(pv, ta.nextSibling);
+      }
+      pv.textContent = ta.value.trim() || '(No response entered)';
+    });
+
+    var closed = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      closed.push(d);
+      d.setAttribute('open', '');
+    });
+
+    window.print();
+
+    window.addEventListener('afterprint', function restore() {
+      closed.forEach(function (d) { d.removeAttribute('open'); });
+      window.removeEventListener('afterprint', restore);
+    });
+  }
+</script>
+
+</body>
+</html>

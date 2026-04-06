@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 Overview - Hardware, the Kernel, and the Boot Process</title>
+<style>
+:root {
+--primary: #2D3B45;
+--accent: #0F7B5F;
+--accent-light: #E8F5F0;
+--border: #C7CDD1;
+--bg: #FFFFFF;
+--text: #2D3B45;
+--text-light: #5A6872;
+--warning: #C25E00;
+--warning-bg: #FFF7ED;
+--complete-bg: #F0FAF6;
+--shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+font-size: 1rem;
+line-height: 1.6;
+color: var(--text);
+background: var(--bg);
+max-width: 54rem;
+margin: 0 auto;
+padding: 1rem;
+}
+
+/* Skip link */
+.skip-link {
+position: absolute;
+top: -100%;
+left: 0.5rem;
+background: var(--accent);
+color: #fff;
+padding: 0.5rem 1rem;
+border-radius: 0 0 4px 4px;
+z-index: 1000;
+font-size: 0.9rem;
+}
+.skip-link:focus { top: 0; }
+
+/* Top nav */
+nav.top-nav {
+background: var(--primary);
+border-radius: 6px;
+padding: 0.6rem 1rem;
+margin-bottom: 1.5rem;
+display: flex;
+flex-wrap: wrap;
+gap: 0.25rem 1rem;
+}
+nav.top-nav a {
+color: #fff;
+text-decoration: none;
+font-size: 0.88rem;
+padding: 0.25rem 0.4rem;
+border-radius: 3px;
+}
+nav.top-nav a:hover,
+nav.top-nav a:focus {
+background: rgba(255,255,255,0.18);
+text-decoration: underline;
+}
+
+/* Headings */
+h1 {
+font-size: 1.65rem;
+color: var(--primary);
+margin-bottom: 0.25rem;
+line-height: 1.3;
+}
+.subtitle {
+font-size: 1.05rem;
+color: var(--text-light);
+margin-bottom: 1.5rem;
+}
+h2 {
+font-size: 1.25rem;
+color: var(--primary);
+margin: 1.8rem 0 0.6rem;
+padding-bottom: 0.3rem;
+border-bottom: 2px solid var(--accent);
+}
+h3 {
+font-size: 1.05rem;
+color: var(--accent);
+margin: 1.2rem 0 0.4rem;
+}
+
+/* Paragraphs and lists */
+p { margin-bottom: 0.85rem; }
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.35rem; }
+
+/* Card */
+.card {
+background: #FAFBFC;
+border: 1px solid var(--border);
+border-radius: 6px;
+padding: 1.1rem 1.25rem;
+margin-bottom: 1.25rem;
+}
+
+/* Callout */
+.callout {
+border-left: 4px solid var(--accent);
+background: var(--accent-light);
+padding: 0.9rem 1.1rem;
+border-radius: 0 6px 6px 0;
+margin-bottom: 1.25rem;
+}
+.callout-warn {
+border-left-color: var(--warning);
+background: var(--warning-bg);
+}
+
+/* Checklist */
+.checklist { list-style: none; margin-left: 0; padding: 0; }
+.checklist li {
+position: relative;
+padding: 0.65rem 0.75rem 0.65rem 2.6rem;
+background: #FAFBFC;
+border: 1px solid var(--border);
+border-radius: 5px;
+margin-bottom: 0.5rem;
+cursor: pointer;
+transition: background 0.15s;
+}
+.checklist li:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.checklist input[type="checkbox"] {
+position: absolute;
+left: 0.8rem;
+top: 50%;
+transform: translateY(-50%);
+width: 1.1rem;
+height: 1.1rem;
+accent-color: var(--accent);
+cursor: pointer;
+}
+.checklist .label-text { font-size: 0.95rem; }
+.checklist .meta {
+display: block;
+font-size: 0.82rem;
+color: var(--text-light);
+margin-top: 0.15rem;
+}
+.checklist li.checked-done {
+background: var(--complete-bg);
+text-decoration: none;
+}
+
+/* Collapsible */
+details {
+border: 1px solid var(--border);
+border-radius: 6px;
+margin-bottom: 1.25rem;
+}
+details summary {
+padding: 0.75rem 1rem;
+font-weight: 600;
+cursor: pointer;
+background: #FAFBFC;
+border-radius: 6px;
+list-style: none;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+content: "\25B6";
+font-size: 0.75rem;
+transition: transform 0.2s;
+color: var(--accent);
+}
+details[open] summary::before { transform: rotate(90deg); }
+details summary:hover { background: var(--accent-light); }
+details summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+details .details-body { padding: 0.75rem 1rem 1rem; }
+
+/* Keyword tags */
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 1rem; }
+.tag {
+display: inline-block;
+background: var(--accent-light);
+color: var(--accent);
+font-size: 0.82rem;
+font-weight: 600;
+padding: 0.2rem 0.65rem;
+border-radius: 100px;
+border: 1px solid rgba(15,123,95,0.2);
+}
+
+/* Footer */
+footer {
+margin-top: 2rem;
+padding-top: 1rem;
+border-top: 1px solid var(--border);
+font-size: 0.82rem;
+color: var(--text-light);
+text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+body { padding: 0.75rem; }
+h1 { font-size: 1.35rem; }
+nav.top-nav { gap: 0.15rem 0.6rem; }
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page navigation">
+<a href="#welcome">Welcome</a>
+<a href="#goals">Learning Goals</a>
+<a href="#activities">Activities</a>
+<a href="#concepts">Key Concepts</a>
+<a href="#ahead">Looking Ahead</a>
+<a href="#arc">Course Arc</a>
+</nav>
+
+<main id="main-content">
+
+<h1 id="welcome">Week 2: Hardware, the Kernel, and the Boot Process</h1>
+<p class="subtitle">CSC 106 - Introduction to Linux II</p>
+
+<p>
+Welcome to Week 2. Last week you installed Ubuntu Server on a virtual machine, set up your first user, and started working with <code>apt</code>. That VM is now your working platform for the rest of the course, and this week you start looking under the hood at what makes it run.
+</p>
+<p>
+The big question this week: <strong>what actually happens between pressing the power button and seeing a login prompt?</strong> To answer that, you will explore the Linux kernel, inspect your VM's hardware from the command line, learn about kernel modules, and trace the entire boot sequence from firmware through GRUB to systemd. This is the kind of foundational knowledge that makes everything else in Linux administration make more sense.
+</p>
+
+<div class="callout">
+<strong>This week's focus:</strong> Understanding the layers underneath your running system. You will move from the kernel outward to hardware, then follow the boot process step by step. By the end of the week, you should be able to explain what your system is doing long before you ever see a login prompt.
+</div>
+
+<!-- Learning Goals -->
+<h2 id="goals">Learning Goals</h2>
+<p>By the end of this week, you will be able to:</p>
+<ul>
+<li>Describe the role of the Linux kernel and how it interacts with hardware.</li>
+<li>Use commands to inspect hardware and kernel information (<code>uname</code>, <code>lspci</code>, <code>lsusb</code>, <code>lsblk</code>, <code>lscpu</code>, <code>dmesg</code>).</li>
+<li>Explain what kernel modules are and how to list and load them.</li>
+<li>Describe the Linux boot sequence from BIOS/UEFI through GRUB to the init system.</li>
+<li>Identify the stages where problems can occur during boot.</li>
+</ul>
+
+<div class="callout" style="margin-top:1rem;">
+<strong>CSLO alignment:</strong> This week maps to <strong>CSLO 1</strong> (Install and configure a Linux operating system) and <strong>CSLO 3</strong> (Describe Linux runlevels and startup scripts). Understanding the kernel and boot process is part of configuring a Linux system, and the boot sequence is the direct lead-in to runlevels and startup scripts that you will work with next week.
+</div>
+
+<!-- Required Activities -->
+<h2 id="activities">Required Activities</h2>
+<p>
+Here is everything you need to complete this week. Check items off as you go to keep track of your progress. Specific due dates are posted in Canvas.
+</p>
+
+<ul class="checklist" role="list" aria-label="Week 2 activity checklist">
+<li role="listitem">
+<label>
+<input type="checkbox" aria-label="Mark reading complete">
+<span class="label-text"><strong>Reading:</strong> Linux Essentials Chapter 12 (targeted review of kernel and device sections) plus supplemental boot process resources</span>
+<span class="meta">Review the kernel, /dev, /proc, and /sys sections from Chapter 12. Read one or two of the recommended boot process resources listed in the module.</span>
+</label>
+</li>
+<li role="listitem">
+<label>
+<input type="checkbox" aria-label="Mark video 1 complete">
+<span class="label-text"><strong>Video:</strong> Meet Your Kernel and Hardware Commands</span>
+<span class="meta">Conceptual overview of the kernel plus a terminal walkthrough of hardware inspection commands. About 10-12 minutes.</span>
+</label>
+</li>
+<li role="listitem">
+<label>
+<input type="checkbox" aria-label="Mark video 2 complete">
+<span class="label-text"><strong>Video:</strong> How Linux Boots: From Power Button to Login Prompt</span>
+<span class="meta">Stage-by-stage walkthrough of the boot process with diagrams. About 10-12 minutes.</span>
+</label>
+</li>
+<li role="listitem">
+<label>
+<input type="checkbox" aria-label="Mark hands-on assignment complete">
+<span class="label-text"><strong>Hands-on Assignment:</strong> Hardware, Kernel, and Boot Exploration (35 points)</span>
+<span class="meta">Two parts completed on your Ubuntu Server VM. Part A: run hardware and kernel commands and annotate the output. Part B: examine GRUB configuration and boot logs, then answer guided questions.</span>
+</label>
+</li>
+</ul>
+
+<div class="callout callout-warn">
+<strong>Heads up:</strong> The hands-on assignment is not just about running commands and pasting output. You need to <em>annotate</em> what you see and explain what it means. Give yourself time to read the output carefully before writing your annotations. Students who rush through the commands without understanding the output tend to lose points here.
+</div>
+
+<h3>Optional: Extra Credit</h3>
+<p>
+<strong>GRUB Modification (5 points):</strong> Read the GNU GRUB Manual and the Ubuntu Community Help Wiki page on Grub2, then modify a GRUB timeout value on your VM. Document the process with before-and-after screenshots. This is a natural extension of the required assignment, where you look at GRUB configuration and then actually change it.
+</p>
+
+<!-- Key Concepts -->
+<h2 id="concepts">Key Concepts and Themes</h2>
+<p>As you work through this week's material, pay special attention to these ideas. They come up repeatedly throughout the rest of the course.</p>
+
+<div class="card">
+<h3>The kernel is the bridge</h3>
+<p>
+The kernel sits between your hardware and every program you run. It handles memory, processes, device access, and more. You do not interact with it directly most of the time, but everything you do on a Linux system depends on it. This week, commands like <code>uname -a</code> and <code>lsmod</code> give you a window into what the kernel is doing.
+</p>
+</div>
+
+<div class="card">
+<h3>"Everything is a file"</h3>
+<p>
+Linux represents hardware devices as files in the <code>/dev</code> directory. Your disk might be <code>/dev/sda</code> or <code>/dev/vda</code>. The null device is <code>/dev/null</code>. This principle is one of the things that makes Linux distinctive, and it will keep showing up in later weeks when you work with permissions, networking, and server configuration.
+</p>
+</div>
+
+<div class="card">
+<h3>The boot process is a chain</h3>
+<p>
+Booting is a sequence of handoffs: firmware to bootloader, bootloader to kernel, kernel to systemd. Each stage depends on the one before it. If any link in the chain breaks, the system does not come up. Understanding this chain is the foundation for troubleshooting boot problems, and it sets up next week's deep dive into systemd and services.
+</p>
+</div>
+
+<div class="card">
+<h3>Kernel modules keep things flexible</h3>
+<p>
+Not everything is baked into the kernel. Drivers and features can be loaded as modules on demand, which keeps the kernel lean. On your VM, you will see modules for the virtual network adapter, the virtual disk controller, and filesystem drivers. Running <code>lsmod</code> and investigating a few modules with <code>modinfo</code> makes this concept concrete.
+</p>
+</div>
+
+<div class="tag-row" aria-label="Key topic tags">
+<span class="tag">kernel</span>
+<span class="tag">uname</span>
+<span class="tag">lspci</span>
+<span class="tag">lsblk</span>
+<span class="tag">lsmod</span>
+<span class="tag">dmesg</span>
+<span class="tag">/dev</span>
+<span class="tag">GRUB2</span>
+<span class="tag">boot sequence</span>
+<span class="tag">systemd (intro)</span>
+</div>
+
+<!-- Looking Ahead -->
+<h2 id="ahead">Looking Ahead: Week 3</h2>
+<p>
+Next week picks up exactly where this week leaves off. If Week 2 is about understanding <em>how</em> the system boots, Week 3 is about <em>controlling what happens at boot</em>. You will learn about runlevels and their modern replacement (systemd targets), use <code>systemctl</code> to manage services, change the default boot target, and perform clean shutdowns and reboots from the command line.
+</p>
+<p>
+The boot sequence knowledge you build this week is essential for Week 3. When you use <code>systemctl</code> to enable a service or switch to rescue mode, you are working with Stage 4 of the boot process (the init system). Having a clear mental picture of how the system gets to that stage will make Week 3's material click much faster.
+</p>
+
+<!-- Course Arc (collapsible) -->
+<h2 id="arc" style="border:none; margin-bottom:0.5rem;">Course Arc</h2>
+<details>
+<summary>Where does this week fit in the course?</summary>
+<div class="details-body">
+<p>
+CSC 106 runs for eight weeks, and the content is organized into two major clusters.
+</p>
+<h3>Weeks 1 through 4: Build and automate</h3>
+<ul>
+<li><strong>Week 1:</strong> Install Ubuntu Server, learn package management with <code>apt</code>.</li>
+<li><strong>Week 2 (this week):</strong> Understand the kernel, hardware, and boot process.</li>
+<li><strong>Week 3:</strong> Control services and boot behavior with systemd and runlevels.</li>
+<li><strong>Week 4:</strong> Advanced shell scripting, leading to Mini-Project 1 (a post-install configuration script).</li>
+</ul>
+<p>
+Weeks 1 through 3 form a tight cluster: install the system, understand its internals, then manage its services. Week 4 layers scripting on top of that configured system. Everything from these four weeks feeds into Mini-Project 1.
+</p>
+<h3>Weeks 5 through 8: Secure and deploy</h3>
+<ul>
+<li><strong>Week 5:</strong> Users, groups, and system security.</li>
+<li><strong>Week 6:</strong> File permissions, ownership, and networking fundamentals.</li>
+<li><strong>Week 7:</strong> Network configuration, web server setup, and security hardening.</li>
+<li><strong>Week 8:</strong> Integration and Mini-Project 2 (build and document a full Linux server).</li>
+</ul>
+<p>
+The kernel and boot process knowledge from this week may feel conceptual right now, but it supports real troubleshooting and configuration decisions throughout the rest of the course. When something goes wrong with a service in Week 3 or a server in Week 7, understanding the layers underneath helps you figure out where the problem is.
+</p>
+</div>
+</details>
+
+</main>
+
+<footer>
+CSC 106 - Introduction to Linux II | Week 2 Overview
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+var items = document.querySelectorAll(".checklist li");
+var STORAGE_KEY = "csc106-wk2-checklist";
+
+function loadState() {
+try {
+var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+return saved || {};
+} catch (e) {
+return {};
+}
+}
+
+function saveState(state) {
+try {
+localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+} catch (e) { /* storage unavailable */ }
+}
+
+var state = loadState();
+
+items.forEach(function (li, idx) {
+var cb = li.querySelector("input[type='checkbox']");
+if (!cb) return;
+
+if (state[idx]) {
+cb.checked = true;
+li.classList.add("checked-done");
+}
+
+cb.addEventListener("change", function () {
+if (cb.checked) {
+li.classList.add("checked-done");
+state[idx] = true;
+} else {
+li.classList.remove("checked-done");
+delete state[idx];
+}
+saveState(state);
+});
+});
+});
+</script>
+</body>
+</html>

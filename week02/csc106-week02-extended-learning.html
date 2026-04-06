@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 - Additional Investigation and Extra Credit Guide</title>
+<style>
+:root{
+--primary:#2D3B45;
+--accent:#0F7B5F;
+--accent-light:#E8F5F0;
+--border:#C7CDD1;
+--bg:#FFFFFF;
+--text:#2D3B45;
+--text-light:#5A6872;
+--warn:#C25E00;
+--warn-bg:#FFF7ED;
+--info:#1A6B9C;
+--info-bg:#EEF6FB;
+--shadow:0 1px 3px rgba(0,0,0,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.6;color:var(--text);background:var(--bg);max-width:54rem;margin:0 auto;padding:1rem}
+.skip-link{position:absolute;top:-100%;left:.5rem;background:var(--accent);color:#fff;padding:.5rem 1rem;border-radius:0 0 4px 4px;z-index:1000;font-size:.9rem}
+.skip-link:focus{top:0}
+nav.top-nav{background:var(--primary);border-radius:6px;padding:.6rem 1rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:.25rem 1rem}
+nav.top-nav a{color:#fff;text-decoration:none;font-size:.88rem;padding:.25rem .4rem;border-radius:3px}
+nav.top-nav a:hover,nav.top-nav a:focus{background:rgba(255,255,255,.18);text-decoration:underline}
+h1{font-size:1.6rem;color:var(--primary);margin-bottom:.25rem;line-height:1.3}
+.subtitle{font-size:1.05rem;color:var(--text-light);margin-bottom:1.4rem}
+h2{font-size:1.25rem;color:var(--primary);margin:1.8rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--accent)}
+h3{font-size:1.05rem;color:var(--accent);margin:1.2rem 0 .4rem}
+p{margin-bottom:.85rem}
+ul,ol{margin:.5rem 0 1rem 1.5rem}
+li{margin-bottom:.35rem}
+code{background:#F0F2F4;padding:.15rem .35rem;border-radius:3px;font-size:.92em}
+pre{background:#F0F2F4;border:1px solid var(--border);border-radius:6px;padding:1rem;overflow-x:auto;font-size:.88rem;line-height:1.5;margin:.75rem 0 1.25rem}
+pre code{background:none;padding:0}
+.card{background:#FAFBFC;border:1px solid var(--border);border-radius:6px;padding:1.1rem 1.25rem;margin-bottom:1.25rem}
+.callout{border-left:4px solid var(--accent);background:var(--accent-light);padding:.9rem 1.1rem;border-radius:0 6px 6px 0;margin-bottom:1.25rem}
+.callout-warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.callout-info{border-left-color:var(--info);background:var(--info-bg)}
+details{border:1px solid var(--border);border-radius:6px;margin-bottom:1.25rem}
+details summary{padding:.75rem 1rem;font-weight:600;cursor:pointer;background:#FAFBFC;border-radius:6px;list-style:none;display:flex;align-items:center;gap:.5rem}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"\25B6";font-size:.75rem;transition:transform .2s;color:var(--accent)}
+details[open] summary::before{transform:rotate(90deg)}
+details summary:hover{background:var(--accent-light)}
+details summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+details .details-body{padding:.75rem 1rem 1rem}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:1.7rem;height:1.7rem;background:var(--accent);color:#fff;border-radius:50%;font-size:.85rem;font-weight:700;margin-right:.5rem;flex-shrink:0}
+.step-row{display:flex;align-items:flex-start;margin-bottom:.85rem}
+.step-row .step-content{flex:1}
+.tag-row{display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 1rem}
+.tag{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:.82rem;font-weight:600;padding:.2rem .65rem;border-radius:100px;border:1px solid rgba(15,123,95,.2)}
+.resource-list{list-style:none;margin-left:0;padding:0}
+.resource-list li{padding:.6rem .75rem;border:1px solid var(--border);border-radius:5px;margin-bottom:.5rem;background:#FAFBFC}
+.resource-list li strong{display:block;margin-bottom:.15rem}
+.resource-list li .meta{font-size:.85rem;color:var(--text-light)}
+footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-light);text-align:center}
+@media(max-width:600px){body{padding:.75rem}h1{font-size:1.35rem}nav.top-nav{gap:.15rem .6rem}}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page navigation">
+<a href="#overview">Overview</a>
+<a href="#investigation">Additional Investigation</a>
+<a href="#extra-credit">Extra Credit</a>
+<a href="#resources">Resources</a>
+<a href="#tips">Tips</a>
+</nav>
+
+<main id="main-content">
+
+<h1 id="overview">Week 2: Additional Investigation and Extra Credit</h1>
+<p class="subtitle">CSC 106 - Introduction to Linux II</p>
+
+<p>
+This page covers the optional activities for Week 2. These are not required, but they give you a chance to dig deeper into the kernel, hardware, and boot process topics you are working with this week. If you finished the required assignment (Hardware, Kernel, and Boot Exploration) and want to keep going, this is your path.
+</p>
+<p>
+There are two things here: a set of suggested additional investigation activities (ungraded, purely for your own learning) and one extra credit opportunity worth 5 points. The extra credit activity is included as an optional section within Lab 02 in Canvas.
+</p>
+
+<div class="callout">
+<strong>Quick orientation:</strong> The additional investigation activities below are things you can try on your Ubuntu Server VM to build deeper understanding. Nobody is grading them. The extra credit (GRUB Modification) is the only optional item this week that earns points, and it is described in detail further down this page.
+</div>
+
+<!-- Additional Investigation -->
+<h2 id="investigation">Additional Investigation Activities</h2>
+
+<p>
+These activities extend the topics from the required assignment. They are designed to satisfy your curiosity and build practical intuition. You do not need to submit anything for these, but the skills and understanding you pick up here will help you in later weeks, especially when you work with systemd in Week 3 and scripting in Week 4.
+</p>
+
+<details>
+<summary>Explore kernel modules in depth</summary>
+<div class="details-body">
+<h3>What to try</h3>
+<p>
+In the required assignment, you ran <code>lsmod</code> and looked at the list of loaded modules. This investigation goes a step further.
+</p>
+<ul>
+<li>Pick three modules from your <code>lsmod</code> output that you are curious about. Run <code>modinfo &lt;module_name&gt;</code> for each one and read through the output. Look at the description, the author, the license, and the "depends" field.</li>
+<li>Try to find a module that depends on another module. You can spot this in the <code>modinfo</code> output or in the third column of <code>lsmod</code> (which shows how many other modules are using it). This gives you a feel for how modules form dependency chains, similar to how packages depend on other packages.</li>
+<li>Look at the directory where modules live on disk:
+<pre><code>ls /lib/modules/$(uname -r)/kernel/</code></pre>
+You will see subdirectories like <code>drivers/</code>, <code>net/</code>, <code>fs/</code>, and others. Browse around. This is where the actual <code>.ko</code> (kernel object) files are stored.</li>
+<li>If you want to see what happens when a module is loaded, try watching <code>dmesg</code> output in real time. Open two terminal sessions (or use <code>tmux</code> if you have it). In one, run <code>dmesg -w</code> (the <code>-w</code> flag means "watch," so it keeps printing new messages). In the other, try loading a harmless module that is not already loaded. On many VMs, <code>sudo modprobe dummy</code> will load the dummy network interface module. Watch what <code>dmesg</code> reports. Then unload it with <code>sudo modprobe -r dummy</code>.</li>
+</ul>
+
+<div class="callout-info callout">
+<strong>Why this matters:</strong> Kernel modules are how Linux supports such a wide range of hardware without a bloated kernel. When you troubleshoot a device that is not working (a network adapter, a storage controller), one of the first things to check is whether the right module is loaded. This investigation builds that diagnostic instinct.
+</div>
+</div>
+</details>
+
+<details>
+<summary>Dig into /proc and /sys</summary>
+<div class="details-body">
+<h3>What to try</h3>
+<p>
+You read about <code>/proc</code> and <code>/sys</code> in Linux Essentials Chapter 12 (and again in Chapter 13 during Week 1). Now explore them hands-on.
+</p>
+<ul>
+<li>Read your kernel version from the filesystem instead of using <code>uname</code>:
+<pre><code>cat /proc/version</code></pre>
+Compare this to the output of <code>uname -a</code>. They should match, because <code>uname</code> is just reading from <code>/proc</code> under the hood.</li>
+<li>Check how long your system has been running:
+<pre><code>cat /proc/uptime</code></pre>
+The first number is seconds since boot. Divide by 60 to get minutes, or by 3600 for hours. Compare this to the output of the <code>uptime</code> command.</li>
+<li>Look at your kernel's command-line parameters:
+<pre><code>cat /proc/cmdline</code></pre>
+This shows the options that GRUB passed to the kernel at boot. You will recognize some of these from your GRUB configuration examination in Part B of the required assignment.</li>
+<li>Explore <code>/sys/class/net/</code> to see your network interfaces:
+<pre><code>ls /sys/class/net/</code></pre>
+You should see at least <code>lo</code> (loopback) and one or more network interfaces. Try <code>cat /sys/class/net/&lt;interface&gt;/address</code> to see the MAC address.</li>
+</ul>
+
+<div class="callout-info callout">
+<strong>Why this matters:</strong> The <code>/proc</code> and <code>/sys</code> filesystems are how Linux exposes kernel and hardware information to user-space programs. Every monitoring tool, every system utility, every script that checks system status is ultimately reading from these virtual filesystems. When you <code>cat /proc/cpuinfo</code>, you are doing exactly what <code>lscpu</code> does internally (just with less formatting). Understanding this makes the "everything is a file" principle feel real.
+</div>
+</div>
+</details>
+
+<details>
+<summary>Trace the boot timeline with systemd-analyze</summary>
+<div class="details-body">
+<h3>What to try</h3>
+<p>
+In Part B of the required assignment, you looked at boot logs with <code>journalctl -b</code>. This investigation uses a different tool to see the boot process from systemd's perspective.
+</p>
+<ul>
+<li>Run <code>systemd-analyze</code> by itself. It prints a summary of how long the boot took, broken into firmware, loader, kernel, and userspace time. On a VM, firmware and loader times may show as zero or very small, which is normal.</li>
+<li>Run <code>systemd-analyze blame</code> to see which services took the longest to start. The output is sorted by time, slowest first. This is the command administrators use when they want to speed up boot times.</li>
+<li>If you want a visual representation, try:
+<pre><code>systemd-analyze plot > boot-timeline.svg</code></pre>
+This creates an SVG image showing every service and when it started relative to boot. You can transfer the file to your host machine and open it in a browser. It is a surprisingly detailed picture of your boot process.</li>
+</ul>
+
+<div class="callout-info callout">
+<strong>Why this matters:</strong> This is a preview of Week 3, where you will work with systemd in depth. Seeing the boot timeline now, while the boot process concepts are fresh, helps you connect the abstract stages (firmware, bootloader, kernel, init) to concrete, measurable events on your own VM. When you get to Week 3 and start enabling and disabling services, you will already have a sense of how those services fit into the boot sequence.
+</div>
+</div>
+</details>
+
+<details>
+<summary>Compare dmesg and journalctl output</summary>
+<div class="details-body">
+<h3>What to try</h3>
+<p>
+The required assignment asks you to use both <code>dmesg</code> and <code>journalctl -b</code>. This investigation helps you understand the difference between them.
+</p>
+<ul>
+<li>Run <code>dmesg | wc -l</code> to count the number of lines in the kernel ring buffer.</li>
+<li>Run <code>journalctl -k | wc -l</code> to count kernel messages from the journal. The numbers may be similar but not identical, because <code>journalctl -k</code> pulls from systemd's journal (which is persistent across reboots if configured that way), while <code>dmesg</code> reads the kernel ring buffer (which is a fixed-size buffer in memory).</li>
+<li>Run <code>journalctl -b -1</code> to try viewing messages from the previous boot. If your system has only booted once since installation, this will say "No journal data found." If you have rebooted at least once, you will see the previous boot's messages. This is something <code>dmesg</code> cannot do, because the ring buffer only holds the current boot.</li>
+<li>Try filtering journal output by priority:
+<pre><code>journalctl -b -p err</code></pre>
+This shows only error-level messages from the current boot. On a healthy VM, you may see very few (or none). That is a good sign.</li>
+</ul>
+
+<div class="callout-info callout">
+<strong>Why this matters:</strong> In practice, you will use both <code>dmesg</code> and <code>journalctl</code> regularly. Knowing when to reach for which tool saves time. Quick hardware question? <code>dmesg</code>. Need to look at a previous boot or filter by severity? <code>journalctl</code>. Building this habit early means you will not have to think about it later.
+</div>
+</div>
+</details>
+
+<!-- Extra Credit -->
+<h2 id="extra-credit">Extra Credit: GRUB Modification (5 points)</h2>
+
+<p>
+This is the one optional activity this week that earns points. It is included as an optional section within Lab 02 in Canvas. You complete it on your Ubuntu Server VM, just like the required assignment.
+</p>
+
+<div class="callout-warn callout">
+<strong>Before you start:</strong> Take a VM snapshot. Modifying GRUB configuration is safe when done correctly, but having a snapshot means you can always roll back if something goes wrong. This is a good habit for any configuration change on a Linux system.
+</div>
+
+<h3>What you will do</h3>
+<p>
+You will read about GRUB2 configuration from two free resources, then modify the GRUB timeout value on your VM and document the change. This is a natural extension of the required assignment, where you examined GRUB configuration with <code>cat /etc/default/grub</code>. Now you actually change it.
+</p>
+
+<h3>Step by step</h3>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">1</span>
+<div class="step-content">
+<strong>Read the resources.</strong> Review the relevant sections of the GNU GRUB Manual and the Ubuntu Community Help Wiki page on Grub2 (both listed in the Resources section below). You do not need to read either document cover to cover. Focus on the sections about <code>/etc/default/grub</code> and the <code>GRUB_TIMEOUT</code> setting. The Ubuntu wiki page is particularly practical and Ubuntu-specific.
+</div>
+</div>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">2</span>
+<div class="step-content">
+<strong>Check your current GRUB timeout.</strong> You already did this in Part B of the required assignment. Run:
+<pre><code>cat /etc/default/grub</code></pre>
+Note the current value of <code>GRUB_TIMEOUT</code>. On a default Ubuntu Server install, this is typically <code>0</code> (meaning the GRUB menu is hidden and boot proceeds immediately). Take a screenshot of this output. This is your "before" screenshot.
+</div>
+</div>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">3</span>
+<div class="step-content">
+<strong>Edit the GRUB defaults file.</strong> Open <code>/etc/default/grub</code> in a text editor with sudo:
+<pre><code>sudo nano /etc/default/grub</code></pre>
+Change the <code>GRUB_TIMEOUT</code> value to something visible, like <code>10</code> (which means GRUB will display its menu for 10 seconds before auto-booting). If there is a line that says <code>GRUB_TIMEOUT_STYLE=hidden</code>, change it to <code>GRUB_TIMEOUT_STYLE=menu</code> so the menu actually appears. Save and exit.
+</div>
+</div>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">4</span>
+<div class="step-content">
+<strong>Regenerate the GRUB configuration.</strong> The file you just edited is the source of truth, but GRUB does not read it directly. You need to regenerate the actual config file:
+<pre><code>sudo update-grub</code></pre>
+You should see output indicating that a new <code>grub.cfg</code> was generated. If you see errors, double-check your edits to <code>/etc/default/grub</code> for typos.
+</div>
+</div>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">5</span>
+<div class="step-content">
+<strong>Verify the change.</strong> Run <code>cat /etc/default/grub</code> again and take a screenshot showing the new timeout value. This is your "after" screenshot. If you want to fully verify, reboot your VM and watch for the GRUB menu. With a timeout of 10, you should see the menu appear and count down before booting. (On VirtualBox, you may need to watch the VM console window. On UTM, watch the display window.)
+</div>
+</div>
+
+<div class="step-row">
+<span class="step-num" aria-hidden="true">6</span>
+<div class="step-content">
+<strong>Document and submit.</strong> Your submission (as part of Lab 02) should include:
+<ul style="margin-top:.4rem">
+<li>Your "before" screenshot showing the original <code>GRUB_TIMEOUT</code> value</li>
+<li>Your "after" screenshot showing the modified value</li>
+<li>A brief explanation (a few sentences) of what you changed, what command you used to apply the change, and what happened when you rebooted</li>
+</ul>
+</div>
+</div>
+
+<div class="callout">
+<strong>CSLO alignment:</strong> This extra credit activity maps to <strong>CSLO 3</strong> (Describe Linux runlevels and startup scripts). GRUB is the bootloader that starts the entire boot chain. Modifying its configuration is a direct, hands-on demonstration that you understand how the boot process is controlled, which is the foundation for the runlevel and startup script topics in Week 3.
+</div>
+
+<details>
+<summary>Common mistakes to watch for</summary>
+<div class="details-body">
+<ul>
+<li><strong>Forgetting to run <code>sudo update-grub</code> after editing.</strong> This is the most common mistake. If you edit <code>/etc/default/grub</code> but do not regenerate the config, nothing changes. GRUB reads <code>/boot/grub/grub.cfg</code>, not <code>/etc/default/grub</code> directly.</li>
+<li><strong>Editing <code>/boot/grub/grub.cfg</code> directly.</strong> Do not do this. That file is auto-generated. Any manual edits will be overwritten the next time <code>update-grub</code> runs (for example, after a kernel update). Always edit <code>/etc/default/grub</code> and then regenerate.</li>
+<li><strong>Leaving <code>GRUB_TIMEOUT_STYLE=hidden</code> while changing the timeout.</strong> If the style is set to "hidden," GRUB will not display the menu regardless of the timeout value. Change it to "menu" if you want to see the countdown.</li>
+<li><strong>Typos in the file.</strong> A missing equals sign or an extra space in the wrong place can cause <code>update-grub</code> to fail or produce unexpected behavior. Double-check your edits before saving.</li>
+</ul>
+</div>
+</details>
+
+<!-- Resources -->
+<h2 id="resources">Resources</h2>
+
+<p>
+These are the resources referenced by the extra credit activity and the additional investigation activities. All are freely available online.
+</p>
+
+<h3>Extra credit reading (required for the GRUB Modification)</h3>
+<ul class="resource-list">
+<li>
+<strong>GNU GRUB Manual</strong>
+<span class="meta">The official manual for GRUB2. Focus on the "Simple configuration" section, which covers <code>/etc/default/grub</code> and its settings. You do not need to read the entire manual.</span>
+<br><span class="meta">https://www.gnu.org/software/grub/manual/grub/grub.html</span>
+</li>
+<li>
+<strong>Ubuntu Community Help Wiki: Grub2</strong>
+<span class="meta">A practical, Ubuntu-focused guide to GRUB2 configuration. Covers common tasks like changing the timeout, setting the default boot entry, and troubleshooting. This is often easier to follow than the official GNU manual for specific Ubuntu tasks.</span>
+<br><span class="meta">https://help.ubuntu.com/community/Grub2</span>
+</li>
+</ul>
+
+<h3>Boot process resources (from this week's reading list)</h3>
+<ul class="resource-list">
+<li>
+<strong>The Linux Foundation: "An Introduction to the Linux Boot and Startup Processes"</strong>
+<span class="meta">A clear walkthrough of the boot stages from firmware through systemd. Good companion to the required assignment's Part B.</span>
+<br><span class="meta">https://www.linux.com/training-tutorials/how-linux-boots/</span>
+</li>
+<li>
+<strong>Ubuntu Community Help Wiki: Boot Process</strong>
+<span class="meta">Ubuntu-specific description of how the boot sequence works, including GRUB2 and systemd.</span>
+<br><span class="meta">https://help.ubuntu.com/community/LinuxBootProcess</span>
+</li>
+<li>
+<strong>Arch Wiki: Arch boot process</strong>
+<span class="meta">Written for Arch Linux, but one of the clearest explanations of firmware, bootloader, kernel, and init stages available. The concepts apply to Ubuntu and any other distribution.</span>
+<br><span class="meta">https://wiki.archlinux.org/title/Arch_boot_process</span>
+</li>
+</ul>
+
+<h3>Kernel module references (for additional investigation)</h3>
+<ul class="resource-list">
+<li>
+<strong>Ubuntu Manpages: lsmod(8), modprobe(8), modinfo(8)</strong>
+<span class="meta">Official manpages for the kernel module commands. Useful as quick references when you are exploring modules on your VM.</span>
+<br><span class="meta">https://manpages.ubuntu.com/manpages/noble/man8/lsmod.8.html</span>
+<br><span class="meta">https://manpages.ubuntu.com/manpages/noble/man8/modprobe.8.html</span>
+<br><span class="meta">https://manpages.ubuntu.com/manpages/noble/man8/modinfo.8.html</span>
+</li>
+<li>
+<strong>The Linux Kernel Documentation</strong>
+<span class="meta">For students who want to go deep. This is the official kernel documentation. Start with "Linux Kernel in a Nutshell" if you are curious about how the kernel works at a more technical level. Entirely optional.</span>
+<br><span class="meta">https://www.kernel.org/doc/html/latest/</span>
+</li>
+</ul>
+
+<!-- Tips -->
+<h2 id="tips">Practical Tips</h2>
+
+<div class="card">
+<h3>Snapshots are your safety net</h3>
+<p>
+Before you try the extra credit (or any of the more adventurous investigation activities like loading and unloading kernel modules), take a VM snapshot. In VirtualBox, go to Machine > Take Snapshot. In UTM, right-click the VM and choose "Clone" or use the snapshot feature if available. If something breaks, you restore the snapshot and try again. Professional administrators do this before any significant change, and it is a habit worth building now.
+</p>
+</div>
+
+<div class="card">
+<h3>Read before you type</h3>
+<p>
+For the extra credit, spend some time with the GNU GRUB Manual and the Ubuntu wiki page before you open a terminal. Understanding what <code>GRUB_TIMEOUT</code>, <code>GRUB_TIMEOUT_STYLE</code>, and <code>update-grub</code> do conceptually makes the actual modification straightforward. Students who jump straight to editing without reading tend to make small mistakes that take longer to fix than the reading would have taken.
+</p>
+</div>
+
+<div class="card">
+<h3>Use the investigation activities to prepare for Week 3</h3>
+<p>
+The <code>systemd-analyze</code> investigation in particular is a direct preview of next week's material. If you try it now, you will already have a mental picture of how services start during boot when you begin working with <code>systemctl</code> in Week 3. That head start makes a real difference.
+</p>
+</div>
+
+<div class="card">
+<h3>Time estimate</h3>
+<p>
+The additional investigation activities are open-ended. You could spend 20 minutes or 2 hours, depending on how deep you go. The extra credit (GRUB Modification) should take roughly 1 to 1.5 hours, including the reading. If you are planning to do both, budget about 2 to 3 hours total on top of the required assignment.
+</p>
+</div>
+
+<div class="tag-row" aria-label="Key topic tags for this page">
+<span class="tag">kernel modules</span>
+<span class="tag">modinfo</span>
+<span class="tag">modprobe</span>
+<span class="tag">/proc</span>
+<span class="tag">/sys</span>
+<span class="tag">systemd-analyze</span>
+<span class="tag">dmesg</span>
+<span class="tag">journalctl</span>
+<span class="tag">GRUB2</span>
+<span class="tag">update-grub</span>
+<span class="tag">extra credit</span>
+</div>
+
+</main>
+
+<footer>
+CSC 106 - Introduction to Linux II | Week 2: Additional Investigation and Extra Credit
+</footer>
+
+</body>
+</html>
