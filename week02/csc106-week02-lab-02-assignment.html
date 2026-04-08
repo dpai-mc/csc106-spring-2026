@@ -167,7 +167,7 @@
       background: var(--blue-light);
     }
     .obj-list li::before {
-      content: '✓';
+      content: '\2713';
       position: absolute;
       left: 11px;
       color: var(--blue);
@@ -238,6 +238,84 @@
       background: #f3f4f6;
     }
     .code-ta:focus { background: #f9fafb; }
+
+    /* ── Screenshot upload fields ── */
+    .screenshot-upload-group { margin-top: 18px; }
+    .screenshot-upload-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .screenshot-upload-group .prompt-text {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      background: #fafcff;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--blue);
+      background: var(--blue-light);
+    }
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-area .upload-placeholder {
+      color: var(--muted);
+      font-size: .9rem;
+      pointer-events: none;
+    }
+    .upload-area .upload-placeholder .upload-icon {
+      display: block;
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+      color: var(--blue);
+    }
+    .img-preview {
+      margin-top: 10px;
+      display: none;
+      position: relative;
+    }
+    .img-preview img {
+      max-width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: block;
+    }
+    .img-preview .remove-img {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,.65);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-size: .8rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .img-preview .remove-img:hover { background: rgba(180,0,0,.8); }
+    .img-preview .img-name {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
 
     /* ── Collapsible hints ── */
     details {
@@ -374,7 +452,7 @@
 
     /* ── Print / Save as PDF ── */
     @media print {
-      nav, .btn-pdf { display: none !important; }
+      nav, .btn-pdf, .upload-area, .remove-img { display: none !important; }
       body { background: #fff; font-size: 11pt; }
       main { padding: 0; }
       .section-card, .lab-header {
@@ -401,12 +479,32 @@
         font-family: 'Courier New', Courier, monospace;
         font-size: 9pt;
       }
+      /* Show uploaded images in print */
+      .img-preview {
+        display: block !important;
+        break-inside: avoid;
+      }
+      .img-preview img {
+        max-width: 100%;
+        max-height: 500pt;
+        object-fit: contain;
+      }
+      .img-preview .remove-img { display: none !important; }
+      .img-preview .img-name { display: block; }
+      .no-screenshot-notice {
+        display: block !important;
+        font-style: italic;
+        color: #888;
+        padding: 8pt 0;
+        font-size: 9.5pt;
+      }
       details { break-inside: avoid; }
       details:not([open]) { display: none; }
       .phase-label { color: #555; }
       a { color: inherit; text-decoration: none; }
     }
     .print-value { display: none; }
+    .no-screenshot-notice { display: none; }
   </style>
 </head>
 <body>
@@ -445,6 +543,10 @@
     <p>In a professional environment, understanding the hardware your software runs on is not optional. Mismatched drivers, unsupported hardware, and mysterious boot failures are real problems administrators deal with. More importantly, knowing how a Linux system starts up - from the moment the power button is pressed to the login prompt - is what separates someone who can recover a broken server from someone who has to reinstall it.</p>
     <p>This week you will look under the hood. You will inspect the server's hardware using command-line tools, explore how the kernel manages devices through loadable modules, read the messages the system logged during boot, and trace the full boot sequence from firmware through GRUB to systemd. Everything you do here runs on the Ubuntu Server VM you built in Lab 1.</p>
     <p><strong>Note on virtual hardware:</strong> Your server is a virtual machine, so the "hardware" you see is emulated by the hypervisor. This is expected and normal. The commands work exactly the same way as on physical hardware, and the output is still informative - the hypervisor presents standard virtual devices to the guest OS, and those are what you will be inspecting.</p>
+
+    <div class="callout">
+      <strong>How to submit command output in this lab:</strong> Because your Ubuntu Server runs without a graphical desktop, you cannot copy and paste terminal output. Instead, you will <strong>take a screenshot</strong> of your terminal after running each command and <strong>upload the screenshot image</strong> using the upload fields provided. On your host computer, use your normal screenshot tool (Snipping Tool on Windows, Command-Shift-4 on macOS, or your hypervisor's screenshot feature) to capture the VM window showing the command and its output. Save each screenshot as a .png or .jpg file, then upload it into the matching field below. The images will be embedded in your PDF when you save.
+    </div>
   </section>
 
   <!-- ── Objectives ── -->
@@ -464,10 +566,10 @@
     <p class="phase-label">Part A of 2</p>
     <h2 id="part-a-h">Hardware and Kernel Exploration</h2>
 
-    <p>Run the six commands below on your Ubuntu Server VM. After pasting each command's output, answer the follow-up question or annotation prompt. Work through the steps in order - each one builds on the previous.</p>
+    <p>Run the six commands below on your Ubuntu Server VM. For each command, take a screenshot of your terminal showing the command and its output, then upload that screenshot. After uploading, answer the follow-up question or annotation prompt in the text field provided. Work through the steps in order.</p>
 
     <div class="callout">
-      <strong>Annotation requirement:</strong> Across all six commands in Part A, you must annotate at least five specific lines of terminal output. Each annotation should identify a specific line and explain in your own words what it means. The prompts below guide you toward this - answering each one thoroughly will meet the requirement.
+      <strong>Annotation requirement:</strong> Across all six commands in Part A, you must annotate at least five specific lines of terminal output. Each annotation should identify a specific line (you can reference what you see in your screenshot) and explain in your own words what it means. The prompts below guide you toward this - answering each one thoroughly will meet the requirement.
     </div>
 
     <ol class="step-list" aria-label="Part A steps">
@@ -479,14 +581,26 @@
           <h3>Identify the running kernel - <code>uname -a</code></h3>
           <p>This command prints a single summary line describing the running kernel and system. You ran it in Lab 1 to verify your installation - this time you will read and interpret every field.</p>
           <div class="cmd-block"><span class="prompt">$</span> uname -a</div>
-          <div class="response-group">
-            <label for="resp-uname-out">uname -a output</label>
-            <p class="prompt-text">Paste the complete output line below.</p>
-            <textarea id="resp-uname-out" name="resp-uname-out" class="code-ta" rows="3" placeholder="Linux hostname 6.8.0-xx-generic #xx-Ubuntu SMP ... x86_64 GNU/Linux"></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-uname-out">Screenshot: uname -a output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>uname -a</code> command and its output, then upload it here.</p>
+            <div class="upload-area" id="drop-uname-out">
+              <input type="file" id="img-uname-out" accept="image/*" aria-label="Upload screenshot of uname -a output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-uname-out">
+              <img src="" alt="Screenshot of uname -a output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-uname-ann">Annotation</label>
-            <p class="prompt-text">Identify and explain three fields from your output: (1) the kernel version number - what do the parts separated by dots and dashes mean? (2) the hostname - does it match what you set in Lab 1? (3) the CPU architecture - do you see <code>x86_64</code> (VirtualBox on Intel/AMD) or <code>aarch64</code> (UTM on Apple Silicon), and what does each mean?</p>
+            <p class="prompt-text">Referring to your screenshot, identify and explain three fields from the output: (1) the kernel version number - what do the parts separated by dots and dashes mean? (2) the hostname - does it match what you set in Lab 1? (3) the CPU architecture - do you see <code>x86_64</code> (VirtualBox on Intel/AMD) or <code>aarch64</code> (UTM on Apple Silicon), and what does each mean?</p>
             <textarea id="resp-uname-ann" name="resp-uname-ann" rows="6" placeholder="1. Kernel version: ...&#10;2. Hostname: ...&#10;3. Architecture: ..."></textarea>
           </div>
           <details>
@@ -513,14 +627,26 @@
           <h3>Inspect CPU information - <code>lscpu</code></h3>
           <p>This command displays a structured overview of the CPU as the kernel sees it - architecture, core count, model, and information about the virtualization environment.</p>
           <div class="cmd-block"><span class="prompt">$</span> lscpu</div>
-          <div class="response-group">
-            <label for="resp-lscpu-out">lscpu output</label>
-            <p class="prompt-text">Paste the full output below.</p>
-            <textarea id="resp-lscpu-out" name="resp-lscpu-out" class="code-ta" rows="16" placeholder="Architecture:            x86_64&#10;  CPU op-mode(s):        32-bit, 64-bit&#10;CPU(s):                  2&#10;Model name:              ...&#10;Hypervisor vendor:       ..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-lscpu-out">Screenshot: lscpu output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>lscpu</code> command and its full output. If the output is longer than one screen, you may need multiple screenshots. Upload the primary screenshot here.</p>
+            <div class="upload-area" id="drop-lscpu-out">
+              <input type="file" id="img-lscpu-out" accept="image/*" aria-label="Upload screenshot of lscpu output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-lscpu-out">
+              <img src="" alt="Screenshot of lscpu output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-lscpu-ann">Annotation</label>
-            <p class="prompt-text">From your output, identify: (1) the number of CPUs your VM is configured with, (2) the CPU model name shown, and (3) whether a <code>Hypervisor vendor</code> line appears and what value it shows. What does the presence of that line tell you about the environment your OS is running in?</p>
+            <p class="prompt-text">From your screenshot, identify: (1) the number of CPUs your VM is configured with, (2) the CPU model name shown, and (3) whether a <code>Hypervisor vendor</code> line appears and what value it shows. What does the presence of that line tell you about the environment your OS is running in?</p>
             <textarea id="resp-lscpu-ann" name="resp-lscpu-ann" rows="6" placeholder="1. CPU(s): ...&#10;2. Model name: ...&#10;3. Hypervisor vendor line: ...&#10;What it tells you: ..."></textarea>
           </div>
           <details>
@@ -539,10 +665,22 @@
           <h3>List block devices - <code>lsblk</code></h3>
           <p>Block devices are storage devices - hard disks, SSDs, and their partitions. This command shows the block devices the kernel has detected and how they are partitioned and mounted.</p>
           <div class="cmd-block"><span class="prompt">$</span> lsblk</div>
-          <div class="response-group">
-            <label for="resp-lsblk-out">lsblk output</label>
-            <p class="prompt-text">Paste the full output below.</p>
-            <textarea id="resp-lsblk-out" name="resp-lsblk-out" class="code-ta" rows="10" placeholder="NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS&#10;sda      8:0    0   20G  0 disk&#10;├─sda1   ..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-lsblk-out">Screenshot: lsblk output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>lsblk</code> command and its output, then upload it here.</p>
+            <div class="upload-area" id="drop-lsblk-out">
+              <input type="file" id="img-lsblk-out" accept="image/*" aria-label="Upload screenshot of lsblk output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-lsblk-out">
+              <img src="" alt="Screenshot of lsblk output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-lsblk-ann">Annotation</label>
@@ -572,14 +710,26 @@
           <h3>List PCI devices - <code>lspci</code></h3>
           <p>PCI is the standard bus through which the CPU communicates with most hardware: network adapters, storage controllers, display adapters, and other devices. This command lists everything the kernel sees on the PCI bus.</p>
           <div class="cmd-block"><span class="prompt">$</span> lspci</div>
-          <div class="response-group">
-            <label for="resp-lspci-out">lspci output</label>
-            <p class="prompt-text">Paste the full output below.</p>
-            <textarea id="resp-lspci-out" name="resp-lspci-out" class="code-ta" rows="10" placeholder="00:00.0 Host bridge: Intel Corporation ...&#10;00:01.0 PCI bridge: ...&#10;00:03.0 Ethernet controller: ..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-lspci-out">Screenshot: lspci output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>lspci</code> command and its output, then upload it here.</p>
+            <div class="upload-area" id="drop-lspci-out">
+              <input type="file" id="img-lspci-out" accept="image/*" aria-label="Upload screenshot of lspci output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-lspci-out">
+              <img src="" alt="Screenshot of lspci output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-lspci-ann">Annotation</label>
-            <p class="prompt-text">Pick two devices from your <code>lspci</code> output. For each, write the device category (the part before the colon, e.g., "Ethernet controller") and the device name. Do either of them look like emulated or virtual hardware based on the name? How can you tell?</p>
+            <p class="prompt-text">Pick two devices from your screenshot. For each, write the device category (the part before the colon, e.g., "Ethernet controller") and the device name. Do either of them look like emulated or virtual hardware based on the name? How can you tell?</p>
             <textarea id="resp-lspci-ann" name="resp-lspci-ann" rows="6" placeholder="Device 1 - Category: ...  Name: ...&#10;Device 2 - Category: ...  Name: ...&#10;&#10;Virtual/emulated hardware? How can you tell: ..."></textarea>
           </div>
           <details>
@@ -606,17 +756,41 @@
           <p>The Linux kernel is modular: drivers and features are compiled as separate modules and loaded into memory on demand, rather than all being baked into the kernel image. This keeps the kernel lean and allows drivers to be added or removed without rebooting.</p>
           <p>First, list all currently loaded modules:</p>
           <div class="cmd-block"><span class="prompt">$</span> lsmod</div>
-          <div class="response-group">
-            <label for="resp-lsmod-out">lsmod output</label>
-            <p class="prompt-text">Paste the full output below. The list may be long - that is expected.</p>
-            <textarea id="resp-lsmod-out" name="resp-lsmod-out" class="code-ta" rows="14" placeholder="Module                  Size  Used by&#10;..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-lsmod-out">Screenshot: lsmod output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>lsmod</code> command and its output. The list may be long, so capture at least the first screenful. Upload it here.</p>
+            <div class="upload-area" id="drop-lsmod-out">
+              <input type="file" id="img-lsmod-out" accept="image/*" aria-label="Upload screenshot of lsmod output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-lsmod-out">
+              <img src="" alt="Screenshot of lsmod output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <p>Now pick one module from your list and run <code>modinfo</code> on it to see its details. Good candidates include network drivers (such as <code>e1000</code> or <code>virtio_net</code>) or filesystem modules (such as <code>ext4</code>). Replace <code>&lt;module-name&gt;</code> with the actual module name:</p>
           <div class="cmd-block"><span class="prompt">$</span> modinfo &lt;module-name&gt;</div>
-          <div class="response-group">
-            <label for="resp-modinfo-out">modinfo output</label>
-            <p class="prompt-text">Paste the full output of <code>modinfo</code> for the module you chose.</p>
-            <textarea id="resp-modinfo-out" name="resp-modinfo-out" class="code-ta" rows="12" placeholder="filename:       /lib/modules/.../...ko.zst&#10;description:    ...&#10;author:         ...&#10;depends:        ..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-modinfo-out">Screenshot: modinfo output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>modinfo</code> command and its output for the module you chose. Upload it here.</p>
+            <div class="upload-area" id="drop-modinfo-out">
+              <input type="file" id="img-modinfo-out" accept="image/*" aria-label="Upload screenshot of modinfo output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-modinfo-out">
+              <img src="" alt="Screenshot of modinfo output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-lsmod-ann">Annotation</label>
@@ -646,14 +820,26 @@
           <p>The kernel maintains a ring buffer of messages logged since it started - hardware detection, driver loading, filesystem mounting, and ongoing hardware events. This buffer is what <code>dmesg</code> reads. Limiting output to the first 50 lines shows the earliest boot events: the very first things the kernel reported after it began running.</p>
           <div class="cmd-block"><span class="prompt">$</span> sudo dmesg | head -50</div>
           <p>On some Ubuntu versions, reading the full ring buffer requires <code>sudo</code>. If the command runs without it, that is fine too - try without <code>sudo</code> first.</p>
-          <div class="response-group">
-            <label for="resp-dmesg-out">dmesg | head -50 output</label>
-            <p class="prompt-text">Paste the output below.</p>
-            <textarea id="resp-dmesg-out" name="resp-dmesg-out" class="code-ta" rows="16" placeholder="[    0.000000] Linux version 6.8.0-xx-generic (buildd@...) ...&#10;[    0.000000] Command line: ...&#10;[    0.000000] BIOS-provided physical RAM map:&#10;..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-dmesg-out">Screenshot: dmesg | head -50 output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>dmesg</code> command and its output. You may need to scroll up in your terminal or take two screenshots to capture all 50 lines. Upload the primary screenshot here.</p>
+            <div class="upload-area" id="drop-dmesg-out">
+              <input type="file" id="img-dmesg-out" accept="image/*" aria-label="Upload screenshot of dmesg output">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-dmesg-out">
+              <img src="" alt="Screenshot of dmesg output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-dmesg-ann">Annotation</label>
-            <p class="prompt-text">Pick two specific lines from your <code>dmesg</code> output and explain what each one is reporting. Include the timestamp (the number in brackets) when quoting a line. Look for lines about the kernel version, CPU detection, memory, or a device being recognized.</p>
+            <p class="prompt-text">Pick two specific lines visible in your screenshot and explain what each one is reporting. Include the timestamp (the number in brackets) when referencing a line. Look for lines about the kernel version, CPU detection, memory, or a device being recognized.</p>
             <textarea id="resp-dmesg-ann" name="resp-dmesg-ann" rows="8" placeholder="Line 1 - timestamp [    x.xxxxxx]:&#10;Quote the line: ...&#10;What it means: ...&#10;&#10;Line 2 - timestamp [    x.xxxxxx]:&#10;Quote the line: ...&#10;What it means: ..."></textarea>
           </div>
           <details>
@@ -691,10 +877,22 @@
           <h3>Examine the GRUB configuration</h3>
           <p>GRUB2 uses a two-file design: <code>/etc/default/grub</code> is the human-editable settings file, and <code>/boot/grub/grub.cfg</code> is the actual boot configuration - generated from it. Read the editable source:</p>
           <div class="cmd-block"><span class="prompt">$</span> cat /etc/default/grub</div>
-          <div class="response-group">
-            <label for="resp-grub-out">/etc/default/grub output</label>
-            <p class="prompt-text">Paste the full output below.</p>
-            <textarea id="resp-grub-out" name="resp-grub-out" class="code-ta" rows="14" placeholder="# If you change this file, run 'update-grub' afterwards to update&#10;# /boot/grub/grub.cfg.&#10;GRUB_DEFAULT=0&#10;GRUB_TIMEOUT_STYLE=hidden&#10;GRUB_TIMEOUT=0&#10;GRUB_CMDLINE_LINUX_DEFAULT=&quot;quiet splash&quot;&#10;..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-grub-out">Screenshot: /etc/default/grub output</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the <code>cat /etc/default/grub</code> command and its output. Upload it here.</p>
+            <div class="upload-area" id="drop-grub-out">
+              <input type="file" id="img-grub-out" accept="image/*" aria-label="Upload screenshot of GRUB config">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-grub-out">
+              <img src="" alt="Screenshot of /etc/default/grub output">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
           <div class="response-group">
             <label for="resp-grub-q1">Question 1 - GRUB_TIMEOUT</label>
@@ -728,48 +926,144 @@
           <h3>Review the boot log and answer guided questions</h3>
           <p><code>journalctl -b</code> displays all log entries from the current boot session - from kernel startup through every service that launched. Start by viewing the opening lines of the log, then use targeted follow-up commands to answer each question below.</p>
           <div class="cmd-block"><span class="prompt">$</span> journalctl -b --no-pager | head -30</div>
-          <div class="response-group">
-            <label for="resp-journal-top">First 30 lines of boot log</label>
-            <p class="prompt-text">Paste the output of the command above.</p>
-            <textarea id="resp-journal-top" name="resp-journal-top" class="code-ta" rows="14" placeholder="-- Boot 8f3abc... --&#10;Apr 05 ... kernel: Linux version 6.8.0-xx-generic ...&#10;..."></textarea>
+          <div class="screenshot-upload-group">
+            <label for="img-journal-top">Screenshot: First 30 lines of boot log</label>
+            <p class="prompt-text">Take a screenshot of your terminal showing the command above and its output. Upload it here.</p>
+            <div class="upload-area" id="drop-journal-top">
+              <input type="file" id="img-journal-top" accept="image/*" aria-label="Upload screenshot of journalctl boot log">
+              <div class="upload-placeholder">
+                <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                Click to select or drag and drop your screenshot here
+              </div>
+            </div>
+            <div class="img-preview" id="preview-journal-top">
+              <img src="" alt="Screenshot of first 30 lines of boot log">
+              <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+              <div class="img-name"></div>
+            </div>
+            <div class="no-screenshot-notice">(No screenshot uploaded)</div>
           </div>
 
           <h3>Guided Questions</h3>
 
           <div class="response-group">
             <label for="resp-bq1">Question 1 - Kernel version</label>
-            <p class="prompt-text">What kernel version loaded during this boot? Find the line in the log that contains <code>Linux version</code> and paste it here. Does the version match what <code>uname -a</code> showed you in Part A?</p>
+            <p class="prompt-text">What kernel version loaded during this boot? Find the line in your screenshot that contains <code>Linux version</code> and type it here. Does the version match what <code>uname -a</code> showed you in Part A?</p>
             <textarea id="resp-bq1" name="resp-bq1" rows="4" placeholder="Kernel line from boot log: ...&#10;Does it match uname -a output from Part A? ..."></textarea>
           </div>
 
           <div class="response-group">
             <label for="resp-bq2">Question 2 - Boot time</label>
-            <p class="prompt-text">How long did this boot take? While you could search through the <code>journalctl -b</code> output for timing information, <code>systemd-analyze</code> is a dedicated tool that reads systemd's internal records and gives you a clean one-line summary instead. It breaks total startup time into three phases: firmware (time before the bootloader), bootloader (GRUB loading the kernel), and userspace (systemd starting services). Run it, paste the output, and explain in your own words what each phase represents.</p>
+            <p class="prompt-text">How long did this boot take? While you could search through the <code>journalctl -b</code> output for timing information, <code>systemd-analyze</code> is a dedicated tool that reads systemd's internal records and gives you a clean one-line summary instead. It breaks total startup time into three phases: firmware (time before the bootloader), bootloader (GRUB loading the kernel), and userspace (systemd starting services). Run it, take a screenshot, upload it, and explain in your own words what each phase represents.</p>
             <div class="cmd-block"><span class="prompt">$</span> systemd-analyze</div>
-            <textarea id="resp-bq2" name="resp-bq2" class="code-ta" rows="5" placeholder="Paste systemd-analyze output here...&#10;&#10;Explanation: ..."></textarea>
+            <div class="screenshot-upload-group">
+              <label for="img-bq2">Screenshot: systemd-analyze output</label>
+              <p class="prompt-text">Upload a screenshot of your <code>systemd-analyze</code> output.</p>
+              <div class="upload-area" id="drop-bq2">
+                <input type="file" id="img-bq2" accept="image/*" aria-label="Upload screenshot of systemd-analyze output">
+                <div class="upload-placeholder">
+                  <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                  Click to select or drag and drop your screenshot here
+                </div>
+              </div>
+              <div class="img-preview" id="preview-bq2">
+                <img src="" alt="Screenshot of systemd-analyze output">
+                <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+                <div class="img-name"></div>
+              </div>
+              <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+            </div>
+            <textarea id="resp-bq2" name="resp-bq2" rows="5" placeholder="Explanation of the three phases: ..."></textarea>
           </div>
 
           <div class="response-group">
             <label for="resp-bq3">Question 3 - Last service to start</label>
-            <p class="prompt-text">What was the last major service to start before the system was ready? Search the boot log for service start events and look at the ones near the end:</p>
+            <p class="prompt-text">What was the last major service to start before the system was ready? Run the two commands below, take a screenshot of each, and upload them. Then identify the last service and the slowest service.</p>
             <div class="cmd-block"><span class="prompt">$</span> journalctl -b --no-pager | grep "Started" | tail -10</div>
-            <p class="prompt-text" style="margin-top: 8px;">Paste the output and identify what the last service was. Also run the command below and paste its output - which service took the longest to start?</p>
+            <div class="screenshot-upload-group">
+              <label for="img-bq3a">Screenshot: Last 10 "Started" services</label>
+              <p class="prompt-text">Upload a screenshot of the <code>journalctl ... grep "Started" | tail -10</code> output.</p>
+              <div class="upload-area" id="drop-bq3a">
+                <input type="file" id="img-bq3a" accept="image/*" aria-label="Upload screenshot of last started services">
+                <div class="upload-placeholder">
+                  <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                  Click to select or drag and drop your screenshot here
+                </div>
+              </div>
+              <div class="img-preview" id="preview-bq3a">
+                <img src="" alt="Screenshot of last started services">
+                <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+                <div class="img-name"></div>
+              </div>
+              <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+            </div>
             <div class="cmd-block"><span class="prompt">$</span> systemd-analyze blame | head -10</div>
-            <textarea id="resp-bq3" name="resp-bq3" class="code-ta" rows="12" placeholder="journalctl | grep 'Started' | tail output:&#10;...&#10;&#10;Last service to start: ...&#10;&#10;systemd-analyze blame output:&#10;...&#10;&#10;Slowest service: ..."></textarea>
+            <div class="screenshot-upload-group">
+              <label for="img-bq3b">Screenshot: systemd-analyze blame output</label>
+              <p class="prompt-text">Upload a screenshot of the <code>systemd-analyze blame | head -10</code> output.</p>
+              <div class="upload-area" id="drop-bq3b">
+                <input type="file" id="img-bq3b" accept="image/*" aria-label="Upload screenshot of systemd-analyze blame">
+                <div class="upload-placeholder">
+                  <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                  Click to select or drag and drop your screenshot here
+                </div>
+              </div>
+              <div class="img-preview" id="preview-bq3b">
+                <img src="" alt="Screenshot of systemd-analyze blame output">
+                <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+                <div class="img-name"></div>
+              </div>
+              <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+            </div>
+            <textarea id="resp-bq3" name="resp-bq3" rows="5" placeholder="Last service to start: ...&#10;Slowest service: ..."></textarea>
           </div>
 
           <div class="response-group">
             <label for="resp-bq4">Question 4 - Errors and warnings</label>
-            <p class="prompt-text">Did the boot log contain any errors? Run the command below to filter for error-level messages and paste the output. If nothing appears, note that and explain what it means for the health of your system.</p>
+            <p class="prompt-text">Did the boot log contain any errors? Run the command below, take a screenshot, and upload it. If nothing appears, note that and explain what it means for the health of your system.</p>
             <div class="cmd-block"><span class="prompt">$</span> journalctl -b -p err --no-pager</div>
-            <textarea id="resp-bq4" name="resp-bq4" class="code-ta" rows="7" placeholder="Paste output here (or note if empty)...&#10;&#10;What does this tell you about your system: ..."></textarea>
+            <div class="screenshot-upload-group">
+              <label for="img-bq4">Screenshot: Error-level boot messages</label>
+              <p class="prompt-text">Upload a screenshot of the <code>journalctl -b -p err</code> output (even if the output is empty or shows only a header).</p>
+              <div class="upload-area" id="drop-bq4">
+                <input type="file" id="img-bq4" accept="image/*" aria-label="Upload screenshot of error-level boot messages">
+                <div class="upload-placeholder">
+                  <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                  Click to select or drag and drop your screenshot here
+                </div>
+              </div>
+              <div class="img-preview" id="preview-bq4">
+                <img src="" alt="Screenshot of error-level boot messages">
+                <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+                <div class="img-name"></div>
+              </div>
+              <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+            </div>
+            <textarea id="resp-bq4" name="resp-bq4" rows="4" placeholder="What does this tell you about your system: ..."></textarea>
           </div>
 
           <div class="response-group">
             <label for="resp-bq5">Question 5 - PID 1</label>
-            <p class="prompt-text">PID 1 is the first user-space process the kernel starts after it finishes initializing. Every other process on the system is a descendant of it. Run the command below, paste its output, and explain: what is PID 1 on your system, and what does that tell you about how services are managed?</p>
+            <p class="prompt-text">PID 1 is the first user-space process the kernel starts after it finishes initializing. Every other process on the system is a descendant of it. Run the command below, take a screenshot, and upload it. Then explain: what is PID 1 on your system, and what does that tell you about how services are managed?</p>
             <div class="cmd-block"><span class="prompt">$</span> ps -p 1</div>
-            <textarea id="resp-bq5" name="resp-bq5" class="code-ta" rows="6" placeholder="Paste ps -p 1 output here...&#10;&#10;What is PID 1, and what role does it play: ..."></textarea>
+            <div class="screenshot-upload-group">
+              <label for="img-bq5">Screenshot: ps -p 1 output</label>
+              <p class="prompt-text">Upload a screenshot of the <code>ps -p 1</code> output.</p>
+              <div class="upload-area" id="drop-bq5">
+                <input type="file" id="img-bq5" accept="image/*" aria-label="Upload screenshot of ps -p 1 output">
+                <div class="upload-placeholder">
+                  <span class="upload-icon" aria-hidden="true">&#128247;</span>
+                  Click to select or drag and drop your screenshot here
+                </div>
+              </div>
+              <div class="img-preview" id="preview-bq5">
+                <img src="" alt="Screenshot of ps -p 1 output">
+                <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+                <div class="img-name"></div>
+              </div>
+              <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+            </div>
+            <textarea id="resp-bq5" name="resp-bq5" rows="5" placeholder="What is PID 1, and what role does it play: ..."></textarea>
           </div>
 
           <details>
@@ -807,21 +1101,61 @@
     </div>
 
     <h3>Screenshot Checklist</h3>
-    <p>Capture these screenshots as you work. Submit them alongside your completed lab PDF in Canvas.</p>
-    <ul class="ss-list" role="list">
-      <li>
-        <input type="checkbox" id="ec-ss1">
-        <label for="ec-ss1">Terminal showing <code>/etc/default/grub</code> <strong>before</strong> your change, with the original <code>GRUB_TIMEOUT</code> value visible</label>
-      </li>
-      <li>
-        <input type="checkbox" id="ec-ss2">
-        <label for="ec-ss2">Terminal output of the command used to apply the change (e.g., <code>sudo update-grub</code>)</label>
-      </li>
-      <li>
-        <input type="checkbox" id="ec-ss3">
-        <label for="ec-ss3">Terminal showing <code>/etc/default/grub</code> <strong>after</strong> your change, confirming the new value</label>
-      </li>
-    </ul>
+    <p>Capture and upload these screenshots as you work.</p>
+
+    <div class="screenshot-upload-group">
+      <label for="img-ec-ss1">Screenshot 1: GRUB config BEFORE your change</label>
+      <p class="prompt-text">Terminal showing <code>/etc/default/grub</code> <strong>before</strong> your change, with the original <code>GRUB_TIMEOUT</code> value visible.</p>
+      <div class="upload-area" id="drop-ec-ss1">
+        <input type="file" id="img-ec-ss1" accept="image/*" aria-label="Upload screenshot of GRUB config before change">
+        <div class="upload-placeholder">
+          <span class="upload-icon" aria-hidden="true">&#128247;</span>
+          Click to select or drag and drop your screenshot here
+        </div>
+      </div>
+      <div class="img-preview" id="preview-ec-ss1">
+        <img src="" alt="Screenshot of GRUB config before change">
+        <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+        <div class="img-name"></div>
+      </div>
+      <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+    </div>
+
+    <div class="screenshot-upload-group">
+      <label for="img-ec-ss2">Screenshot 2: update-grub output</label>
+      <p class="prompt-text">Terminal output of the command used to apply the change (e.g., <code>sudo update-grub</code>).</p>
+      <div class="upload-area" id="drop-ec-ss2">
+        <input type="file" id="img-ec-ss2" accept="image/*" aria-label="Upload screenshot of update-grub output">
+        <div class="upload-placeholder">
+          <span class="upload-icon" aria-hidden="true">&#128247;</span>
+          Click to select or drag and drop your screenshot here
+        </div>
+      </div>
+      <div class="img-preview" id="preview-ec-ss2">
+        <img src="" alt="Screenshot of update-grub output">
+        <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+        <div class="img-name"></div>
+      </div>
+      <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+    </div>
+
+    <div class="screenshot-upload-group">
+      <label for="img-ec-ss3">Screenshot 3: GRUB config AFTER your change</label>
+      <p class="prompt-text">Terminal showing <code>/etc/default/grub</code> <strong>after</strong> your change, confirming the new value.</p>
+      <div class="upload-area" id="drop-ec-ss3">
+        <input type="file" id="img-ec-ss3" accept="image/*" aria-label="Upload screenshot of GRUB config after change">
+        <div class="upload-placeholder">
+          <span class="upload-icon" aria-hidden="true">&#128247;</span>
+          Click to select or drag and drop your screenshot here
+        </div>
+      </div>
+      <div class="img-preview" id="preview-ec-ss3">
+        <img src="" alt="Screenshot of GRUB config after change">
+        <button class="remove-img" type="button" aria-label="Remove uploaded image">Remove</button>
+        <div class="img-name"></div>
+      </div>
+      <div class="no-screenshot-notice">(No screenshot uploaded)</div>
+    </div>
 
     <div class="response-group">
       <label for="resp-ec-change">What change did you make?</label>
@@ -831,7 +1165,7 @@
 
     <div class="response-group">
       <label for="resp-ec-commands">Commands used</label>
-      <p class="prompt-text">List every command you ran to make and apply the change, in the order you ran them - from opening the file to editor, to regenerating the config, to rebooting.</p>
+      <p class="prompt-text">List every command you ran to make and apply the change, in the order you ran them - from opening the file in an editor, to regenerating the config, to rebooting.</p>
       <textarea id="resp-ec-commands" name="resp-ec-commands" class="code-ta" rows="6" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
     </div>
 
@@ -856,16 +1190,16 @@
     <div class="submit-grid">
       <div class="submit-item">
         <h3>Completed lab (PDF)</h3>
-        <p>Use the Save as PDF button below to export this page with all your typed responses. Upload the resulting PDF to Canvas.</p>
+        <p>Use the Save as PDF button below to export this page with all your uploaded screenshots and typed responses. The images will be embedded in the PDF. Upload the resulting PDF to Canvas.</p>
       </div>
       <div class="submit-item">
         <h3>Extra credit screenshots (if applicable)</h3>
-        <p>If you completed the GRUB Modification section, include your three before/after screenshots as image files (.png or .jpg) or combined into the PDF.</p>
+        <p>If you completed the GRUB Modification section, your extra credit screenshots are already included in the PDF through the upload fields above.</p>
       </div>
     </div>
 
     <div class="callout">
-      <strong>Before saving:</strong> Scroll back through Parts A and B and confirm: (1) all six command outputs are pasted in Part A and each annotation prompt is answered; (2) you have annotated at least five specific lines across Part A; (3) all five guided questions in Part B are answered, including the boot log excerpt and the GRUB config questions. Your typed responses will appear in the exported PDF.
+      <strong>Before saving:</strong> Scroll back through Parts A and B and confirm: (1) all command output screenshots are uploaded in Part A and each annotation prompt is answered; (2) you have annotated at least five specific lines across Part A; (3) all five guided questions in Part B are answered with screenshots uploaded and text responses completed; (4) all uploaded images show a preview below their upload field. Your screenshots and typed responses will appear in the exported PDF.
     </div>
 
     <button class="btn-pdf" onclick="saveAsPDF()" type="button">
@@ -876,7 +1210,7 @@
 </main>
 
 <script>
-  // Scroll-spy: highlight active nav link
+  // ── Scroll-spy: highlight active nav link ──
   (function () {
     var sections = ['scenario', 'objectives', 'part-a', 'part-b', 'extra-credit', 'submission'];
     var links = {};
@@ -898,8 +1232,65 @@
     });
   })();
 
-  // Save as PDF: sync textarea values to print divs, open hints, print, restore
+  // ── Screenshot upload handling ──
+  (function () {
+    document.querySelectorAll('.upload-area').forEach(function (area) {
+      var input = area.querySelector('input[type="file"]');
+      var previewContainer = area.parentElement.querySelector('.img-preview');
+      var previewImg = previewContainer.querySelector('img');
+      var removeBtn = previewContainer.querySelector('.remove-img');
+      var nameEl = previewContainer.querySelector('.img-name');
+      var noNotice = area.parentElement.querySelector('.no-screenshot-notice');
+
+      // Drag-and-drop visual feedback
+      area.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        area.classList.add('dragover');
+      });
+      area.addEventListener('dragleave', function () {
+        area.classList.remove('dragover');
+      });
+      area.addEventListener('drop', function (e) {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          input.files = e.dataTransfer.files;
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      input.addEventListener('change', function () {
+        if (input.files && input.files.length > 0) {
+          handleFile(input.files[0]);
+        }
+      });
+
+      removeBtn.addEventListener('click', function () {
+        input.value = '';
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+        area.style.display = '';
+        if (noNotice) noNotice.style.display = '';
+      });
+
+      function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          previewImg.src = e.target.result;
+          nameEl.textContent = file.name;
+          previewContainer.style.display = 'block';
+          area.style.display = 'none';
+          if (noNotice) noNotice.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  })();
+
+  // ── Save as PDF: sync textarea values to print divs, show images, open hints, print, restore ──
   function saveAsPDF() {
+    // Sync textareas to print-value divs
     document.querySelectorAll('textarea').forEach(function (ta) {
       var pv = ta.parentNode.querySelector('.print-value');
       if (!pv) {
@@ -910,6 +1301,15 @@
       pv.textContent = ta.value.trim() || '(No response entered)';
     });
 
+    // For screenshots without an uploaded image, make the notice visible for print
+    document.querySelectorAll('.no-screenshot-notice').forEach(function (notice) {
+      var preview = notice.parentElement.querySelector('.img-preview');
+      if (preview && preview.style.display === 'block') {
+        notice.style.display = 'none';
+      }
+    });
+
+    // Open all collapsed hints for print
     var closed = [];
     document.querySelectorAll('details:not([open])').forEach(function (d) {
       closed.push(d);
