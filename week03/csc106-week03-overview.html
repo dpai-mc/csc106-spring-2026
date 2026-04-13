@@ -278,6 +278,7 @@
     .b-lab        { background: #dbeafe; color: #1e40af; }
     .b-quiz       { background: #fce7f3; color: #9d174d; }
     .b-discussion { background: #d1fae5; color: #065f46; }
+    .b-extra      { background: #fdf4e7; color: #7c4d00; border: 1px solid #e6a800; }
     .item-note { font-size: 0.82rem; color: var(--muted); }
 
     .progress-wrap {
@@ -391,31 +392,23 @@
     <ul class="goals" role="list">
       <li>
         <span class="goal-num" aria-hidden="true">1</span>
-        <span>Trace the Linux boot sequence from firmware (BIOS/UEFI) through the bootloader and kernel to a working login prompt.</span>
+        <span>Explain the concept of runlevels and their modern equivalent, <code>systemd</code> targets.</span>
       </li>
       <li>
         <span class="goal-num" aria-hidden="true">2</span>
-        <span>Identify the traditional SysV runlevels 0 through 6 and describe the purpose of each one.</span>
+        <span>Use <code>systemctl</code> to start, stop, enable, disable, and check the status of services.</span>
       </li>
       <li>
         <span class="goal-num" aria-hidden="true">3</span>
-        <span>Explain what <code>systemd</code> is and why it replaced SysV init on most modern distributions.</span>
+        <span>Change the default <code>systemd</code> target and boot into rescue mode.</span>
       </li>
       <li>
         <span class="goal-num" aria-hidden="true">4</span>
-        <span>Map traditional runlevels to their equivalent <code>systemd</code> targets, including <code>multi-user.target</code> and <code>graphical.target</code>.</span>
+        <span>Describe how startup scripts and unit files control what runs at boot.</span>
       </li>
       <li>
         <span class="goal-num" aria-hidden="true">5</span>
-        <span>Use <code>systemctl</code> to start, stop, restart, reload, enable, disable, and check the status of a service.</span>
-      </li>
-      <li>
-        <span class="goal-num" aria-hidden="true">6</span>
-        <span>Describe the three sections of a <code>.service</code> unit file and write a simple one from scratch.</span>
-      </li>
-      <li>
-        <span class="goal-num" aria-hidden="true">7</span>
-        <span>Use <code>journalctl</code> with common flags to view and filter logs for a specific service, boot session, or time window.</span>
+        <span>Perform clean shutdowns and reboots from the command line using <code>shutdown</code>, <code>reboot</code>, and <code>systemctl poweroff</code>.</span>
       </li>
     </ul>
   </section>
@@ -437,11 +430,11 @@
         <ul class="arc-list" role="list">
           <li class="past">
             <span class="arc-tag past">Wk 1</span>
-            Shell Review, Navigation, and the File System Hierarchy
+            Linux Installation and Package Management
           </li>
           <li class="past">
             <span class="arc-tag past">Wk 2</span>
-            Permissions, Ownership, and File Management
+            Hardware, the Kernel, and the Boot Process
           </li>
           <li class="current" aria-current="step">
             <span class="arc-tag current">Wk 3</span>
@@ -449,23 +442,23 @@
           </li>
           <li class="future">
             <span class="arc-tag future">Wk 4</span>
-            Process Management and Job Scheduling
+            Advanced Shell Scripting and Mini-Project 1
           </li>
           <li class="future">
             <span class="arc-tag future">Wk 5</span>
-            Networking Fundamentals
+            Users, Groups, and System Security
           </li>
           <li class="future">
             <span class="arc-tag future">Wk 6</span>
-            Shell Scripting
+            File Permissions, Ownership, and Networking Fundamentals
           </li>
           <li class="future">
             <span class="arc-tag future">Wk 7</span>
-            Package Management and Software Installation
+            Network Configuration, Server Setup, and Security
           </li>
           <li class="future">
             <span class="arc-tag future">Wk 8</span>
-            System Administration and Final Project
+            Integration, Review, and Mini-Project 2
           </li>
         </ul>
       </div>
@@ -483,12 +476,12 @@
 
       <li role="listitem">
         <label>
-          <input type="checkbox" data-key="w3-reading" aria-label="Week 3 Reading: The Linux Boot Process and systemd" />
+          <input type="checkbox" data-key="w3-reading" aria-label="Reading: Linux Essentials Lesson 13 (Cisco Networking Academy) — init and systemd sections" />
           <span class="item-body">
-            <span class="item-name">Week 3 Reading: The Linux Boot Process and systemd</span>
+            <span class="item-name">Reading: Linux Essentials Lesson 13 (Cisco Networking Academy)</span>
             <span class="item-meta">
               <span class="badge b-reading">Reading</span>
-              <span class="item-note">Complete before starting the labs.</span>
+              <span class="item-note">Review the init and systemd sections. This is a targeted re-read, not the full chapter. Complete before the hands-on assignment.</span>
             </span>
           </span>
         </label>
@@ -496,12 +489,12 @@
 
       <li role="listitem">
         <label>
-          <input type="checkbox" data-key="w3-video" aria-label="Week 3 Lecture Video: systemd Concepts and systemctl Walkthrough" />
+          <input type="checkbox" data-key="w3-reading-supplemental" aria-label="Additional Readings: Supplemental resources posted on Canvas" />
           <span class="item-body">
-            <span class="item-name">Week 3 Lecture Video: systemd Concepts and systemctl Walkthrough</span>
+            <span class="item-name">Additional Readings: Supplemental resources posted on Canvas</span>
             <span class="item-meta">
-              <span class="badge b-video">Video</span>
-              <span class="item-note">Watch before attempting the lab exercises.</span>
+              <span class="badge b-reading">Reading</span>
+              <span class="item-note">Free web resources supplementing Lesson 13. Links and guidance are posted on the Canvas course page.</span>
             </span>
           </span>
         </label>
@@ -509,12 +502,12 @@
 
       <li role="listitem">
         <label>
-          <input type="checkbox" data-key="w3-lab3a" aria-label="Lab 3A: Exploring Runlevels and systemd Targets" />
+          <input type="checkbox" data-key="w3-systemd-exploration" aria-label="Hands-on Assignment: systemd Exploration (25 pts)" />
           <span class="item-body">
-            <span class="item-name">Lab 3A: Exploring Runlevels and systemd Targets</span>
+            <span class="item-name">Hands-on Assignment: systemd Exploration (25 pts)</span>
             <span class="item-meta">
-              <span class="badge b-lab">Lab</span>
-              <span class="item-note">Graded. Complete in your Linux VM and submit screenshots and answers in Canvas.</span>
+              <span class="badge b-lab">Hands-on</span>
+              <span class="item-note">Graded. On your Ubuntu Server VM: list active services, check status of ssh and cron, enable/disable a service, identify and change the default target, boot into rescue mode and change back. Submit screenshots and a short narrative in Canvas.</span>
             </span>
           </span>
         </label>
@@ -522,38 +515,25 @@
 
       <li role="listitem">
         <label>
-          <input type="checkbox" data-key="w3-lab3b" aria-label="Lab 3B: Managing Services with systemctl" />
+          <input type="checkbox" data-key="w3-discussion" aria-label="RSI Discussion 3: Why Runlevels Still Matter (15 pts)" />
           <span class="item-body">
-            <span class="item-name">Lab 3B: Managing Services with systemctl</span>
-            <span class="item-meta">
-              <span class="badge b-lab">Lab</span>
-              <span class="item-note">Graded. Includes creating and installing a custom unit file. Submit in Canvas.</span>
-            </span>
-          </span>
-        </label>
-      </li>
-
-      <li role="listitem">
-        <label>
-          <input type="checkbox" data-key="w3-quiz" aria-label="Quiz 3: Runlevels, systemd, and Service Management" />
-          <span class="item-body">
-            <span class="item-name">Quiz 3: Runlevels, systemd, and Service Management</span>
-            <span class="item-meta">
-              <span class="badge b-quiz">Quiz</span>
-              <span class="item-note">Graded. Covers the boot process, SysV runlevels, systemd targets, and systemctl. Complete in Canvas.</span>
-            </span>
-          </span>
-        </label>
-      </li>
-
-      <li role="listitem">
-        <label>
-          <input type="checkbox" data-key="w3-discussion" aria-label="Discussion 3: Why Did Linux Adopt systemd?" />
-          <span class="item-body">
-            <span class="item-name">Discussion 3: Why Did Linux Adopt systemd?</span>
+            <span class="item-name">RSI Discussion 3: &ldquo;Why Runlevels Still Matter&rdquo; (15 pts)</span>
             <span class="item-meta">
               <span class="badge b-discussion">Discussion</span>
-              <span class="item-note">Graded. Post your response and reply to at least one classmate. Full prompt is in Canvas.</span>
+              <span class="item-note">Graded. Original post (min. 150 words) by Wednesday; two substantive replies by Sunday. Full prompt is in Canvas.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-extracredit-cron" aria-label="Extra Credit: Cron Job Setup (5 pts, optional)" />
+          <span class="item-body">
+            <span class="item-name">Extra Credit: Cron Job Setup (5 pts)</span>
+            <span class="item-meta">
+              <span class="badge b-extra">Extra Credit</span>
+              <span class="item-note">Optional. Set up a working cron job on your VM using the resources posted on Canvas. Submit screenshots and an explanation of your cron schedule expression.</span>
             </span>
           </span>
         </label>
@@ -564,14 +544,14 @@
       class="progress-wrap"
       role="progressbar"
       aria-valuemin="0"
-      aria-valuemax="6"
+      aria-valuemax="5"
       aria-valuenow="0"
       aria-label="Activities completed"
       id="progress-bar-wrap"
     >
       <div class="progress-fill" id="progress-fill"></div>
     </div>
-    <p class="progress-text" aria-live="polite" id="progress-text">0 of 6 complete</p>
+    <p class="progress-text" aria-live="polite" id="progress-text">0 of 5 complete</p>
   </section>
 
   <!-- Key Concepts -->
@@ -617,14 +597,13 @@
     <h2 id="ahead-hd">Looking Ahead</h2>
     <div class="ahead-box" role="note">
       <p>
-        <strong>Coming up in Week 4: Process Management and Job Scheduling.</strong>
-        Once you understand how services come to life at boot, the next question is what happens
-        to those processes while the system is running. Week 4 covers the tools you use to inspect
-        and control live processes: <code>ps</code>, <code>top</code>, <code>htop</code>,
-        <code>kill</code>, and <code>nice</code>. You will also schedule recurring tasks with
-        <code>cron</code> and <code>at</code>. The systemd knowledge from this week carries
-        forward directly, because many modern systems now manage scheduled work through systemd
-        timer units rather than traditional cron jobs.
+        <strong>Coming up in Week 4: Advanced Shell Scripting and Mini-Project 1.</strong>
+        With a working Linux server and an understanding of how it boots and manages services,
+        the next step is automating common tasks. Week 4 dives deeper into bash scripting:
+        functions, arrays, I/O redirection, command substitution, and debugging techniques using
+        <code>bash -x</code> and <code>set -e</code>. The week culminates in
+        <strong>Mini-Project 1</strong>, where you write a complete post-install configuration
+        script that ties together skills from Weeks 1 through 3.
       </p>
     </div>
   </section>

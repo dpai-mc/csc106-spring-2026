@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 3 Additional Resources &ndash; Runlevels, systemd, and Startup Scripts | CSC106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:    #1a3a5c;
+      --accent:     #2878a0;
+      --bg:         #f2f5f9;
+      --card:       #ffffff;
+      --border:     #cdd6e0;
+      --text:       #1e2a38;
+      --muted:      #546070;
+      --green:      #1e6e45;
+      --green-bg:   #e5f5ed;
+      --warn-bg:    #fff8e6;
+      --warn-bdr:   #e6a800;
+      --warn-text:  #6b4800;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute;
+      top: -48px;
+      left: 0;
+      z-index: 9999;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.875rem;
+      padding: 10px 18px;
+      text-decoration: none;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Sticky nav ── */
+    nav[aria-label="Page sections"] {
+      background: var(--primary);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-inner {
+      max-width: 940px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .nav-course {
+      color: #7fb4d4;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
+    nav a {
+      color: #b6d3e8;
+      font-size: 0.8rem;
+      text-decoration: none;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    nav a:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.55);
+      outline-offset: -2px;
+      color: #fff;
+    }
+
+    /* Scroll offset so sticky nav does not cover section headings */
+    .hero, .card { scroll-margin-top: 50px; }
+
+    /* ── Main ── */
+    main {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(140deg, #19395a 0%, #265d8a 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 36px 36px 30px;
+      margin-bottom: 24px;
+    }
+    .week-pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.14);
+      color: #a8d4ee;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      padding: 3px 11px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero p { font-size: 0.96rem; color: #cce2f5; line-height: 1.72; max-width: 680px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 28px 30px;
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .card-intro {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+      font-size: 0.87em;
+      background: #eef2f8;
+      color: #1a3a5c;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Resource list ── */
+    .resource-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .resource-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      background: var(--bg);
+      transition: border-color 0.15s;
+    }
+    .resource-item:hover { border-color: var(--accent); }
+
+    .resource-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .resource-link {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      line-height: 1.35;
+    }
+    .resource-link:hover { text-decoration: underline; color: var(--primary); }
+    .resource-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+    .resource-link .ext-icon {
+      font-style: normal;
+      font-size: 0.75em;
+      margin-left: 3px;
+      opacity: 0.7;
+    }
+
+    .resource-source {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .resource-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    /* Priority badges */
+    .rpill {
+      display: inline-block;
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .rpill-start    { background: #dcfce7; color: #14532d; }
+    .rpill-deeper   { background: #dbeafe; color: #1e3a8a; }
+    .rpill-ref      { background: #fef3c7; color: #92400e; }
+    .rpill-tool     { background: #f3e8ff; color: #581c87; }
+    .rpill-steps    { background: #ccfbf1; color: #134e4a; }
+
+    .resource-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      font-size: 0.76rem;
+      color: #9aaab8;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 1.3rem; }
+      .card { padding: 20px 16px; }
+      .nav-course { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav aria-label="Page sections">
+  <div class="nav-inner">
+    <span class="nav-course">CSC106 / Wk 3</span>
+    <a href="#intro">Intro</a>
+    <a href="#systemd">systemd &amp; systemctl</a>
+    <a href="#unit-files">Unit Files &amp; Targets</a>
+    <a href="#cron">Cron</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Hero ── -->
+  <div class="hero" id="intro">
+    <div class="week-pill">Week 3</div>
+    <h1>Additional Resources</h1>
+    <p>
+      These free web resources supplement the Linux Essentials Lesson 13 review and
+      provide the deeper <code>systemd</code> and <code>cron</code> content for this week.
+      You do not need to read everything here&mdash;the
+      <strong>Start here</strong> resources in the first two sections are enough to complete
+      the required assignment. The remaining resources are available when you want
+      more depth or are working on the extra credit.
+    </p>
+  </div>
+
+  <!-- ── Card 1: systemd and systemctl ── -->
+  <section class="card" id="systemd" aria-labelledby="systemd-hd">
+    <h2 id="systemd-hd">systemd and systemctl</h2>
+    <p class="card-intro">
+      Start with the Beginner&rsquo;s Guide to get the conceptual picture, then use the
+      DigitalOcean tutorial for the specific <code>systemctl</code> commands you will run
+      in the hands-on assignment. The Arch Wiki entry is there when you want a thorough
+      reference beyond what either tutorial covers.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://dev.to/wycliffealphus/a-beginners-guide-to-linux-services-in-ubuntu-mastering-systemd-and-systemctl-1hn2"
+             target="_blank"
+             rel="noopener noreferrer">
+            A Beginner&rsquo;s Guide to Linux Services in Ubuntu: Mastering systemd and systemctl
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">dev.to &mdash; Wycliffe Alphus</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-start">Start here</span>
+        </div>
+        <p class="resource-desc">
+          Excellent introduction to what systemd is and how you use
+          <code>systemctl</code> to tell systemd what to do with services.
+          If you are new to the concept of a service manager, read this one first.
+        </p>
+      </li>
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://www.digitalocean.com/community/tutorials/how-to-use-systemctl-to-manage-systemd-services-and-units"
+             target="_blank"
+             rel="noopener noreferrer">
+            How To Use Systemctl to Manage Systemd Services and Units on Ubuntu
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">DigitalOcean</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-start">Start here</span>
+        </div>
+        <p class="resource-desc">
+          Practical, step-by-step guide to the <code>systemctl</code> commands you will use
+          in the hands-on assignment&mdash;listing units, checking status, enabling, disabling,
+          starting, and stopping services. Work through this before sitting down with the lab.
+        </p>
+      </li>
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://wiki.archlinux.org/title/Systemd"
+             target="_blank"
+             rel="noopener noreferrer">
+            systemd
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">Arch Wiki</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-deeper">Go deeper</span>
+        </div>
+        <p class="resource-desc">
+          One of the most thorough freely available references on systemd. Not Ubuntu-specific,
+          but the concepts and commands transfer directly. Recommended when you want more depth
+          than either of the tutorials above provides, or when you run into something the
+          tutorials do not cover.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- ── Card 2: systemd Unit Files and Targets ── -->
+  <section class="card" id="unit-files" aria-labelledby="unit-files-hd">
+    <h2 id="unit-files-hd">systemd Unit Files and Targets</h2>
+    <p class="card-intro">
+      This resource gives you the background on how unit files are structured and how the
+      <code>[Install]</code> section connects a service to a target. It is useful context
+      for understanding what <code>systemctl enable</code> is actually doing under the hood.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files"
+             target="_blank"
+             rel="noopener noreferrer">
+            Understanding Systemd Units and Unit Files
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">DigitalOcean</span>
+        </div>
+        <p class="resource-desc">
+          Covers unit file structure in detail, including the <code>[Unit]</code>,
+          <code>[Service]</code>, and <code>[Install]</code> sections, and explains the
+          <code>WantedBy=</code> directive that connects a service to a target at boot.
+          Good background for the hands-on assignment and useful context for the
+          RSI Discussion.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- ── Card 3: Cron ── -->
+  <section class="card" id="cron" aria-labelledby="cron-hd">
+    <h2 id="cron-hd">Cron &mdash; Extra Credit and Week 7 Preparation</h2>
+    <p class="card-intro">
+      These resources support the optional Cron Job Setup extra credit assignment and give
+      you a head start on Week 7, where a working cron job is a required part of the
+      Server Configuration assignment. Work through the manpage first to understand the
+      format, use Crontab Guru to build and test your schedule expression, then follow
+      the DigitalOcean tutorial step by step on your VM.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://manpages.ubuntu.com/manpages/noble/man5/crontab.5.html"
+             target="_blank"
+             rel="noopener noreferrer">
+            crontab(5) Manual Page
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">Ubuntu Manpages</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-ref">Reference</span>
+        </div>
+        <p class="resource-desc">
+          The authoritative format reference for cron syntax. Explains every field, special
+          characters (<code>*</code>, <code>/</code>, <code>-</code>, <code>,</code>),
+          and environment variables. Come back here when you need to know exactly what
+          a field accepts or how a particular expression is evaluated.
+        </p>
+      </li>
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://crontab.guru/"
+             target="_blank"
+             rel="noopener noreferrer">
+            Crontab Guru
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">crontab.guru</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-tool">Interactive tool</span>
+        </div>
+        <p class="resource-desc">
+          Paste or build a cron schedule expression and instantly see a plain-English
+          description of when it runs. Use this to verify your expression before adding
+          it to your crontab. Particularly useful when you are still learning the
+          five-field format and want immediate feedback on what your schedule means.
+        </p>
+      </li>
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://www.digitalocean.com/community/tutorials/how-to-use-cron-to-automate-tasks-ubuntu-1804"
+             target="_blank"
+             rel="noopener noreferrer">
+            Use Cron to Automate Tasks on Ubuntu: Complete Guide
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">DigitalOcean</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-steps">Step-by-step</span>
+        </div>
+        <p class="resource-desc">
+          Step-by-step tutorial for setting up, editing, and verifying a cron job on Ubuntu.
+          Covers <code>crontab&nbsp;-e</code>, saving and listing entries with
+          <code>crontab&nbsp;-l</code>, and confirming that the job ran.
+          Follow this guide alongside the manpage for the extra credit assignment.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  CSC106 &ndash; Introduction to Linux II &nbsp;|&nbsp; Week 3 Additional Resources &nbsp;|&nbsp;
+  Check Canvas for current due dates and assignment details.
+</footer>
+
+</body>
+</html>
