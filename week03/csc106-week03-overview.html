@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 3 Overview &ndash; Runlevels, systemd, and Startup Scripts | CSC106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:    #1a3a5c;
+      --accent:     #2878a0;
+      --bg:         #f2f5f9;
+      --card:       #ffffff;
+      --border:     #cdd6e0;
+      --text:       #1e2a38;
+      --muted:      #546070;
+      --green:      #1e6e45;
+      --green-bg:   #e5f5ed;
+      --warn-bg:    #fff8e6;
+      --warn-bdr:   #e6a800;
+      --warn-text:  #6b4800;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -48px;
+      left: 0;
+      z-index: 9999;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.875rem;
+      padding: 10px 18px;
+      text-decoration: none;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Nav */
+    nav[aria-label="Page sections"] {
+      background: var(--primary);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-inner {
+      max-width: 940px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .nav-course {
+      color: #7fb4d4;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
+    nav a {
+      color: #b6d3e8;
+      font-size: 0.8rem;
+      text-decoration: none;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    nav a:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.55);
+      outline-offset: -2px;
+      color: #fff;
+    }
+
+    /* Scroll offset so sticky nav does not cover section headings */
+    .hero, .card { scroll-margin-top: 50px; }
+
+    /* Main */
+    main {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(140deg, #19395a 0%, #265d8a 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 36px 36px 30px;
+      margin-bottom: 24px;
+    }
+    .week-pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.14);
+      color: #a8d4ee;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      padding: 3px 11px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero p { font-size: 0.96rem; color: #cce2f5; line-height: 1.72; max-width: 680px; }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 28px 30px;
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+      font-size: 0.87em;
+      background: #eef2f8;
+      color: #1a3a5c;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* Goals */
+    .goals { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .goals li { display: flex; gap: 11px; align-items: flex-start; font-size: 0.95rem; }
+    .goal-num {
+      flex-shrink: 0;
+      width: 23px;
+      height: 23px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* Collapsible */
+    .collapse-btn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 12px 16px;
+      font-size: 0.93rem;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      text-align: left;
+    }
+    .collapse-btn:hover { background: #e6ecf4; }
+    .collapse-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .c-arrow {
+      font-size: 0.68rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      transition: transform 0.25s;
+    }
+    .collapse-btn[aria-expanded="true"] .c-arrow { transform: rotate(180deg); }
+    .collapse-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+    }
+    .collapse-panel.open { max-height: 700px; }
+    .arc-body { padding: 16px 0 4px; }
+    .arc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .arc-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .arc-list li.past   { color: var(--muted); }
+    .arc-list li.current {
+      background: #d8edf8;
+      color: var(--primary);
+      font-weight: 600;
+      border-left: 3px solid var(--accent);
+    }
+    .arc-list li.future { color: #8da0b0; }
+    .arc-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .arc-tag.past    { background: #dde4ea; color: #546070; }
+    .arc-tag.current { background: var(--accent); color: #fff; }
+    .arc-tag.future  { background: #e8ecf0; color: #94a3b5; }
+
+    /* Checklist */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .checklist li {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .checklist li.done {
+      background: var(--green-bg);
+      border-color: #7dbf9a;
+    }
+    .checklist label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+    .checklist input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+    .item-body { display: flex; flex-direction: column; gap: 4px; }
+    .item-name {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .checklist li.done .item-name { color: var(--green); }
+    .item-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+    .b-reading    { background: #fef3c7; color: #92400e; }
+    .b-video      { background: #ede9fe; color: #5b21b6; }
+    .b-lab        { background: #dbeafe; color: #1e40af; }
+    .b-quiz       { background: #fce7f3; color: #9d174d; }
+    .b-discussion { background: #d1fae5; color: #065f46; }
+    .item-note { font-size: 0.82rem; color: var(--muted); }
+
+    .progress-wrap {
+      margin-top: 18px;
+      background: #dde5ef;
+      border-radius: 20px;
+      height: 7px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      border-radius: 20px;
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    /* Concepts grid */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+    }
+    .concept {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 14px 16px;
+    }
+    .concept h3 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .concept p { font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
+
+    /* Looking ahead */
+    .ahead-box {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-bdr);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+    }
+    .ahead-box p { font-size: 0.94rem; color: var(--warn-text); line-height: 1.7; }
+
+    /* Footer */
+    footer {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      font-size: 0.76rem;
+      color: #9aaab8;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 1.3rem; }
+      .card { padding: 20px 16px; }
+      .nav-course { display: none; }
+      .concepts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav aria-label="Page sections">
+  <div class="nav-inner">
+    <span class="nav-course">CSC106 / Wk 3</span>
+    <a href="#welcome">Welcome</a>
+    <a href="#goals">Goals</a>
+    <a href="#arc">Course Arc</a>
+    <a href="#activities">Activities</a>
+    <a href="#concepts">Key Concepts</a>
+    <a href="#ahead">Looking Ahead</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- Hero / Welcome -->
+  <div class="hero" id="welcome">
+    <div class="week-pill">Week 3</div>
+    <h1>Runlevels, systemd, and Startup Scripts</h1>
+    <p>
+      This week you go under the hood to see how Linux boots and manages running services.
+      You will learn where the traditional concept of runlevels came from, then shift into
+      <code>systemd</code>, the init system you will find on virtually every modern Linux
+      distribution. By the end of the week you should feel comfortable using
+      <code>systemctl</code> to manage services, reading and writing a simple unit file,
+      and reaching for <code>journalctl</code> when something does not start the way it should.
+    </p>
+  </div>
+
+  <!-- Learning Goals -->
+  <section class="card" id="goals" aria-labelledby="goals-hd">
+    <h2 id="goals-hd">Learning Goals</h2>
+    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">
+      After completing this week's work you should be able to:
+    </p>
+    <ul class="goals" role="list">
+      <li>
+        <span class="goal-num" aria-hidden="true">1</span>
+        <span>Trace the Linux boot sequence from firmware (BIOS/UEFI) through the bootloader and kernel to a working login prompt.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">2</span>
+        <span>Identify the traditional SysV runlevels 0 through 6 and describe the purpose of each one.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">3</span>
+        <span>Explain what <code>systemd</code> is and why it replaced SysV init on most modern distributions.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">4</span>
+        <span>Map traditional runlevels to their equivalent <code>systemd</code> targets, including <code>multi-user.target</code> and <code>graphical.target</code>.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">5</span>
+        <span>Use <code>systemctl</code> to start, stop, restart, reload, enable, disable, and check the status of a service.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">6</span>
+        <span>Describe the three sections of a <code>.service</code> unit file and write a simple one from scratch.</span>
+      </li>
+      <li>
+        <span class="goal-num" aria-hidden="true">7</span>
+        <span>Use <code>journalctl</code> with common flags to view and filter logs for a specific service, boot session, or time window.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Course Arc (collapsible) -->
+  <section class="card" id="arc" aria-labelledby="arc-hd">
+    <h2 id="arc-hd">Where This Week Fits</h2>
+    <button
+      class="collapse-btn"
+      id="arc-btn"
+      aria-expanded="false"
+      aria-controls="arc-panel"
+    >
+      <span id="arc-btn-label">Show the 8-week course arc</span>
+      <span class="c-arrow" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="collapse-panel" id="arc-panel" role="region" aria-labelledby="arc-btn">
+      <div class="arc-body">
+        <ul class="arc-list" role="list">
+          <li class="past">
+            <span class="arc-tag past">Wk 1</span>
+            Shell Review, Navigation, and the File System Hierarchy
+          </li>
+          <li class="past">
+            <span class="arc-tag past">Wk 2</span>
+            Permissions, Ownership, and File Management
+          </li>
+          <li class="current" aria-current="step">
+            <span class="arc-tag current">Wk 3</span>
+            Runlevels, systemd, and Startup Scripts (you are here)
+          </li>
+          <li class="future">
+            <span class="arc-tag future">Wk 4</span>
+            Process Management and Job Scheduling
+          </li>
+          <li class="future">
+            <span class="arc-tag future">Wk 5</span>
+            Networking Fundamentals
+          </li>
+          <li class="future">
+            <span class="arc-tag future">Wk 6</span>
+            Shell Scripting
+          </li>
+          <li class="future">
+            <span class="arc-tag future">Wk 7</span>
+            Package Management and Software Installation
+          </li>
+          <li class="future">
+            <span class="arc-tag future">Wk 8</span>
+            System Administration and Final Project
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Required Activities Checklist -->
+  <section class="card" id="activities" aria-labelledby="activities-hd">
+    <h2 id="activities-hd">Required Activities</h2>
+    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">
+      Check items off as you finish them. This list is saved in your browser only and does not
+      submit anything to Canvas. Make sure you turn in all graded work inside Canvas itself.
+    </p>
+    <ul class="checklist" role="list" id="checklist">
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-reading" aria-label="Week 3 Reading: The Linux Boot Process and systemd" />
+          <span class="item-body">
+            <span class="item-name">Week 3 Reading: The Linux Boot Process and systemd</span>
+            <span class="item-meta">
+              <span class="badge b-reading">Reading</span>
+              <span class="item-note">Complete before starting the labs.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-video" aria-label="Week 3 Lecture Video: systemd Concepts and systemctl Walkthrough" />
+          <span class="item-body">
+            <span class="item-name">Week 3 Lecture Video: systemd Concepts and systemctl Walkthrough</span>
+            <span class="item-meta">
+              <span class="badge b-video">Video</span>
+              <span class="item-note">Watch before attempting the lab exercises.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-lab3a" aria-label="Lab 3A: Exploring Runlevels and systemd Targets" />
+          <span class="item-body">
+            <span class="item-name">Lab 3A: Exploring Runlevels and systemd Targets</span>
+            <span class="item-meta">
+              <span class="badge b-lab">Lab</span>
+              <span class="item-note">Graded. Complete in your Linux VM and submit screenshots and answers in Canvas.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-lab3b" aria-label="Lab 3B: Managing Services with systemctl" />
+          <span class="item-body">
+            <span class="item-name">Lab 3B: Managing Services with systemctl</span>
+            <span class="item-meta">
+              <span class="badge b-lab">Lab</span>
+              <span class="item-note">Graded. Includes creating and installing a custom unit file. Submit in Canvas.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-quiz" aria-label="Quiz 3: Runlevels, systemd, and Service Management" />
+          <span class="item-body">
+            <span class="item-name">Quiz 3: Runlevels, systemd, and Service Management</span>
+            <span class="item-meta">
+              <span class="badge b-quiz">Quiz</span>
+              <span class="item-note">Graded. Covers the boot process, SysV runlevels, systemd targets, and systemctl. Complete in Canvas.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+      <li role="listitem">
+        <label>
+          <input type="checkbox" data-key="w3-discussion" aria-label="Discussion 3: Why Did Linux Adopt systemd?" />
+          <span class="item-body">
+            <span class="item-name">Discussion 3: Why Did Linux Adopt systemd?</span>
+            <span class="item-meta">
+              <span class="badge b-discussion">Discussion</span>
+              <span class="item-note">Graded. Post your response and reply to at least one classmate. Full prompt is in Canvas.</span>
+            </span>
+          </span>
+        </label>
+      </li>
+
+    </ul>
+    <div
+      class="progress-wrap"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="6"
+      aria-valuenow="0"
+      aria-label="Activities completed"
+      id="progress-bar-wrap"
+    >
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <p class="progress-text" aria-live="polite" id="progress-text">0 of 6 complete</p>
+  </section>
+
+  <!-- Key Concepts -->
+  <section class="card" id="concepts" aria-labelledby="concepts-hd">
+    <h2 id="concepts-hd">Key Concepts This Week</h2>
+    <div class="concepts-grid" role="list">
+
+      <div class="concept" role="listitem">
+        <h3>SysV Init and Runlevels</h3>
+        <p>The legacy init system defined system states with numbers 0 through 6. Knowing them is still useful because older documentation, scripts, and some tools still reference these numbers.</p>
+      </div>
+
+      <div class="concept" role="listitem">
+        <h3>systemd and Units</h3>
+        <p>systemd manages services, mounts, sockets, timers, and more through unit files. Each type has its own extension: <code>.service</code>, <code>.target</code>, <code>.timer</code>, and so on.</p>
+      </div>
+
+      <div class="concept" role="listitem">
+        <h3>Targets vs. Runlevels</h3>
+        <p>systemd replaces numeric runlevels with named targets. The two you will see most often are <code>multi-user.target</code> (roughly runlevel 3) and <code>graphical.target</code> (roughly runlevel 5).</p>
+      </div>
+
+      <div class="concept" role="listitem">
+        <h3>systemctl</h3>
+        <p>Your main tool for talking to systemd. Commands like <code>systemctl status sshd</code>, <code>systemctl enable nginx</code>, and <code>systemctl set-default multi-user.target</code> come up constantly in real admin work.</p>
+      </div>
+
+      <div class="concept" role="listitem">
+        <h3>Unit File Structure</h3>
+        <p>A <code>.service</code> file has three sections: <code>[Unit]</code> for description and ordering, <code>[Service]</code> for what to run, and <code>[Install]</code> for when to activate it. Getting these right avoids a lot of subtle startup problems.</p>
+      </div>
+
+      <div class="concept" role="listitem">
+        <h3>journalctl and Logs</h3>
+        <p>When a service fails silently, <code>journalctl</code> is usually the first place to look. Flags like <code>-u sshd</code>, <code>-b</code> (current boot), and <code>--since "1 hour ago"</code> help you narrow things down fast.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Looking Ahead -->
+  <section class="card" id="ahead" aria-labelledby="ahead-hd">
+    <h2 id="ahead-hd">Looking Ahead</h2>
+    <div class="ahead-box" role="note">
+      <p>
+        <strong>Coming up in Week 4: Process Management and Job Scheduling.</strong>
+        Once you understand how services come to life at boot, the next question is what happens
+        to those processes while the system is running. Week 4 covers the tools you use to inspect
+        and control live processes: <code>ps</code>, <code>top</code>, <code>htop</code>,
+        <code>kill</code>, and <code>nice</code>. You will also schedule recurring tasks with
+        <code>cron</code> and <code>at</code>. The systemd knowledge from this week carries
+        forward directly, because many modern systems now manage scheduled work through systemd
+        timer units rather than traditional cron jobs.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  CSC106 &ndash; Introduction to Linux II &nbsp;|&nbsp; Week 3 Overview &nbsp;|&nbsp;
+  Check Canvas for current due dates and assignment details.
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Collapsible course arc */
+  var arcBtn   = document.getElementById('arc-btn');
+  var arcLabel = document.getElementById('arc-btn-label');
+  var arcPanel = document.getElementById('arc-panel');
+
+  arcBtn.addEventListener('click', function () {
+    var isOpen = arcBtn.getAttribute('aria-expanded') === 'true';
+    arcBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+    arcLabel.textContent = isOpen
+      ? 'Show the 8-week course arc'
+      : 'Hide the 8-week course arc';
+    arcPanel.classList.toggle('open', !isOpen);
+  });
+
+  /* Checklist with localStorage persistence */
+  var listEl    = document.getElementById('checklist');
+  var fillEl    = document.getElementById('progress-fill');
+  var wrapEl    = document.getElementById('progress-bar-wrap');
+  var textEl    = document.getElementById('progress-text');
+  var boxes     = Array.prototype.slice.call(
+    listEl.querySelectorAll('input[type="checkbox"]')
+  );
+  var total = boxes.length;
+
+  function sync() {
+    var done = boxes.filter(function (cb) { return cb.checked; }).length;
+    var pct  = total > 0 ? Math.round(done / total * 100) : 0;
+    fillEl.style.width = pct + '%';
+    wrapEl.setAttribute('aria-valuenow', String(done));
+    textEl.textContent = done + ' of ' + total + ' complete';
+  }
+
+  boxes.forEach(function (cb) {
+    var storageKey = 'csc106-' + cb.dataset.key;
+
+    try {
+      if (localStorage.getItem(storageKey) === '1') {
+        cb.checked = true;
+        cb.closest('li').classList.add('done');
+      }
+    } catch (e) { /* localStorage may be unavailable */ }
+
+    cb.addEventListener('change', function () {
+      cb.closest('li').classList.toggle('done', cb.checked);
+      try {
+        if (cb.checked) {
+          localStorage.setItem(storageKey, '1');
+        } else {
+          localStorage.removeItem(storageKey);
+        }
+      } catch (e) {}
+      sync();
+    });
+  });
+
+  sync();
+
+}());
+</script>
+
+</body>
+</html>

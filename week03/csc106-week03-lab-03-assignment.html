@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 3: systemd Exploration — CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --nav-height: 3.25rem;
+      --color-bg: #ffffff;
+      --color-surface: #f4f6f9;
+      --color-border: #d0d7de;
+      --color-primary: #1a4a8a;
+      --color-primary-dark: #12336b;
+      --color-accent: #2563eb;
+      --color-text: #1a1a2e;
+      --color-muted: #4b5563;
+      --color-hint-bg: #e0f2fe;
+      --color-hint-border: #38bdf8;
+      --color-hint-text: #0c4a6e;
+      --color-caution-bg: #fff7ed;
+      --color-caution-border: #fb923c;
+      --color-caution-text: #7c2d12;
+      --color-ec-bg: #faf5ff;
+      --color-ec-border: #a855f7;
+      --color-ec-text: #581c87;
+      --radius: 6px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: var(--color-primary);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 var(--radius) 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Sticky nav ── */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--color-primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0 1rem;
+      height: var(--nav-height);
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .nav-inner::-webkit-scrollbar { height: 3px; }
+    .nav-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      flex-shrink: 0;
+      margin-right: 0.4rem;
+    }
+    .nav-inner a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.78rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-inner a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .nav-inner a:focus {
+      outline: 2px solid rgba(255,255,255,0.7);
+      outline-offset: 1px;
+      color: #fff;
+    }
+    .nav-inner a.nav-active {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-weight: 600;
+    }
+    .nav-pdf-btn {
+      margin-left: auto;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .nav-pdf-btn:hover { background: rgba(255,255,255,0.22); }
+    .nav-pdf-btn:focus {
+      outline: 2px solid rgba(255,255,255,0.7);
+      outline-offset: 1px;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+    section[id], .lab-header[id] {
+      scroll-margin-top: calc(var(--nav-height) + 0.75rem);
+    }
+
+    /* ── Lab header ── */
+    .lab-header {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .lab-header h1 {
+      font-size: 1.45rem;
+      color: var(--color-primary);
+      margin-bottom: 0.4rem;
+    }
+    .lab-header p { color: var(--color-muted); font-size: 0.92rem; }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.85rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .badge-blue  { background: #dbeafe; color: #1e3a8a; }
+    .badge-green { background: #dcfce7; color: #14532d; }
+    .badge-purple { background: #f3e8ff; color: #581c87; }
+
+    /* ── Section typography ── */
+    h2 {
+      font-size: 1.15rem;
+      color: var(--color-primary);
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 0.35rem;
+      margin-bottom: 0.9rem;
+    }
+    h3 {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.4rem;
+    }
+    p { margin-bottom: 0.7rem; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.7rem; }
+    li { margin-bottom: 0.3rem; }
+    section > p:first-of-type { margin-top: 0; }
+
+    /* ── Phase cards ── */
+    .phase {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .phase-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 0.7rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .phase-num {
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 1.9rem;
+      height: 1.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+      flex-shrink: 0;
+    }
+    .phase-header h2 {
+      color: #fff;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: 1.02rem;
+    }
+    .phase-tag {
+      margin-left: auto;
+      font-size: 0.72rem;
+      background: rgba(255,255,255,0.15);
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .phase-body { padding: 1.2rem; }
+
+    /* ── Extra credit ── */
+    .ec-section {
+      border: 2px solid var(--color-ec-border);
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .ec-header {
+      background: var(--color-ec-bg);
+      border-bottom: 2px solid var(--color-ec-border);
+      padding: 0.7rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .ec-header h2 {
+      color: var(--color-ec-text);
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: 1.02rem;
+    }
+    .ec-body { padding: 1.2rem; }
+
+    /* ── Step blocks ── */
+    .step {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 0.95rem 1rem;
+      margin: 1rem 0;
+    }
+    .step h3 {
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Code ── */
+    .cmd-block {
+      background: #1e2a3a;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 0.65rem 1rem;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.87rem;
+      margin: 0.5rem 0 0.65rem;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+    .cmd-comment { color: #94a3b8; }
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      font-size: 0.87em;
+    }
+    kbd {
+      font-family: "Consolas", "Courier New", monospace;
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      font-size: 0.85em;
+      border: 1px solid #94a3b8;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      margin: 0.75rem 0;
+      font-size: 0.92rem;
+    }
+    .callout-title { font-weight: 700; margin-bottom: 0.3rem; }
+    .callout-hint {
+      background: var(--color-hint-bg);
+      border-left: 4px solid var(--color-hint-border);
+      color: var(--color-hint-text);
+    }
+    .callout-caution {
+      background: var(--color-caution-bg);
+      border-left: 4px solid var(--color-caution-border);
+      color: var(--color-caution-text);
+    }
+
+    /* ── Hint details ── */
+    details.hint {
+      background: var(--color-hint-bg);
+      border: 1px solid var(--color-hint-border);
+      border-radius: var(--radius);
+      margin: 0.75rem 0;
+    }
+    details.hint > summary {
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-hint-text);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    details.hint > summary::-webkit-details-marker { display: none; }
+    details.hint > summary::before {
+      content: "▶";
+      font-size: 0.62em;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details[open].hint > summary::before { transform: rotate(90deg); }
+    details.hint > summary:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+      border-radius: var(--radius);
+    }
+    .hint-body {
+      padding: 0.1rem 1rem 0.8rem;
+      color: var(--color-hint-text);
+      font-size: 0.88rem;
+    }
+    .hint-body p { margin-bottom: 0.5rem; }
+    .hint-body ul { margin-bottom: 0.5rem; }
+
+    /* ── Form elements ── */
+    .form-group { margin: 1rem 0 0.25rem; }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 0.4rem;
+      color: var(--color-text);
+    }
+    .req { color: #dc2626; margin-left: 0.2rem; }
+    .opt { font-weight: 400; font-size: 0.8rem; color: var(--color-muted); margin-left: 0.3rem; }
+    .field-hint {
+      font-size: 0.79rem;
+      color: var(--color-muted);
+      margin: 0.2rem 0 0.4rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--color-text);
+      background: #fff;
+      resize: vertical;
+      line-height: 1.55;
+    }
+    textarea:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 1px;
+      border-color: var(--color-accent);
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 0.35rem 0 0;
+      font-size: 0.88rem;
+      color: var(--color-text);
+    }
+    input[type="file"]:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .img-preview {
+      margin-top: 0.55rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .img-preview img {
+      max-width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* ── Table (runlevel mapping) ── */
+    .mapping-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+      margin: 0.6rem 0 0.5rem;
+    }
+    .mapping-table th {
+      background: #e2e8f0;
+      padding: 0.4rem 0.65rem;
+      text-align: left;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+    }
+    .mapping-table td {
+      padding: 0.4rem 0.65rem;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+
+    /* ── Submission section ── */
+    .submission-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 2rem;
+    }
+    .pdf-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 0.75rem;
+      transition: background 0.15s;
+    }
+    .pdf-btn:hover { background: var(--color-primary-dark); }
+    .pdf-btn:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    hr.divider { border: none; border-top: 1px solid var(--color-border); margin: 1.25rem 0; }
+
+    blockquote {
+      border-left: 4px solid #94a3b8;
+      padding: 0.6rem 1rem;
+      margin: 0.75rem 0;
+      background: #f8fafc;
+      font-style: italic;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: #334155;
+    }
+
+    /* ── Print / Save as PDF ── */
+    @media print {
+      .skip-link,
+      .site-nav,
+      .pdf-btn,
+      input[type="file"],
+      .field-hint { display: none !important; }
+
+      body { font-size: 10.5pt; color: #000; }
+      main { max-width: 100%; padding: 0; }
+
+      .phase { page-break-inside: avoid; margin-bottom: 1rem; border: 1px solid #ccc; }
+      .phase-header {
+        background: #1a4a8a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      details.hint { display: block; border: 1px solid #aad; }
+      details.hint .hint-body { display: block; padding: 0.4rem 0.8rem 0.6rem; }
+      details.hint > summary::before { display: none; }
+
+      textarea {
+        border: 1px solid #999;
+        min-height: 60px;
+        height: auto;
+        overflow: visible;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        resize: none;
+      }
+
+      .img-preview img {
+        max-width: 100%;
+        page-break-inside: avoid;
+      }
+
+      .cmd-block {
+        background: #f1f5f9 !important;
+        color: #000 !important;
+        border: 1px solid #ccc;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      a { text-decoration: underline; color: #000; }
+      a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Lab navigation">
+  <div class="nav-inner">
+    <span class="nav-brand" aria-hidden="true">Lab 3</span>
+    <a href="#overview">Overview</a>
+    <a href="#phase1">Phase 1</a>
+    <a href="#phase2">Phase 2</a>
+    <a href="#phase3">Phase 3</a>
+    <a href="#phase4">Phase 4</a>
+    <a href="#phase5">Phase 5</a>
+    <a href="#phase6">Phase 6</a>
+    <a href="#extracredit">Extra Credit</a>
+    <a href="#submission">Submission</a>
+    <button class="nav-pdf-btn" type="button" onclick="savePDF()" aria-label="Save this page as PDF">&#128438; Save as PDF</button>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Overview ──────────────────────────────────────────────────────── -->
+  <div class="lab-header" id="overview" tabindex="-1">
+    <h1>Lab 3: systemd Exploration</h1>
+    <p>CSC 106 &mdash; Introduction to Linux II &nbsp;&#8226;&nbsp; Week 3</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">25 points</span>
+      <span class="badge badge-purple">+5 points extra credit</span>
+      <span class="badge badge-green">CSLO 1</span>
+      <span class="badge badge-green">CSLO 3</span>
+    </div>
+  </div>
+
+  <section aria-labelledby="scenario-heading" style="margin-bottom:2rem;">
+    <h2 id="scenario-heading">Scenario</h2>
+    <p>You have just started as a junior Linux systems administrator at <strong>Summit Ridge Hosting</strong>, a small company that manages Ubuntu Server virtual machines for clients. On your first day, your supervisor hands you access to a freshly installed Ubuntu Server 24.04 VM and says:</p>
+    <blockquote>
+      "Before we put any client workloads on this server, I need you to document exactly what services are running at boot, confirm that SSH is healthy, and prove you know how to control the service manager. I also need to know you can get into single-user maintenance mode if something goes wrong at 3&nbsp;AM."
+    </blockquote>
+    <p>This lab is that documentation task. You will explore <strong>systemd</strong>&mdash;the service and init manager running on your Ubuntu Server VM&mdash;and demonstrate that you can manage services and system targets from the command line.</p>
+  </section>
+
+  <section aria-labelledby="objectives-heading" style="margin-bottom:2rem;">
+    <h2 id="objectives-heading">Objectives</h2>
+    <p>By completing this lab you will demonstrate the ability to:</p>
+    <ul>
+      <li>Verify that systemd is running as PID 1 and check its version. <em>(warm-up)</em></li>
+      <li>List all active services using <code>systemctl</code> and interpret the output. <em>(Task a)</em></li>
+      <li>Check the detailed status of the <code>ssh</code> and <code>cron</code> services. <em>(Task b)</em></li>
+      <li>Enable and disable a service, and verify the filesystem change in the <code>.wants/</code> directory. <em>(Task c)</em></li>
+      <li>Identify the current default systemd target and explain what it means. <em>(Task d)</em></li>
+      <li>Change the default target to <code>rescue.target</code>, reboot into it, observe the result, and restore <code>multi-user.target</code>. <em>(Task e)</em></li>
+    </ul>
+    <p><strong>Extra Credit (+5 pts):</strong> Set up a working cron job on your VM, verify it runs, and document it with screenshots and a written explanation of the schedule expression.</p>
+  </section>
+
+  <section aria-labelledby="prereq-heading" style="margin-bottom:2rem;">
+    <h2 id="prereq-heading">Before You Begin</h2>
+    <ul>
+      <li>Your Ubuntu Server 24.04 LTS VM from Week 1 must be running and accessible (VirtualBox or UTM terminal, or SSH from your host machine).</li>
+      <li>Log in as your non-root admin user (the one you created during installation).</li>
+      <li>Commands that modify the system require <code>sudo</code>. You will be prompted for your password on first use.</li>
+      <li><strong>You cannot copy and paste terminal output directly into this form.</strong> Take screenshots of terminal output and upload them to the appropriate fields. Use the text areas for written explanations and narratives.</li>
+    </ul>
+    <div class="callout callout-caution">
+      <div class="callout-title">&#9888; Phase 6 involves a reboot into an unfamiliar mode</div>
+      <p>Phase 6 changes your system's default boot target and requires a reboot. You will restore the system to normal before finishing. Read all steps in Phase 6 before you begin that section so there are no surprises.</p>
+    </div>
+  </section>
+
+  <!-- ── Phase 1 ── -->
+  <section class="phase" id="phase1" aria-labelledby="phase1-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">1</div>
+      <h2 id="phase1-heading">Meet systemd</h2>
+      <span class="phase-tag">Warm-up &mdash; ungraded</span>
+    </div>
+    <div class="phase-body">
+      <p>Before diving into service management, confirm that systemd is actually the init system running on your VM. This phase is ungraded; it orients you for the graded tasks ahead.</p>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Confirm systemd is PID 1</h3>
+        <p>Run the following command. PID 1 is the first user-space process the kernel starts after booting. On a systemd-based system, the command output will show <code>systemd</code> in the CMD column.</p>
+        <div class="cmd-block">ps -p 1</div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2 &mdash; Check the systemd version</h3>
+        <p>This shows the version of systemd installed on your Ubuntu system, along with compile-time options.</p>
+        <div class="cmd-block">systemctl --version</div>
+      </div>
+
+      <details class="hint">
+        <summary>What to look for</summary>
+        <div class="hint-body">
+          <p>The <code>ps -p 1</code> output should show <code>systemd</code> or <code>/sbin/init</code> (a symlink to systemd on Ubuntu) in the CMD column. The <code>systemctl --version</code> output will start with a line such as <code>systemd 255</code> followed by compile-time options in parentheses.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="notes-phase1">Your notes <span class="opt">(optional &mdash; ungraded)</span></label>
+        <textarea id="notes-phase1" name="notes-phase1" placeholder="Any observations from the warm-up steps..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 2 ── -->
+  <section class="phase" id="phase2" aria-labelledby="phase2-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">2</div>
+      <h2 id="phase2-heading">List Active Services</h2>
+      <span class="phase-tag">Task (a) &mdash; graded</span>
+    </div>
+    <div class="phase-body">
+      <p>Your supervisor wants a snapshot of everything that is currently running on the server. Use <code>systemctl</code> to list all active service units.</p>
+
+      <div class="step">
+        <h3>Step 1 &mdash; List all active services</h3>
+        <p>Run this command in your terminal:</p>
+        <div class="cmd-block">systemctl list-units --type=service --no-pager</div>
+        <p>The <code>--no-pager</code> flag sends the full output directly to the terminal instead of opening it in a scrollable viewer. If the list is long, scroll your terminal window up and take multiple screenshots to capture the full output including the summary line at the bottom.</p>
+      </div>
+
+      <details class="hint">
+        <summary>Understanding the output columns</summary>
+        <div class="hint-body">
+          <ul>
+            <li><strong>UNIT</strong> &mdash; the unit name, ending in <code>.service</code></li>
+            <li><strong>LOAD</strong> &mdash; whether systemd parsed the unit file (<code>loaded</code> is normal)</li>
+            <li><strong>ACTIVE</strong> &mdash; the high-level state (<code>active</code> = currently running)</li>
+            <li><strong>SUB</strong> &mdash; a more detailed state; for services, <code>running</code> is healthy</li>
+            <li><strong>DESCRIPTION</strong> &mdash; a human-readable label from the unit file</li>
+          </ul>
+          <p>The summary line at the bottom shows the total count of loaded, active, and running units.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="upload-phase2-list">
+          Upload screenshot: <code>systemctl list-units --type=service</code> output
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <p class="field-hint">Upload one or more screenshots if the output spans multiple screens. Include the summary line at the bottom if visible.</p>
+        <input type="file" id="upload-phase2-list" name="upload-phase2-list"
+               accept="image/*" multiple
+               data-preview="preview-phase2-list"
+               aria-describedby="hint-phase2-list">
+        <div class="img-preview" id="preview-phase2-list" role="region" aria-label="Uploaded screenshot preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="obs-phase2">
+          Task (a) &mdash; Your observations
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-phase2" name="obs-phase2"
+          placeholder="Describe what you see in the output. How many services are listed? Do any names look familiar from previous weeks? Can you tell what some of them do from their descriptions? Note anything that surprises you."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 3 ── -->
+  <section class="phase" id="phase3" aria-labelledby="phase3-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">3</div>
+      <h2 id="phase3-heading">Check Service Status</h2>
+      <span class="phase-tag">Task (b) &mdash; graded</span>
+    </div>
+    <div class="phase-body">
+      <p>Two services that must be healthy on this server are <code>ssh</code> (remote login) and <code>cron</code> (scheduled tasks). Use <code>systemctl status</code> to check each one in detail.</p>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Check the SSH service</h3>
+        <p>On Ubuntu, the SSH daemon service is named <code>ssh</code>:</p>
+        <div class="cmd-block">systemctl status ssh</div>
+        <p>Take a screenshot of the full output, including the <strong>Loaded</strong> and <strong>Active</strong> lines and the log entries at the bottom.</p>
+      </div>
+
+      <details class="hint">
+        <summary>Reading <code>systemctl status</code> output</summary>
+        <div class="hint-body">
+          <ul>
+            <li>The first line shows the unit name and its description from the unit file.</li>
+            <li><strong>Loaded:</strong> &mdash; path to the unit file and whether the service is <code>enabled</code> or <code>disabled</code> (controls boot behavior).</li>
+            <li><strong>Active:</strong> &mdash; whether the service is running right now. A green dot and <code>active (running)</code> is healthy.</li>
+            <li><strong>Main PID:</strong> &mdash; the process ID of the service's main process.</li>
+            <li>The last several lines show recent journal log entries for this service.</li>
+          </ul>
+          <p><strong>Key distinction:</strong> <em>Enabled</em> and <em>active</em> are independent. A service can be enabled (configured to start at boot) but inactive right now&mdash;or active right now but disabled (will not start on the next boot). You will see this clearly in Phase 4.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="upload-phase3-ssh">
+          Upload screenshot: <code>systemctl status ssh</code> output
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <p class="field-hint">Capture the full block including Loaded, Active, Main PID, and the recent log lines.</p>
+        <input type="file" id="upload-phase3-ssh" name="upload-phase3-ssh"
+               accept="image/*"
+               data-preview="preview-phase3-ssh">
+        <div class="img-preview" id="preview-phase3-ssh" role="region" aria-label="SSH status screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2 &mdash; Check the cron service</h3>
+        <div class="cmd-block">systemctl status cron</div>
+        <p>Take a screenshot of the full output.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase3-cron">
+          Upload screenshot: <code>systemctl status cron</code> output
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase3-cron" name="upload-phase3-cron"
+               accept="image/*"
+               data-preview="preview-phase3-cron">
+        <div class="img-preview" id="preview-phase3-cron" role="region" aria-label="Cron status screenshot preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="obs-phase3">
+          Task (b) &mdash; Comparing ssh and cron: your observations
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-phase3" name="obs-phase3"
+          placeholder="For each service: Is it active (running right now)? Is it enabled (starts at boot)? What does the Loaded line show? What do the recent log entries tell you? Is there anything different between the two services' outputs?"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 4 ── -->
+  <section class="phase" id="phase4" aria-labelledby="phase4-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">4</div>
+      <h2 id="phase4-heading">Enable and Disable a Service</h2>
+      <span class="phase-tag">Task (c) &mdash; graded</span>
+    </div>
+    <div class="phase-body">
+      <p>Now you will enable and disable a service and observe what changes in the filesystem when you do. You will use <code>ModemManager</code> as the test subject&mdash;it manages cellular modems, which your server VM does not have, so toggling it has no effect on your running system.</p>
+
+      <div class="callout callout-hint">
+        <div class="callout-title">&#128161; If ModemManager is not present</div>
+        <p>Run <code>systemctl status ModemManager</code> first. If the system says the unit is not found, use <code>snapd</code> instead. Substitute <code>snapd</code> for <code>ModemManager</code> in every command below. Both are safe to enable and disable for this exercise.</p>
+      </div>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Check the initial state</h3>
+        <p>First, check whether the service is currently enabled or disabled. Look for the word <code>enabled</code> or <code>disabled</code> on the <strong>Loaded</strong> line.</p>
+        <div class="cmd-block">systemctl status ModemManager</div>
+        <p>Take a screenshot of this output.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase4-before">
+          Upload screenshot: initial <code>systemctl status ModemManager</code>
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase4-before" name="upload-phase4-before"
+               accept="image/*"
+               data-preview="preview-phase4-before">
+        <div class="img-preview" id="preview-phase4-before" role="region" aria-label="Initial service status preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2 &mdash; Enable the service and inspect the result</h3>
+        <p>Enable the service so it would start at the next boot, then look at what changed in the filesystem:</p>
+        <div class="cmd-block">sudo systemctl enable ModemManager
+ls -l /etc/systemd/system/multi-user.target.wants/</div>
+        <p>Run both commands and take a screenshot of the combined output.</p>
+      </div>
+
+      <details class="hint">
+        <summary>What enabling does under the hood</summary>
+        <div class="hint-body">
+          <p>When you run <code>systemctl enable</code>, systemd reads the <code>[Install]</code> section of the unit file and finds a <code>WantedBy=multi-user.target</code> directive. It then creates a symbolic link:</p>
+          <div class="cmd-block" style="font-size:0.8rem;">/etc/systemd/system/multi-user.target.wants/ModemManager.service
+  &#8594; /lib/systemd/system/ModemManager.service</div>
+          <p>That symlink is what makes the service start when the system reaches <code>multi-user.target</code> at boot. Disabling the service removes the symlink.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="upload-phase4-enable">
+          Upload screenshot: <code>systemctl enable</code> output and <code>ls -l</code> of the .wants/ directory
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <p class="field-hint">Both commands and their output should be visible. Upload two screenshots if needed.</p>
+        <input type="file" id="upload-phase4-enable" name="upload-phase4-enable"
+               accept="image/*" multiple
+               data-preview="preview-phase4-enable">
+        <div class="img-preview" id="preview-phase4-enable" role="region" aria-label="Enable and symlink screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 3 &mdash; Disable the service and verify</h3>
+        <p>Disable the service and check whether the symlink was removed:</p>
+        <div class="cmd-block">sudo systemctl disable ModemManager
+ls -l /etc/systemd/system/multi-user.target.wants/</div>
+        <p>Take a screenshot of both commands and their output.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase4-disable">
+          Upload screenshot: <code>systemctl disable</code> output and updated <code>ls -l</code> of the .wants/ directory
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <p class="field-hint">Both commands and their output should be visible.</p>
+        <input type="file" id="upload-phase4-disable" name="upload-phase4-disable"
+               accept="image/*" multiple
+               data-preview="preview-phase4-disable">
+        <div class="img-preview" id="preview-phase4-disable" role="region" aria-label="Disable and symlink screenshot preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="obs-phase4">
+          Task (c) &mdash; What changed? Your narrative
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-phase4" name="obs-phase4"
+          placeholder="Describe what you observed in the .wants/ directory before enabling, after enabling, and after disabling. What did the symlink look like, and where did it point? What does this tell you about how systemd decides which services to start at boot?"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 5 ── -->
+  <section class="phase" id="phase5" aria-labelledby="phase5-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">5</div>
+      <h2 id="phase5-heading">Identify the Default Target</h2>
+      <span class="phase-tag">Task (d) &mdash; graded</span>
+    </div>
+    <div class="phase-body">
+      <p>A systemd <strong>target</strong> is a named group of units that defines a system state, similar to the numbered runlevels used in older Linux systems. The default target determines what state the system boots into.</p>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Check the current default target</h3>
+        <div class="cmd-block">systemctl get-default</div>
+        <p>Take a screenshot of the output.</p>
+      </div>
+
+      <details class="hint">
+        <summary>Runlevels and targets &mdash; the mapping</summary>
+        <div class="hint-body">
+          <p>Traditional SysV init used numbered runlevels. systemd replaces them with named targets:</p>
+          <table class="mapping-table">
+            <thead>
+              <tr>
+                <th scope="col">SysV Runlevel</th>
+                <th scope="col">systemd Target</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td><code>poweroff.target</code></td><td>System halt</td></tr>
+              <tr><td>1</td><td><code>rescue.target</code></td><td>Single-user / maintenance mode</td></tr>
+              <tr><td>3</td><td><code>multi-user.target</code></td><td>Multi-user, network, no GUI</td></tr>
+              <tr><td>5</td><td><code>graphical.target</code></td><td>Multi-user with desktop GUI</td></tr>
+              <tr><td>6</td><td><code>reboot.target</code></td><td>System reboot</td></tr>
+            </tbody>
+          </table>
+          <p>Ubuntu Server defaults to <code>multi-user.target</code>&mdash;the state you have been working in since Week 1: no desktop GUI, network services running, normal login prompt.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="upload-phase5">
+          Upload screenshot: <code>systemctl get-default</code> output
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase5" name="upload-phase5"
+               accept="image/*"
+               data-preview="preview-phase5">
+        <div class="img-preview" id="preview-phase5" role="region" aria-label="Default target screenshot preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="obs-phase5">
+          Task (d) &mdash; What is the default target and what does it mean?
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-phase5" name="obs-phase5"
+          placeholder="What target did systemctl get-default return? In your own words, what does this target mean — what state is the system in when it finishes booting? How does this relate to the traditional runlevel numbering system?"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 6 ── -->
+  <section class="phase" id="phase6" aria-labelledby="phase6-heading">
+    <div class="phase-header">
+      <div class="phase-num" aria-hidden="true">6</div>
+      <h2 id="phase6-heading">Switch to Rescue Mode and Back</h2>
+      <span class="phase-tag">Task (e) &mdash; graded</span>
+    </div>
+    <div class="phase-body">
+      <p>Your supervisor wants confirmation that you can enter <strong>rescue mode</strong>&mdash;the minimal single-user shell used for emergency system repairs. In this phase you will change the default target to <code>rescue.target</code>, reboot to observe it, and restore the system to normal operation.</p>
+
+      <div class="callout callout-caution">
+        <div class="callout-title">&#9888; Read all six steps before you start</div>
+        <p>When the system boots into rescue mode it drops to a minimal root shell. Your normal user login will not be available. You will change the default target back from inside that shell, then reboot again to confirm everything is restored. Follow the steps in order and do not skip ahead.</p>
+      </div>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Confirm your starting point</h3>
+        <p>Verify you are on <code>multi-user.target</code> before making any changes:</p>
+        <div class="cmd-block">systemctl get-default</div>
+        <p>Take a screenshot showing <code>multi-user.target</code>.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase6-before">
+          Upload screenshot: <code>systemctl get-default</code> confirming multi-user.target
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase6-before" name="upload-phase6-before"
+               accept="image/*"
+               data-preview="preview-phase6-before">
+        <div class="img-preview" id="preview-phase6-before" role="region" aria-label="Before rescue mode screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2 &mdash; Set rescue.target as the default and confirm</h3>
+        <div class="cmd-block">sudo systemctl set-default rescue.target
+systemctl get-default</div>
+        <p>Take a screenshot of both commands and their output together.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase6-setdefault">
+          Upload screenshot: <code>set-default rescue.target</code> and confirmation
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase6-setdefault" name="upload-phase6-setdefault"
+               accept="image/*"
+               data-preview="preview-phase6-setdefault">
+        <div class="img-preview" id="preview-phase6-setdefault" role="region" aria-label="Set rescue target screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 3 &mdash; Reboot into rescue mode</h3>
+        <p>Reboot the VM. The system will boot into rescue mode instead of the normal multi-user environment:</p>
+        <div class="cmd-block">sudo reboot</div>
+        <p>After the reboot you will see a minimal root shell. It may look something like:</p>
+        <div class="cmd-block"><span class="cmd-comment"># You may be prompted for the root password, or dropped directly to a prompt</span>
+[  OK  ] Reached target rescue.target.
+root@hostname:~#</div>
+        <p>Take a screenshot of the rescue shell prompt and the boot messages above it.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase6-rescue">
+          Upload screenshot: the rescue mode shell after rebooting
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase6-rescue" name="upload-phase6-rescue"
+               accept="image/*"
+               data-preview="preview-phase6-rescue">
+        <div class="img-preview" id="preview-phase6-rescue" role="region" aria-label="Rescue mode shell screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 4 &mdash; Restore multi-user.target from inside rescue mode</h3>
+        <p>From the rescue shell, set the default target back to normal, then reboot:</p>
+        <div class="cmd-block">systemctl set-default multi-user.target
+reboot</div>
+        <p>Note: in rescue mode you are already operating as root, so <code>sudo</code> is not needed. Take a screenshot of both commands in the rescue shell.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase6-restore">
+          Upload screenshot: setting multi-user.target and reboot command from within rescue mode
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase6-restore" name="upload-phase6-restore"
+               accept="image/*"
+               data-preview="preview-phase6-restore">
+        <div class="img-preview" id="preview-phase6-restore" role="region" aria-label="Restore target screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 5 &mdash; Verify normal boot is restored</h3>
+        <p>After the system reboots normally, log in and confirm the default target is back:</p>
+        <div class="cmd-block">systemctl get-default</div>
+        <p>Take a screenshot showing <code>multi-user.target</code>.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-phase6-after">
+          Upload screenshot: <code>systemctl get-default</code> confirming multi-user.target is restored
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-phase6-after" name="upload-phase6-after"
+               accept="image/*"
+               data-preview="preview-phase6-after">
+        <div class="img-preview" id="preview-phase6-after" role="region" aria-label="Restored target screenshot preview"></div>
+      </div>
+
+      <details class="hint">
+        <summary>What to do if you get stuck in rescue mode</summary>
+        <div class="hint-body">
+          <p>If rescue mode prompts you for a root password and you have not set one, try pressing <kbd>Enter</kbd>. If that does not work, you can force a recovery by using the VirtualBox or UTM interface to power cycle the VM, boot normally (which may still go to rescue if the default is not restored), and follow the recovery steps above. Contact your instructor if you cannot restore normal boot.</p>
+        </div>
+      </details>
+
+      <div class="form-group">
+        <label for="obs-phase6">
+          Task (e) &mdash; Describe your rescue mode experience
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-phase6" name="obs-phase6"
+          placeholder="Describe what rescue mode looked like when the system booted into it. What was different from a normal boot? Were network services available? What did you notice about what was or was not running? Why would a system administrator need this mode? What would have happened if you had not known how to restore the default target from inside the rescue shell?"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Extra Credit ── -->
+  <section class="ec-section" id="extracredit" aria-labelledby="ec-heading">
+    <div class="ec-header">
+      <span aria-hidden="true" style="font-size:1rem;">&#11088;</span>
+      <h2 id="ec-heading">Extra Credit &mdash; Cron Job Setup</h2>
+      <span class="badge badge-purple" style="margin-left:auto;">+5 points</span>
+    </div>
+    <div class="ec-body">
+      <p>This section is <strong>optional</strong>. Completing it earns 5 extra credit points (CSLO 2, CSLO 3). It also gives you a useful head start on the Week 7 Server Configuration assignment, which requires a working cron job.</p>
+      <p>Cron is the traditional Unix job scheduler. It runs commands on a repeating schedule, independently of systemd. You will write a crontab entry, verify it runs, and explain the schedule expression.</p>
+
+      <div class="step">
+        <h3>Step 1 &mdash; Read the documentation</h3>
+        <p>Before writing a crontab entry, review these free resources (they open in a new tab):</p>
+        <ul>
+          <li><a href="https://manpages.ubuntu.com/manpages/noble/man5/crontab.5.html" target="_blank" rel="noopener noreferrer">Ubuntu crontab(5) manpage</a> &mdash; authoritative format reference</li>
+          <li><a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">Crontab Guru</a> &mdash; interactive schedule expression builder. Use this to test your expression before adding it to your crontab.</li>
+          <li><a href="https://www.digitalocean.com/community/tutorials/how-to-use-cron-to-automate-tasks-ubuntu" target="_blank" rel="noopener noreferrer">DigitalOcean &mdash; How To Use Cron to Automate Tasks on Ubuntu</a></li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3>Step 2 &mdash; Design your cron job</h3>
+        <p>Write a cron job that does something simple but verifiable. A good starting point is a job that appends the current date and time to a log file on a short, repeating schedule:</p>
+        <div class="cmd-block"><span class="cmd-comment"># Five time fields: minute hour day-of-month month day-of-week</span>
+<span class="cmd-comment"># This example runs every 5 minutes and appends to a log file</span>
+*/5 * * * * echo "$(date) -- cron ran" >> /home/yourusername/cron-test.log</div>
+        <p>Replace <code>yourusername</code> with your actual username. Use <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">Crontab Guru</a> to verify your schedule expression before adding it.</p>
+      </div>
+
+      <div class="step">
+        <h3>Step 3 &mdash; Add the job and verify it was saved</h3>
+        <p>Open your crontab for editing (this opens your default text editor):</p>
+        <div class="cmd-block">crontab -e</div>
+        <p>Add your cron job line at the end of the file. Save and exit. In <strong>nano</strong>: press <kbd>Ctrl+O</kbd>, then <kbd>Enter</kbd> to save, then <kbd>Ctrl+X</kbd> to exit.</p>
+        <p>Confirm the job was saved:</p>
+        <div class="cmd-block">crontab -l</div>
+        <p>Take a screenshot of the <code>crontab -l</code> output showing your entry.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-ec-crontab">
+          Upload screenshot: <code>crontab -l</code> showing your cron job
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-ec-crontab" name="upload-ec-crontab"
+               accept="image/*"
+               data-preview="preview-ec-crontab">
+        <div class="img-preview" id="preview-ec-crontab" role="region" aria-label="Crontab listing screenshot preview"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 4 &mdash; Verify the job ran</h3>
+        <p>Wait for your schedule to trigger (if you used <code>*/5</code>, wait at least 5 minutes), then check your log file:</p>
+        <div class="cmd-block">cat /home/yourusername/cron-test.log</div>
+        <p>You should see one or more timestamped lines. Take a screenshot showing at least one entry. If you want to confirm using the system log instead:</p>
+        <div class="cmd-block">grep CRON /var/log/syslog | tail -10</div>
+      </div>
+
+      <div class="form-group">
+        <label for="upload-ec-proof">
+          Upload screenshot: evidence that your cron job ran (log file contents or syslog entries)
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <input type="file" id="upload-ec-proof" name="upload-ec-proof"
+               accept="image/*"
+               data-preview="preview-ec-proof">
+        <div class="img-preview" id="preview-ec-proof" role="region" aria-label="Cron job execution proof screenshot preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="obs-ec">
+          Extra Credit &mdash; Explanation
+          <span class="req" aria-label="required">*</span>
+        </label>
+        <textarea id="obs-ec" name="obs-ec"
+          placeholder="Explain your cron job: What command does it run? What schedule expression did you use? Break down each of the five time fields and explain the value you used in each position. Why did you choose this schedule? How does cron differ from a systemd timer?"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="submission-section" id="submission" aria-labelledby="submission-heading">
+    <h2 id="submission-heading">Deliverables and Submission</h2>
+
+    <p>This lab is worth <strong>25 points</strong>, plus 5 points extra credit for the cron section. Submit the following to Canvas:</p>
+
+    <h3 style="margin-top:1rem;">Required deliverables (25 points)</h3>
+    <ol>
+      <li><strong>This completed lab as a PDF.</strong> Use the Save as PDF button below. Your PDF must include all screenshots and written responses for Tasks (a) through (e).</li>
+      <li>Make sure all five graded tasks are addressed: the active service list, the SSH and cron status screenshots with comparison, the enable/disable sequence with .wants/ directory evidence, the default target screenshot and explanation, and the rescue mode screenshots and narrative.</li>
+    </ol>
+
+    <h3 style="margin-top:1rem;">Extra credit deliverable (+5 points)</h3>
+    <ol>
+      <li>If you completed the cron section, your PDF should include the <code>crontab -l</code> screenshot, the execution proof screenshot, and your written explanation. No separate file needed.</li>
+    </ol>
+
+    <div class="callout callout-hint" style="margin-top:1rem;">
+      <div class="callout-title">&#128247; Screenshot quality tips</div>
+      <ul>
+        <li>Make sure text in screenshots is legible &mdash; increase your terminal font size if needed.</li>
+        <li>Include both the command you ran <em>and</em> its output in each screenshot.</li>
+        <li>For long output that spans multiple screens, upload several screenshots to the same field.</li>
+      </ul>
+    </div>
+
+    <hr class="divider">
+
+    <h3>Save your completed lab as a PDF</h3>
+    <p>When you are finished entering all responses and uploading all screenshots, click the button below. Your browser's print dialog will open &mdash; select <strong>Save as PDF</strong> (or <strong>Print to PDF</strong>) as the destination. All screenshots and text responses will be included in the output.</p>
+
+    <button class="pdf-btn" type="button" onclick="savePDF()" aria-label="Open print dialog to save this lab as a PDF">
+      &#128438; Save as PDF
+    </button>
+  </section>
+
+</main>
+
+<script>
+  // ── Image upload previews ─────────────────────────────────────────────────
+  document.querySelectorAll('input[type="file"][data-preview]').forEach(function(input) {
+    input.addEventListener('change', function() {
+      var preview = document.getElementById(this.dataset.preview);
+      if (!preview) return;
+      preview.innerHTML = '';
+      Array.from(this.files).forEach(function(file) {
+        if (!file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = document.createElement('img');
+          img.src = e.target.result;
+          img.alt = 'Terminal output screenshot';
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  });
+
+  // ── Save as PDF ───────────────────────────────────────────────────────────
+  function savePDF() {
+    var details = document.querySelectorAll('details');
+    var wasOpen = Array.from(details).map(function(d) { return d.open; });
+    details.forEach(function(d) { d.open = true; });
+    window.print();
+    setTimeout(function() {
+      details.forEach(function(d, i) { d.open = wasOpen[i]; });
+    }, 1200);
+  }
+
+  // ── Active nav link on scroll ─────────────────────────────────────────────
+  var navLinks = document.querySelectorAll('.nav-inner a[href^="#"]');
+  var targets = Array.from(navLinks).map(function(a) {
+    return document.querySelector(a.getAttribute('href'));
+  });
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach(function(link, i) {
+        if (targets[i] === entry.target) {
+          navLinks.forEach(function(l) { l.classList.remove('nav-active'); });
+          link.classList.add('nav-active');
+        }
+      });
+    });
+  }, { rootMargin: '-15% 0px -80% 0px' });
+
+  targets.forEach(function(t) { if (t) observer.observe(t); });
+</script>
+
+</body>
+</html>

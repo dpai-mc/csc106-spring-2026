@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discussion 3: Why Runlevels Still Matter — CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --nav-height: 3rem;
+      --color-primary: #1a4a8a;
+      --color-primary-dark: #12336b;
+      --color-accent: #2563eb;
+      --color-bg: #ffffff;
+      --color-surface: #f4f6f9;
+      --color-border: #d0d7de;
+      --color-text: #1a1a2e;
+      --color-muted: #4b5563;
+      --color-hint-bg: #e0f2fe;
+      --color-hint-border: #38bdf8;
+      --color-hint-text: #0c4a6e;
+      --color-good-bg: #f0fdf4;
+      --color-good-border: #4ade80;
+      --color-good-text: #14532d;
+      --color-weak-bg: #fef2f2;
+      --color-weak-border: #f87171;
+      --color-weak-text: #7f1d1d;
+      --radius: 6px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: var(--color-primary);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-radius: 0 0 var(--radius) 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Sticky nav ── */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--color-primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0 1rem;
+      height: var(--nav-height);
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .nav-inner::-webkit-scrollbar { height: 3px; }
+    .nav-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      flex-shrink: 0;
+      margin-right: 0.4rem;
+    }
+    .nav-inner a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.76rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .nav-inner a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .nav-inner a:focus {
+      outline: 2px solid rgba(255,255,255,0.7);
+      outline-offset: 1px;
+      color: #fff;
+    }
+    .nav-inner a.nav-active {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1.75rem 1rem 3.5rem;
+    }
+    section[id] { scroll-margin-top: calc(var(--nav-height) + 0.75rem); }
+
+    /* ── Assignment header ── */
+    .disc-header {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 1.75rem;
+    }
+    .disc-header h1 {
+      font-size: 1.35rem;
+      color: var(--color-primary);
+      margin-bottom: 0.35rem;
+    }
+    .disc-header p { color: var(--color-muted); font-size: 0.9rem; }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-blue   { background: #dbeafe; color: #1e3a8a; }
+    .badge-green  { background: #dcfce7; color: #14532d; }
+    .badge-orange { background: #ffedd5; color: #7c2d12; }
+
+    /* ── Deadline cards ── */
+    .deadline-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .deadline-card {
+      flex: 1;
+      min-width: 180px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+    }
+    .deadline-card .dl-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-muted);
+      margin-bottom: 0.2rem;
+    }
+    .deadline-card .dl-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .deadline-card .dl-sub {
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* ── Section typography ── */
+    h2 {
+      font-size: 1.1rem;
+      color: var(--color-primary);
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 0.3rem;
+      margin-bottom: 0.85rem;
+    }
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.4rem;
+    }
+    p { margin-bottom: 0.65rem; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 1.4rem; margin-bottom: 0.65rem; }
+    li { margin-bottom: 0.3rem; }
+
+    section { margin-bottom: 2rem; }
+
+    /* ── Prompt box ── */
+    .prompt-box {
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 1.3rem 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .prompt-box p {
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-bottom: 0.7rem;
+    }
+    .prompt-box p:last-child { margin-bottom: 0; }
+    .prompt-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 0.5rem;
+    }
+    .prompt-part {
+      border-left: 3px solid rgba(255,255,255,0.4);
+      padding-left: 0.85rem;
+      margin: 0.5rem 0;
+      font-size: 0.97rem;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      margin: 0.75rem 0;
+      font-size: 0.92rem;
+    }
+    .callout-title { font-weight: 700; margin-bottom: 0.25rem; }
+    .callout-info {
+      background: var(--color-hint-bg);
+      border-left: 4px solid var(--color-hint-border);
+      color: var(--color-hint-text);
+    }
+    .callout-canvas {
+      background: #fff7ed;
+      border-left: 4px solid #fb923c;
+      color: #7c2d12;
+    }
+
+    /* ── Grading table ── */
+    .rubric-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .rubric-card {
+      flex: 1;
+      min-width: 160px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .rubric-card-head {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .rubric-card-pts {
+      font-size: 1.5rem;
+      font-weight: 700;
+      padding: 0.6rem 0.85rem 0.2rem;
+      color: var(--color-primary);
+    }
+    .rubric-card-body {
+      padding: 0 0.85rem 0.75rem;
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      line-height: 1.45;
+    }
+    .rubric-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 0.65rem 1rem;
+      margin-top: 0.75rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .rubric-total span:last-child {
+      font-size: 1.15rem;
+      color: var(--color-primary);
+    }
+
+    /* ── Example details ── */
+    details.example {
+      border-radius: var(--radius);
+      margin: 0.6rem 0;
+      overflow: hidden;
+    }
+    details.example.good {
+      border: 1px solid var(--color-good-border);
+    }
+    details.example.weak {
+      border: 1px solid var(--color-weak-border);
+    }
+    details.example > summary {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      list-style: none;
+      user-select: none;
+    }
+    details.example > summary::-webkit-details-marker { display: none; }
+    details.example.good > summary { background: var(--color-good-bg); color: var(--color-good-text); }
+    details.example.weak > summary { background: var(--color-weak-bg); color: var(--color-weak-text); }
+    details.example > summary::before {
+      content: "▶";
+      font-size: 0.6em;
+      transition: transform 0.18s;
+      flex-shrink: 0;
+    }
+    details[open].example > summary::before { transform: rotate(90deg); }
+    details.example > summary:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+    .example-body {
+      padding: 0.85rem 1rem 1rem;
+      font-size: 0.88rem;
+      background: #fff;
+      border-top: 1px solid var(--color-border);
+    }
+    .example-body p { margin-bottom: 0.5rem; }
+    .example-body .why {
+      margin-top: 0.6rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .good .why { background: var(--color-good-bg); color: var(--color-good-text); border-left: 3px solid var(--color-good-border); }
+    .weak .why { background: var(--color-weak-bg); color: var(--color-weak-text); border-left: 3px solid var(--color-weak-border); }
+    .why-label { font-weight: 700; margin-bottom: 0.2rem; }
+    .quoted-post {
+      background: var(--color-surface);
+      border-left: 3px solid var(--color-border);
+      padding: 0.7rem 0.9rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+      color: #374151;
+      margin: 0.5rem 0;
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+    .wc-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    .wc-ok  { background: #dcfce7; color: #14532d; }
+    .wc-low { background: #fee2e2; color: #7f1d1d; }
+
+    .example-divider {
+      border: none;
+      border-top: 1px dashed var(--color-border);
+      margin: 0.75rem 0;
+    }
+
+    /* ── Draft tool ── */
+    .draft-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .draft-section h2 { border-color: var(--color-border); }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 0.85rem;
+    }
+    .checklist li {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      margin-bottom: 0.35rem;
+      color: var(--color-muted);
+    }
+    .checklist li::before {
+      content: "○";
+      flex-shrink: 0;
+      font-size: 0.8em;
+      color: var(--color-primary);
+    }
+
+    .word-counter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .word-counter-row label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .wc-display {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background: #fff;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .wc-display.met {
+      background: #dcfce7;
+      color: #14532d;
+      border-color: #4ade80;
+    }
+
+    textarea#draft {
+      width: 100%;
+      min-height: 180px;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--color-text);
+      background: #fff;
+      resize: vertical;
+      line-height: 1.55;
+    }
+    textarea#draft:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 1px;
+      border-color: var(--color-accent);
+    }
+
+    .wc-msg {
+      font-size: 0.8rem;
+      margin-top: 0.35rem;
+      min-height: 1.2em;
+      color: var(--color-muted);
+      transition: color 0.2s;
+    }
+    .wc-msg.met { color: var(--color-good-text); font-weight: 600; }
+
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      font-size: 0.87em;
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Discussion assignment navigation">
+  <div class="nav-inner">
+    <span class="nav-brand" aria-hidden="true">Discussion 3</span>
+    <a href="#prompt">Prompt</a>
+    <a href="#requirements">Requirements</a>
+    <a href="#grading">Grading</a>
+    <a href="#examples">Examples</a>
+    <a href="#draft">Draft Tool</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Header ── -->
+  <div class="disc-header" id="overview" tabindex="-1">
+    <h1>Discussion 3: Why Runlevels Still Matter</h1>
+    <p>CSC 106 &mdash; Introduction to Linux II &nbsp;&#8226;&nbsp; Week 3</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">15 points</span>
+      <span class="badge badge-green">CSLO 3</span>
+      <span class="badge badge-orange">RSI Discussion</span>
+    </div>
+    <div class="deadline-row">
+      <div class="deadline-card">
+        <div class="dl-label">Initial Post Due</div>
+        <div class="dl-value">Thursday, 11:59 pm</div>
+        <div class="dl-sub">Minimum 150 words</div>
+      </div>
+      <div class="deadline-card">
+        <div class="dl-label">Peer Replies Due</div>
+        <div class="dl-value">Sunday, 11:59 pm</div>
+        <div class="dl-sub">Two substantive replies required</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Prompt ── -->
+  <section id="prompt" aria-labelledby="prompt-heading">
+    <h2 id="prompt-heading">Discussion Prompt</h2>
+    <p>Your instructor will open this discussion on Monday with a brief real-world anecdote about a rescue-mode situation. Read that post before writing your own. Then respond to <em>both</em> parts of the prompt below:</p>
+    <div class="prompt-box" role="region" aria-label="Discussion prompt">
+      <div class="prompt-label">Discussion 3 Prompt</div>
+      <div class="prompt-part">
+        <strong>Part 1:</strong> Modern Ubuntu uses systemd targets instead of traditional runlevels, but the concept of runlevels still shows up in documentation, job interviews, and older systems. In your own words, explain the relationship between runlevels and systemd targets.
+      </div>
+      <div class="prompt-part">
+        <strong>Part 2:</strong> Describe a real scenario where a system administrator might need to boot into single-user (rescue) mode. What specific problem would they be trying to fix, and what would they do once they got there?
+      </div>
+    </div>
+    <div class="callout callout-info">
+      <div class="callout-title">&#128161; Connect it to what you did in Lab 3</div>
+      <p>You changed the default target to <code>rescue.target</code> and rebooted in Lab 3. What did you observe? What was running &mdash; or not running &mdash; in rescue mode? Your own experience from the lab is strong evidence to draw on here.</p>
+    </div>
+  </section>
+
+  <!-- ── Requirements ── -->
+  <section id="requirements" aria-labelledby="req-heading">
+    <h2 id="req-heading">What You Need to Submit</h2>
+
+    <h3>Initial post &mdash; due Thursday, 11:59 pm</h3>
+    <ul>
+      <li><strong>Minimum 150 words.</strong> Use the draft tool at the bottom of this page to check your word count before posting.</li>
+      <li>Address <em>both</em> parts of the prompt: the runlevel &harr; target relationship, and a specific rescue-mode scenario.</li>
+      <li>Be specific. Name commands, target names, or runlevel numbers where relevant. Vague answers earn partial credit at best.</li>
+      <li>Draw on your Lab 3 experience, the week's reading, or both. Cite a specific detail &mdash; something you ran, something you read, something that surprised you.</li>
+    </ul>
+
+    <h3 style="margin-top:1rem;">Peer replies &mdash; due Sunday, 11:59 pm</h3>
+    <ul>
+      <li>Post <strong>two substantive replies</strong> to classmates. You must return to the discussion after your initial post to earn reply credit.</li>
+      <li>A substantive reply does at least one of these things:
+        <ul>
+          <li>Adds a new idea, tool, or scenario not mentioned in the original post.</li>
+          <li>Asks a specific, genuine follow-up question.</li>
+          <li>Respectfully offers an alternative explanation or correction.</li>
+          <li>Connects the classmate's point to something from the reading or the lab.</li>
+        </ul>
+      </li>
+      <li>"Great post!" or "I agree!" by themselves <strong>do not count</strong> as substantive replies. See the examples section for what this looks like in practice.</li>
+    </ul>
+
+    <div class="callout callout-canvas">
+      <div class="callout-title">&#128205; Submit in Canvas, not here</div>
+      <p>This page is for instructions and drafting only. Your actual post goes in the Canvas discussion board for Week 3. Use the draft tool below to write and check your word count, then copy and paste into Canvas.</p>
+    </div>
+  </section>
+
+  <!-- ── Grading ── -->
+  <section id="grading" aria-labelledby="grading-heading">
+    <h2 id="grading-heading">Grading Breakdown</h2>
+    <div class="rubric-cards">
+      <div class="rubric-card">
+        <div class="rubric-card-head">Initial Post</div>
+        <div class="rubric-card-pts">8 pts</div>
+        <div class="rubric-card-body">Posted by Thursday 11:59 pm &bull; at least 150 words &bull; addresses both parts of the prompt with specific details, commands, or examples &bull; demonstrates engagement with week's topics</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-card-head">Peer Replies &times;2</div>
+        <div class="rubric-card-pts">4 pts</div>
+        <div class="rubric-card-body">2 pts per reply &bull; posted by Sunday 11:59 pm &bull; each reply is substantive &mdash; adds a new idea, asks a follow-up question, or offers a constructive alternative</div>
+      </div>
+      <div class="rubric-card">
+        <div class="rubric-card-head">Quality &amp; Depth</div>
+        <div class="rubric-card-pts">3 pts</div>
+        <div class="rubric-card-body">Thoughtful reflection &bull; technically accurate content &bull; willingness to engage with peers' ideas beyond surface agreement</div>
+      </div>
+    </div>
+    <div class="rubric-total" aria-label="Total: 15 points">
+      <span>Total</span>
+      <span>15 points</span>
+    </div>
+  </section>
+
+  <!-- ── Examples ── -->
+  <section id="examples" aria-labelledby="examples-heading">
+    <h2 id="examples-heading">Post Quality Guide</h2>
+    <p>Read these examples before writing your post. They show the difference between responses that earn full credit and responses that fall short &mdash; and explain why.</p>
+
+    <h3 style="margin-top:1.1rem;">Initial Post Examples</h3>
+
+    <!-- Good initial post -->
+    <details class="example good">
+      <summary>&#10003;&nbsp; Strong initial post &mdash; full credit</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          Before doing Lab 3, I knew runlevels existed but thought of them as just numbers. Working through systemd this week made the relationship click. Runlevels 0 through 6 in SysV init each mapped to a specific system state, and systemd targets are the modern equivalent. Runlevel 3 &mdash; multi-user with no GUI &mdash; corresponds to <code>multi-user.target</code>, which is exactly what my Ubuntu Server boots into by default. Running <code>systemctl get-default</code> confirmed this. Runlevel 1 &mdash; single-user mode &mdash; maps to <code>rescue.target</code>.<br><br>
+          For a real rescue scenario: imagine you edited <code>/etc/fstab</code> and made a typo in a mount point entry. On the next reboot, the system cannot mount the filesystem and hangs before reaching the normal login prompt. You need <code>rescue.target</code> to get a root shell, fix the typo, and reboot normally. I actually simulated part of this in the lab &mdash; I ran <code>sudo systemctl set-default rescue.target</code> and rebooted. The system dropped into a minimal shell with no network services. It was quieter than I expected. Getting out required running <code>systemctl set-default multi-user.target</code> from inside the rescue shell before rebooting again. Now I understand why sysadmins treat rescue mode as a lifeline rather than something exotic.
+        </div>
+        <span class="wc-tag wc-ok">~178 words &#10003;</span>
+        <div class="why">
+          <div class="why-label">Why this earns full credit</div>
+          Both parts are addressed. The runlevel mapping is named specifically (runlevel 3 &rarr; <code>multi-user.target</code>, runlevel 1 &rarr; <code>rescue.target</code>). The rescue scenario is concrete: a real file, a real failure mode, a real fix. Actual commands from the lab are referenced. The final sentence reflects on what the experience meant, which is exactly the kind of depth the quality and depth rubric rewards.
+        </div>
+      </div>
+    </details>
+
+    <!-- Weak post 1 -->
+    <details class="example weak">
+      <summary>&#10007;&nbsp; Weak initial post #1 &mdash; too vague and too short</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          Runlevels are old and systemd targets are the new version. They basically do the same thing but systemd is better because it starts things faster. Rescue mode is for when something breaks. I did the lab and changed the target and then changed it back. It worked fine.
+        </div>
+        <span class="wc-tag wc-low">~52 words &#10007;</span>
+        <div class="why">
+          <div class="why-label">Why this falls short</div>
+          It is far below 150 words. No specific runlevel numbers or target names appear. "Something breaks" is not a scenario &mdash; a scenario names the specific problem. No commands are mentioned. There is nothing for a classmate to respond to or build on.
+        </div>
+      </div>
+    </details>
+
+    <!-- Weak post 2 -->
+    <details class="example weak">
+      <summary>&#10007;&nbsp; Weak initial post #2 &mdash; only half the prompt answered</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          The mapping between runlevels and systemd targets is a one-to-one correspondence. Runlevel 0 is <code>poweroff.target</code>, runlevel 1 is <code>rescue.target</code>, runlevel 3 is <code>multi-user.target</code>, runlevel 5 is <code>graphical.target</code>, and runlevel 6 is <code>reboot.target</code>. Ubuntu Server defaults to <code>multi-user.target</code>, which I confirmed with <code>systemctl get-default</code>. The old <code>/etc/init.d/</code> scripts still exist on Ubuntu as compatibility shims, which I thought was a thoughtful design choice since it prevents older scripts from completely breaking on modern systems. I read the DigitalOcean article on systemd units and it explained how the <code>[Install]</code> section of a unit file uses <code>WantedBy=</code> to link a service to a target, which is what creates the symlinks in <code>/etc/systemd/system/multi-user.target.wants/</code>.
+        </div>
+        <span class="wc-tag wc-low">~129 words &#10007;</span>
+        <div class="why">
+          <div class="why-label">Why this falls short</div>
+          Part 1 is handled well &mdash; there are specific names, commands, and a reference to the reading. But Part 2 is missing entirely. The prompt asks for a real rescue-mode scenario, and this post never addresses it. Even if the word count were over 150, leaving out half the prompt costs significant points.
+        </div>
+      </div>
+    </details>
+
+    <h3 style="margin-top:1.5rem;">Peer Reply Examples</h3>
+
+    <!-- Good reply 1 -->
+    <details class="example good">
+      <summary>&#10003;&nbsp; Strong peer reply #1 &mdash; adds a new idea and asks a follow-up</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          Your <code>/etc/fstab</code> scenario is exactly the kind of situation I had in mind too. One thing I would add: once you fix the problem and reboot normally, it is worth running <code>systemd-analyze blame</code> to see if any services were affected by the bad mount entry. I found that command useful during the lab just to see which services take the longest to start &mdash; it makes the boot sequence feel a lot less like a black box. Did you notice whether rescue mode mounted your filesystem read-only or read-write? I had to remount it before I could write any changes, which added an extra step I was not expecting.
+        </div>
+        <div class="why">
+          <div class="why-label">Why this earns full reply credit</div>
+          It introduces a new tool (<code>systemd-analyze blame</code>) that is relevant to the discussion but not in the original post. It shares a specific experience (the read-only filesystem issue). It ends with a genuine question that the original poster can answer, keeping the conversation going.
+        </div>
+      </div>
+    </details>
+
+    <!-- Good reply 2 -->
+    <details class="example good">
+      <summary>&#10003;&nbsp; Strong peer reply #2 &mdash; offers an alternative scenario</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          I like the <code>/etc/fstab</code> example &mdash; that is a classic. Another scenario I have read about is a forgotten root password or a corrupted sudoers file. If you can no longer run <code>sudo</code> and you do not have another admin account, rescue mode gives you a root shell to either reset the password with <code>passwd</code> or restore <code>/etc/sudoers</code> with <code>visudo</code>. The DigitalOcean article mentioned that this is one of the main reasons rescue mode exists on servers. I had not connected that reading to the lab until I saw your post. Do you think there are situations where even rescue mode would not be enough to recover the system?
+        </div>
+        <div class="why">
+          <div class="why-label">Why this earns full reply credit</div>
+          It adds a distinct, technically accurate rescue scenario. It connects the classmate's post to the reading (DigitalOcean reference). It ends with a thought-provoking question. The tone is collaborative rather than just agreeable.
+        </div>
+      </div>
+    </details>
+
+    <!-- Weak reply 1 -->
+    <details class="example weak">
+      <summary>&#10007;&nbsp; Weak peer reply #1 &mdash; no substance</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          Great post! I had a similar experience with the lab and also found rescue mode kind of interesting.
+        </div>
+        <div class="why">
+          <div class="why-label">Why this earns no credit</div>
+          It agrees but adds nothing. There is no new idea, no question, no connection to the reading, and no specific detail. Reading this reply tells the original poster nothing they did not already know.
+        </div>
+      </div>
+    </details>
+
+    <!-- Weak reply 2 -->
+    <details class="example weak">
+      <summary>&#10007;&nbsp; Weak peer reply #2 &mdash; restates without adding</summary>
+      <div class="example-body">
+        <div class="quoted-post">
+          Yeah, runlevels and targets basically map to each other and it is good to know rescue mode for emergencies. Your post explained it well.
+        </div>
+        <div class="why">
+          <div class="why-label">Why this earns no credit</div>
+          It paraphrases the original post without adding anything. Complimenting a classmate is fine, but a reply that consists entirely of agreement and restatement is not substantive.
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- ── Draft Tool ── -->
+  <section id="draft" aria-labelledby="draft-heading">
+    <div class="draft-section">
+      <h2 id="draft-heading">Draft Your Initial Post</h2>
+      <p style="font-size:0.9rem;color:var(--color-muted);margin-bottom:0.85rem;">Use this space to draft your post and confirm it meets the 150-word minimum. When you are ready, copy your text and paste it into the Canvas discussion board.</p>
+
+      <p style="font-size:0.88rem;font-weight:600;margin-bottom:0.4rem;">Your post should cover:</p>
+      <ul class="checklist" aria-label="Post checklist">
+        <li>The relationship between SysV runlevels (0&ndash;6) and their systemd target equivalents &mdash; name at least two pairs specifically</li>
+        <li>Why understanding runlevels still matters even on a modern systemd system</li>
+        <li>A real, specific rescue-mode scenario &mdash; name the problem, not just "when things break"</li>
+        <li>What an administrator would actually do inside rescue mode to fix the problem</li>
+        <li>At least one concrete detail from Lab 3 or the week's reading</li>
+      </ul>
+
+      <div class="word-counter-row">
+        <label for="draft">Your draft</label>
+        <div class="wc-display" id="wc-display" aria-live="polite" aria-label="Word count">0 / 150 words</div>
+      </div>
+      <textarea id="draft" name="draft" aria-describedby="wc-msg"
+        placeholder="Write your initial post here. Both parts of the prompt must be addressed. Aim for at least 150 words."></textarea>
+      <p class="wc-msg" id="wc-msg" aria-live="polite">Start typing &mdash; your word count will appear above.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ── Word counter ──────────────────────────────────────────────────────────
+  var draftArea = document.getElementById('draft');
+  var wcDisplay = document.getElementById('wc-display');
+  var wcMsg     = document.getElementById('wc-msg');
+  var MIN_WORDS = 150;
+
+  function countWords(text) {
+    var trimmed = text.trim();
+    return trimmed === '' ? 0 : trimmed.split(/\s+/).length;
+  }
+
+  draftArea.addEventListener('input', function() {
+    var count = countWords(this.value);
+    var met   = count >= MIN_WORDS;
+    wcDisplay.textContent = count + ' / ' + MIN_WORDS + ' words';
+    wcDisplay.classList.toggle('met', met);
+    if (met) {
+      wcMsg.textContent = '✓ Minimum met — you\'re ready to post in Canvas.';
+      wcMsg.classList.add('met');
+    } else {
+      var remaining = MIN_WORDS - count;
+      wcMsg.textContent = remaining + ' more word' + (remaining === 1 ? '' : 's') + ' needed to reach the minimum.';
+      wcMsg.classList.remove('met');
+    }
+  });
+
+  // ── Active nav link on scroll ─────────────────────────────────────────────
+  var navLinks = document.querySelectorAll('.nav-inner a[href^="#"]');
+  var targets  = Array.from(navLinks).map(function(a) {
+    return document.querySelector(a.getAttribute('href'));
+  });
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach(function(link, i) {
+        link.classList.toggle('nav-active', targets[i] === entry.target);
+      });
+    });
+  }, { rootMargin: '-15% 0px -80% 0px' });
+
+  targets.forEach(function(t) { if (t) observer.observe(t); });
+</script>
+
+</body>
+</html>
