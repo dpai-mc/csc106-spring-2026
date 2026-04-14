@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 3 Demo: Managing Services with systemctl | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style (global) ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav Bar ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 0.5rem;
+}
+h3 {
+  font-size: 1.0rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video Summary ── */
+.video-summary {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+
+/* ── Video + Transcript ── */
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+.commands-group {
+  margin-bottom: 1.25rem;
+}
+.commands-list {
+  padding-left: 1.5rem;
+  margin: 0.4rem 0 0;
+}
+.commands-list li {
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.cmd-note {
+  display: block;
+  color: #475569;
+  font-size: 0.88rem;
+  margin-top: 0.15rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: nowrap;
+}
+
+/* ── Info Box ── */
+.info-box {
+  background: #f0f4ff;
+  border: 1px solid #a5b4fc;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+.info-box strong { color: #3730a3; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands Used</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Week 3 &middot; systemctl Demo</p>
+    <h1 id="page-heading">Week 3 Demo: Managing Services with systemctl</h1>
+    <p>This is the hands-on companion to the Week 3 Introduction video. Where the first video covered concepts — what systemd is, how targets replaced runlevels — this video goes directly to the terminal. You will watch a live Ubuntu Server session covering the full day-to-day workflow for managing services.</p>
+    <p>The demo service used throughout is <strong>nginx</strong>, a widely-used web server. The specific service does not matter — all of these commands work identically on <code>ssh</code>, <code>cron</code>, or any other service on your VM. You can follow along on your own Ubuntu Server, or watch through once and then try the commands during the systemd Exploration assignment.</p>
+  </section>
+
+  <!-- ── Video ── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video: Managing Services with systemctl</h2>
+    <p class="video-summary">This hands-on video walks through the full day-to-day systemctl workflow on a live Ubuntu Server VM, using nginx as the demo service. You will see how to check service status, start and stop services, and control whether they start at boot using <code>enable</code> and <code>disable</code>. The video also covers reading unit files with <code>systemctl cat</code>, issuing clean shutdowns and reboots, and using <code>journalctl</code> to diagnose errors — including a live example of finding a deliberately introduced nginx configuration error. These are the same commands you will use in the systemd Exploration assignment.</p>
+
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/jgg5-Wk0dmw?enablejsapi=1"
+                  title="Week 3 Demo: Managing Services with systemctl"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container"
+             role="region"
+             aria-label="Transcript for Week 3 systemctl demo video. Click any line to jump to that point in the video.">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands Used ── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <h2 id="commands-heading">Commands Demonstrated in This Video</h2>
+    <p>Commands are listed in the order they appear in the video and grouped by function. Use this as a reference when following along or completing the systemd Exploration assignment.</p>
+
+    <div class="commands-group">
+      <h3>Checking service status</h3>
+      <ol class="commands-list">
+        <li>
+          <code>systemctl status nginx</code>
+          <span class="cmd-note">Shows current state (active/inactive/failed), PID, how long it has been running, and the most recent log lines. The green dot means running; white means stopped; red means failed.</span>
+        </li>
+        <li>
+          <code>systemctl is-enabled nginx</code>
+          <span class="cmd-note">Returns <code>enabled</code> or <code>disabled</code> — whether the service is configured to start at boot. Useful in scripts.</span>
+        </li>
+        <li>
+          <code>systemctl is-active nginx</code>
+          <span class="cmd-note">Returns <code>active</code> or <code>inactive</code> — whether the service is running right now.</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="info-box">
+      <strong>Active vs. enabled:</strong> These are two separate things. A service can be <em>active</em> (running right now) but <em>disabled</em> (will not start at the next boot). It can also be <em>enabled</em> (will start at boot) but <em>inactive</em> (manually stopped since the last boot). Keep this distinction in mind when reading <code>systemctl status</code> output.
+    </div>
+
+    <div class="commands-group">
+      <h3>Start, stop, restart, and reload</h3>
+      <ol class="commands-list">
+        <li>
+          <code>sudo systemctl start nginx</code>
+          <span class="cmd-note">Start a stopped service. No output means it worked — silence is success in Unix.</span>
+        </li>
+        <li>
+          <code>sudo systemctl stop nginx</code>
+          <span class="cmd-note">Stop a running service. Does not affect whether it starts at the next boot.</span>
+        </li>
+        <li>
+          <code>sudo systemctl restart nginx</code>
+          <span class="cmd-note">Kill the process and start a fresh one. Use after configuration changes. There is a brief moment of downtime.</span>
+        </li>
+        <li>
+          <code>sudo systemctl reload nginx</code>
+          <span class="cmd-note">Ask the running process to re-read its configuration without stopping. No downtime, but only works if the service explicitly supports it.</span>
+        </li>
+        <li>
+          <code>sudo systemctl reload-or-restart nginx</code>
+          <span class="cmd-note">Tries <code>reload</code> first; falls back to <code>restart</code> automatically if the service does not support reload. The safer choice when you are not sure.</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="commands-group">
+      <h3>Enable and disable (boot behavior)</h3>
+      <ol class="commands-list">
+        <li>
+          <code>sudo systemctl enable nginx</code>
+          <span class="cmd-note">Configure the service to start at boot. systemd does this by creating a symlink inside <code>multi-user.target.wants/</code>. Does not start the service right now.</span>
+        </li>
+        <li>
+          <code>sudo systemctl disable nginx</code>
+          <span class="cmd-note">Remove the service from boot startup by deleting the symlink. Does not stop the service if it is currently running.</span>
+        </li>
+        <li>
+          <code>sudo systemctl enable --now nginx</code>
+          <span class="cmd-note">Enable and start the service in a single command. The <code>--now</code> flag is a handy shortcut you will see frequently in setup guides.</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="commands-group">
+      <h3>Reading a unit file</h3>
+      <ol class="commands-list">
+        <li>
+          <code>systemctl cat nginx.service</code>
+          <span class="cmd-note">Display the unit file exactly as systemd reads it. The three sections are <code>[Unit]</code> (description and ordering), <code>[Service]</code> (how to run it), and <code>[Install]</code> (the <code>WantedBy=</code> line that connects it to a target). This is why <code>enable</code> works the way it does.</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="commands-group">
+      <h3>Shutdown and reboot</h3>
+      <ol class="commands-list">
+        <li>
+          <code>sudo systemctl poweroff</code>
+          <span class="cmd-note">Shut down and power off cleanly — services stop in dependency order, filesystems unmount safely.</span>
+        </li>
+        <li>
+          <code>sudo systemctl reboot</code>
+          <span class="cmd-note">Reboot cleanly. Equivalent to <code>sudo reboot</code>. Use this instead of forcing the VM off from the VirtualBox or UTM interface.</span>
+        </li>
+        <li>
+          <code>sudo systemctl halt</code>
+          <span class="cmd-note">Halt the CPU without powering off. Less common in practice.</span>
+        </li>
+        <li>
+          <code>sudo shutdown -h now</code>
+          <span class="cmd-note">Halt immediately using the traditional <code>shutdown</code> command (which wraps systemd on Ubuntu).</span>
+        </li>
+        <li>
+          <code>sudo shutdown -r +5 "Rebooting for updates"</code>
+          <span class="cmd-note">Schedule a reboot in 5 minutes and broadcast a message to logged-in users.</span>
+        </li>
+        <li>
+          <code>sudo shutdown -c</code>
+          <span class="cmd-note">Cancel a scheduled shutdown before it runs.</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="commands-group">
+      <h3>Viewing logs with journalctl</h3>
+      <ol class="commands-list">
+        <li>
+          <code>journalctl -u nginx</code>
+          <span class="cmd-note">Show all log entries for the nginx unit across all boot sessions, oldest to newest. Press <code>q</code> to quit.</span>
+        </li>
+        <li>
+          <code>journalctl -u nginx -b</code>
+          <span class="cmd-note">Show logs for this boot session only (<code>-b</code> = boot). Usually the most useful option when diagnosing a startup problem.</span>
+        </li>
+        <li>
+          <code>journalctl -u nginx --since "30 minutes ago"</code>
+          <span class="cmd-note">Filter log output by time. Accepts natural language expressions and explicit timestamps.</span>
+        </li>
+        <li>
+          <code>journalctl -u nginx -f</code>
+          <span class="cmd-note">Follow new log entries in real time, like <code>tail -f</code>. Press <code>Ctrl+C</code> to stop. Useful for watching a service as you make changes.</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VIDEO_ID = 'jgg5-Wk0dmw';
+  var player;
+  var timeUpdater;
+  var parsedTranscript = [];
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.000 --> 00:08.520
+Aloha! So in this video we're going to use systemctl and journalctl as commands
+
+00:08.520 --> 00:15.120
+and we're gonna do a bunch of stuff with our Ubuntu server. Okay so basically
+
+00:15.120 --> 00:27.180
+when you're done you should be able to use systemctl status, systemctl to start, stop, restart, reload, enable, disable, read a basic .service unit file and then also do some stuff with journalctl.
+
+00:35.400 --> 00:49.460
+Okay so before I started this video I wanted to install a service on my server so that I have something to status and enable and disable.
+
+00:49.460 --> 00:57.180
+So I installed nginx — n-g-i-n-x. Okay so I did this. You should do this too if you would like to follow along.
+
+00:57.180 --> 01:20.580
+You know, pause the video, do this and then confirm it's running. Okay so the first thing once you have your system set up is you want to check the status of something.
+
+01:20.580 --> 01:31.800
+You do that with this command: systemctl status, and then whatever service that you want to check. So I want to check nginx.
+
+01:31.800 --> 01:51.000
+So let me go systemctl status nginx. Enter. Alright so now when we have this output it says it's a high-performance web server and reverse proxy.
+
+01:51.000 --> 02:05.580
+Okay it's loaded and it's enabled. The preset is enabled. Active running since about 59 minutes ago.
+
+02:05.580 --> 02:15.880
+Okay main PID is 893. There are five tasks running at the same time.
+
+02:15.880 --> 02:36.000
+Okay you can see here it says cgroup and it has 893 master process. And then 894, 95, 96, and 97. So 893 is the master process and the others are nginx worker processes.
+
+02:36.000 --> 02:52.280
+Alright and then you can see here down at the bottom there are log lines that say starting nginx, service has started, with a date and a time. That's our basic systemctl status for any service.
+
+02:56.400 --> 03:18.780
+Okay so now if I want to stop this service I have to use sudo systemctl is the command. What I want to do is stop nginx.
+
+03:18.800 --> 03:40.060
+Then first time I have to put in my password and it doesn't say anything, which is normal — it actually means it worked. So let's go in and check status on nginx.
+
+03:40.060 --> 04:19.700
+Okay so you can see the service is enabled — and I'll talk in a minute about what that means — but under active it says inactive, dead, meaning it's not running.
+
+04:19.700 --> 04:47.840
+And they have a few lines down there which show started, stopped, and deactivation successful. So those are the log entries from when I started it earlier and when I just stopped it.
+
+04:47.840 --> 05:17.840
+So key points: if I look at the status when it was running, we had that green active running. When it's not running I have inactive and then there's no main PID listed.
+
+05:35.440 --> 05:49.180
+Okay so my little cheat sheet — we stopped it. The next part is how do I start a stopped service? I can use sudo systemctl start nginx.
+
+05:49.680 --> 06:17.840
+Okay so it's sudo systemctl, that's the command. What I want to do is start nginx. Clear my screen. Type systemctl start nginx.
+
+06:19.680 --> 06:33.180
+And I get nothing. But that's perfectly normal — it actually means it worked. So how do I know? systemctl status nginx.
+
+06:35.580 --> 06:48.860
+It's now active and running. I have a new PID. It's not the same as the old one — it'll always be a new one because it just creates new ones every time you start.
+
+06:49.680 --> 07:15.420
+Okay so I started it. I can stop it. Sorry — sudo systemctl stop nginx. Okay, inactive dead.
+
+07:19.680 --> 07:28.540
+I could restart.
+
+07:28.540 --> 07:57.620
+And what restart does — it stops it and then starts it. Okay you want to use restart when you've made some configuration change and you want to make sure that it re-reads and restarts with the proper new configuration.
+
+07:57.620 --> 08:19.580
+Okay even though mine is stopped let's see if restart works. And then we could go systemctl status nginx — and it's up and running.
+
+08:23.380 --> 08:49.780
+Okay if I reload — there's another command called reload. The difference between restart and reload is: restart will stop it and then start it. Reload will just re-read the configuration without stopping.
+
+08:50.780 --> 09:15.260
+So while it's running it'll read the configuration and reload and keep running. Okay so it's the same sudo systemctl but instead of start stop restart you use reload, and then your service name.
+
+09:16.880 --> 09:43.820
+And I give it a status again — status nginx — still running. Okay key distinctions here: restart kills and starts a brand new process.
+
+09:43.820 --> 10:04.540
+Short downtime — typically fine in a lab, but in production it can briefly drop connections. Reload on the other hand never shuts down. It says re-read the configuration file but continue to work while you're doing it.
+
+10:04.540 --> 10:25.480
+Okay this only works if the service explicitly supports it, and not every service does. If you're not sure, there is a systemctl reload-or-restart which will try to reload first and if that doesn't work it'll restart it.
+
+10:25.480 --> 10:45.740
+So that's kind of a better approach if you're unsure which one to use — you can use reload-or-restart.
+
+10:45.740 --> 11:13.440
+Okay enable versus disabled. So what is enabled and what is disabled, versus what is active and what is inactive? Running right now — that's active or inactive. Is it running or not?
+
+11:14.460 --> 11:24.440
+Start at boot — that's enable or disable. Okay so if a service is enabled it will start at boot. If it's disabled, it won't start at boot. You have to manually start it.
+
+11:26.920 --> 11:32.400
+Okay if it's active it's running right now. If it's inactive it's not running right now.
+
+11:37.120 --> 11:43.820
+So typically we want to enable our services, especially if it's a service that we use a lot, to start at boot.
+
+11:43.820 --> 12:05.400
+And to do that we would use this command: sudo systemctl enable nginx. Okay if you look up here it's already enabled. Let's do disable.
+
+12:07.800 --> 12:39.580
+sudo systemctl disable nginx. And it should be disabled. So let's check the status of it. Okay so the service is disabled — even though it's running.
+
+12:49.180 --> 13:18.280
+We could enable it — sudo systemctl enable nginx. And it creates a symbolic link that says, hey, when we run, do this thing. And now the service is enabled.
+
+13:23.180 --> 13:47.320
+It's still running but it's enabled. You can check using some quick check commands: systemctl is-enabled, and then your service. And it will tell you if it's enabled or not.
+
+13:50.800 --> 14:07.640
+And the same — you can do systemctl is-active, and that will tell you if it's currently active or not.
+
+14:13.800 --> 14:33.300
+Now you can group these together. For instance you can do sudo systemctl enable --now nginx. And the --now says start it. You're enabling it, but also start it.
+
+14:33.300 --> 14:59.440
+So you can enable a service that's not running — because enable has nothing to do with whether it's active or not, it has to do with what happens when it boots. But if I want to enable it so it runs at boot, and I also want to activate it now, I can use the --now flag and it will start it up.
+
+14:59.440 --> 15:12.900
+And now you can see that it's running. So I enabled it and then I started it.
+
+15:23.860 --> 15:37.280
+There's one last part to systemctl that I want to cover before we go to journalctl. And that's reading a unit file.
+
+15:38.280 --> 15:55.680
+Okay so you can use systemctl cat for a service if you want. We'll use the ssh service.
+
+15:55.680 --> 18:11.160
+Oops — let me try that. Let's clear this first. And then let's try systemctl cat ssh.service. No file found for ssh.service, which means I didn't install SSH. Let me look at what's actually available. Let me check with ls on /lib/systemd/system.
+
+18:11.160 --> 18:21.160
+Here's all the things I actually have. And if I pipe that to grep and look for ssh — the key generator is running but ssh itself is not installed.
+
+18:23.800 --> 18:33.160
+Let's see if nginx is there — nginx.service. So let's do our systemctl cat on nginx.service.
+
+18:33.160 --> 18:52.520
+Okay so this is the service unit file for nginx. It has a description. You'll notice there are pound signs — those are all comments. The first section is Unit.
+
+18:52.520 --> 19:14.280
+It has a description, tells you where the documentation is, and the After= directive. After= tells systemd not to start nginx until the network-online target has been reached, the remote filesystem target has been reached, and the nss-lookup target has been reached.
+
+19:16.280 --> 19:33.640
+Okay so what that does is tells systemd the ordering — start this only after those dependencies are met.
+
+19:49.720 --> 20:28.920
+And then in the Install section down here where it says WantedBy=multi-user.target — that's where the symlink is going to be created when you run enable. Basically this is your service file. You can read these things and kind of figure out what they're saying. They're pretty readable.
+
+20:45.860 --> 21:12.020
+All right something that you need to know just to make your life easier is shutdown and reboot. Okay you're going to want to do this — it's easier to do it from inside than it is to get out and do it through your hypervisor. So these commands should work: sudo systemctl poweroff to shut it down,
+
+21:12.020 --> 21:30.360
+sudo systemctl reboot to reboot it cleanly, halt to halt the CPU. There is an Ubuntu command shutdown that should work as well. You can use shutdown -h now which essentially is power off immediately.
+
+21:43.320 --> 22:01.200
+So typically we're going to use sudo systemctl reboot or sudo reboot. For instance if I'm at a point where I'm on my server and I need to restart it,
+
+22:01.240 --> 22:25.140
+I can just go sudo reboot and it'll reboot. And then I can keep going — I don't have to get out of my terminal, open up VirtualBox, and start it. I can just do it from inside the server.
+
+22:25.140 --> 22:31.180
+And this is typically a better way and faster.
+
+22:41.480 --> 23:08.480
+All right last section here is journalctl. All right so every time something happens your logs are collected and each service writes its log entries and journalctl will read those logs and return stuff to you.
+
+23:08.500 --> 23:27.380
+So if I want to read the logs for nginx I can say journalctl -u to specify a specific service, then nginx. The -u stands for unit, which is essentially the same as the service as far as we're concerned.
+
+23:31.180 --> 23:58.760
+So journalctl -u nginx. Okay so this is all the logs — all the starting and stopping I did. Remember I did a bunch of starting and stopping and reloading, okay?
+
+23:58.760 --> 24:20.940
+There is — so that was for all sessions. If you want to limit to the current boot session, you're going to add a -b for boot, and then you only get it for the current boot session.
+
+24:22.640 --> 24:29.640
+All right the other one was everything that we've done. It's all in the log. This is just what's been done since we started this boot.
+
+24:36.760 --> 24:56.760
+You can filter by time if you want — like journalctl -u nginx --since "30 minutes ago".
+
+24:58.240 --> 25:05.680
+Okay here's everything I've done in the last 30 minutes.
+
+25:06.000 --> 25:39.320
+You can follow your log in real time to see what's going on, what's being written to it. So the same journalctl -u for that unit — nginx — and the -f is real time. So anything happening with it will show up and then to get out you'll hit Ctrl+C.
+
+25:39.320 --> 25:54.780
+Now you might want to troubleshoot. Sometimes things are going on. You want to see the logs as they're happening so you can diagnose what's going on.
+
+25:54.780 --> 26:22.620
+Okay so we can see that — if we want, let's mess with our nginx configuration file to create an error so that we can find it. Nano /etc/nginx/nginx.conf. Okay here's my nginx basic settings.
+
+26:22.620 --> 26:50.360
+Let's take the basic setting for tcp_nopush on. Let's get rid of that semicolon at the end of that line. And then we can do a Ctrl+X, save, yes, save it to that same file.
+
+26:54.780 --> 27:09.500
+And then we can do sudo systemctl restart nginx. So it'll read that new file — and it failed. Okay because I just created an error.
+
+27:09.500 --> 27:39.960
+So it failed. Let's check the status. systemctl status nginx. We can see it failed — Active: failed. "Failed to start a high performance web server." Okay just tells us what happened.
+
+27:39.960 --> 28:05.640
+So you hit Q to get out of that status output. All right now what we want to do is journalctl -u nginx -b for our current boot session.
+
+28:13.780 --> 28:35.940
+And we can read all these. And you can see reading from the bottom — the last line says "Failed to start nginx service." Above it, "nginx.service failed with result exit-code."
+
+28:38.600 --> 28:54.020
+The third one from the bottom: "nginx.service control process exited." The fourth one says "nginx configuration file test failed." The fifth one says "invalid number of arguments in tcp_nopush directive."
+
+28:54.020 --> 29:08.280
+And it even tells us the file and line number. So what it's telling us is that there was something wrong with the tcp_nopush directive in /etc/nginx/nginx.conf.
+
+29:09.380 --> 29:34.480
+So if we go back and open nano /etc/nginx/nginx.conf — you can see here the tcp_nopush line. journalctl actually told us where the error was, because I took out that semicolon so it doesn't terminate the line.
+
+29:37.200 --> 30:03.500
+But it told us — journalctl actually told us where the error was. Now it won't always do that, but sometimes it will. So this is a good way, at least the first easy way, to do some troubleshooting on something if it's not working right.
+
+30:40.820 --> 30:52.540
+I'm going to fix that semicolon and then restart or reload. Let's try reload-or-restart nginx.
+
+30:52.540 --> 31:07.780
+And then systemctl status nginx — okay it's up and running again. It re-read the configuration and kept running.
+
+31:28.720 --> 32:01.760
+So to recap — the key commands you're going to use all the time: systemctl status. Start, stop, restart, reload are the things you can do beyond status. Enable, disable, enable --now. systemctl cat to read the unit file — the Install section explains why enable works.
+
+32:00.340 --> 32:36.680
+systemctl poweroff, reboot. Shutdown. journalctl -u service -b for the current boot session. These are commands that Linux administrators use all the time.
+
+32:37.880 --> 33:09.500
+You know, they get so good at it they don't even think about it. But basically you're going to be using systemctl to interface with systemd: to check on services, to see if they're running or not, and to modify them — set them to run at boot by enabling them, or make them not run at boot by disabling them.
+
+33:09.500 --> 33:22.440
+And journalctl will tell you a lot of times what went wrong or where it went wrong. So we can diagnose and go to where it failed and try to figure out why.
+
+33:44.760 --> 34:01.560
+Hopefully this helps you understand systemd and working in that environment in something like Ubuntu Server.
+
+34:04.300 --> 34:11.960
+As always, if you have questions let me know. If you don't understand something, reach out, and hope you have a good week.`;
+
+  function timeToSeconds(timeStr) {
+    if (!timeStr) return 0;
+    var parts = timeStr.trim().split(':');
+    if (parts.length === 2) {
+      return (parseInt(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
+    } else if (parts.length === 3) {
+      return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
+    }
+    return 0;
+  }
+
+  function parseVtt(vttText) {
+    var cues = vttText.trim().split(/\n\n+/);
+    var parsed = [];
+    cues.forEach(function (block) {
+      if (block.startsWith('WEBVTT') || block.trim() === '') return;
+      var lines = block.trim().split('\n');
+      var timeLine = lines.find(function (l) { return l.includes('-->'); });
+      if (!timeLine) return;
+      var times = timeLine.split(' --> ');
+      var textLines = lines.slice(lines.indexOf(timeLine) + 1);
+      parsed.push({
+        start: timeToSeconds(times[0]),
+        end: timeToSeconds(times[1]),
+        text: textLines.join(' ').trim()
+      });
+    });
+    return parsed;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById('tc-1');
+    container.innerHTML = '';
+    parsedTranscript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      var seek = function () {
+        if (player && player.seekTo) {
+          player.seekTo(cue.start, true);
+          player.playVideo();
+        }
+      };
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var lines = document.querySelectorAll('#tc-1 .transcript-line');
+    lines.forEach(function (line) {
+      var s = parseFloat(line.dataset.start);
+      var e = parseFloat(line.dataset.end);
+      if (t >= s && t < e) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = document.querySelector('#tc-1 .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncTranscriptHeight() {
+    var mq = window.matchMedia('(min-width: 860px)');
+    var vc = document.getElementById('vc-1');
+    var tc = document.getElementById('tc-1');
+    if (!vc || !tc) return;
+    tc.style.maxHeight = mq.matches ? (vc.offsetHeight + 'px') : '22rem';
+  }
+
+  function onPlayerStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('yt-1', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onPlayerStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    parsedTranscript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncTranscriptHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncTranscriptHeight, 250);
+  });
+}());
+</script>
+</body>
+</html>

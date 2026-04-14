@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 3 Introduction: Runlevels and systemd Targets | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style (global) ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav Bar ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 0.5rem;
+}
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video Summary ── */
+.video-summary {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+
+/* ── Video + Transcript ── */
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+.commands-list {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0 1rem;
+}
+.commands-list li {
+  margin-bottom: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.cmd-note {
+  display: block;
+  color: #475569;
+  font-size: 0.88rem;
+  margin-top: 0.15rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: nowrap;
+}
+
+/* ── Caution Box ── */
+.caution-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+.caution-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands Used</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Week 3 &middot; Introduction</p>
+    <h1 id="page-heading">Week 3 Introduction: Runlevels and systemd Targets</h1>
+    <p>In Week 2 you traced the Linux boot sequence from firmware and GRUB to the moment the kernel hands control to the first user-space process. This week picks up right there: that process is <strong>systemd</strong>, and it runs as PID&nbsp;1. Week 3 is about understanding what systemd does when the system boots, how it replaced the older SysV init system, and how the traditional concept of <em>runlevels</em> maps onto the modern named-target model.</p>
+    <p>This is the first of two instructor videos for the week. It focuses on concepts and terminology. <strong>Video 2</strong> is a hands-on terminal demo of the <code>systemctl</code> commands you will use in the systemd Exploration assignment.</p>
+  </section>
+
+  <!-- ── Video ── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video: Runlevels and systemd Targets Explained</h2>
+    <p class="video-summary">This video picks up where Week 2 ended — the kernel has handed control to systemd, which now runs as PID&nbsp;1. You will learn why SysV init and numbered runlevels were replaced by systemd's named target system, and see how the familiar runlevel numbers (0–6) map to modern targets like <code>multi-user.target</code> and <code>graphical.target</code>. A live terminal demo shows how to check your default target, list all active targets, and change the default with <code>systemctl set-default</code>. By the end you will have the conceptual foundation needed for the hands-on service management in Video 2.</p>
+
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/pKxbTtn8k_o?enablejsapi=1"
+                  title="Week 3 Introduction: Runlevels and systemd Targets Explained"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container"
+             role="region"
+             aria-label="Transcript for Week 3 Introduction video. Click any line to jump to that point in the video.">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands Used ── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <h2 id="commands-heading">Commands Demonstrated in This Video</h2>
+    <p>These commands appear in the video in the order listed. Use this as a reference when following along or when completing the systemd Exploration assignment.</p>
+    <ol class="commands-list">
+      <li>
+        <code>ps -p 1</code>
+        <span class="cmd-note">Confirm that systemd is running as PID&nbsp;1 — the first user-space process started by the kernel after boot.</span>
+      </li>
+      <li>
+        <code>systemctl get-default</code>
+        <span class="cmd-note">Display the current default boot target. On Ubuntu Server you will typically see <code>multi-user.target</code>.</span>
+      </li>
+      <li>
+        <code>systemctl list-units --type=target</code>
+        <span class="cmd-note">List all currently loaded and active targets. Shows the checkpoints the system passed through during this boot.</span>
+      </li>
+      <li>
+        <code>ls -la /lib/systemd/system/runlevel*.target</code>
+        <span class="cmd-note">View the compatibility symlinks that map old SysV runlevel numbers to their equivalent systemd target names.</span>
+      </li>
+      <li>
+        <code>sudo systemctl set-default multi-user.target</code>
+        <span class="cmd-note">Change the default boot target. systemd implements this by updating a symlink at <code>/etc/systemd/system/default.target</code>. The change takes effect on the next boot.</span>
+      </li>
+      <li>
+        <code>systemctl isolate &lt;target&gt;</code>
+        <span class="cmd-note">Switch the running system to a different target immediately, without rebooting. Mentioned in the video but not demonstrated live — see the caution note below before trying this.</span>
+      </li>
+    </ol>
+    <div class="caution-box">
+      <strong>Caution &mdash; <code>systemctl isolate</code>:</strong> This command stops all units not part of the target you switch to. Running <code>isolate rescue.target</code> will drop your system to a minimal single-user shell. Do not run this on the VM you use for the course unless you have a snapshot to restore from. If you want to experiment, create a separate throwaway VM first.
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VIDEO_ID = 'pKxbTtn8k_o';
+  var player;
+  var timeUpdater;
+  var parsedTranscript = [];
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.280 --> 00:06.820
+Aloha. So this is our introduction video to week three. It's probably going to end up being a little
+
+00:06.820 --> 00:13.660
+longer than I really wanted, but I do want to go over a few things and then also introduce the
+
+00:13.660 --> 00:21.880
+topic for this week. Basically how we're set up. We have our overview for the week. We're going to
+
+00:21.880 --> 00:27.180
+talk about run level, systemd, and startup scripts. And primarily it's about systemd
+
+00:27.180 --> 00:33.040
+and what that does. Run levels have been deprecated. They're not really used anymore,
+
+00:33.840 --> 00:39.320
+but I will talk about them in a second and why they're still worth knowing about.
+
+00:40.900 --> 00:45.820
+Okay. So these learning goals — you can see where we are in the eight week course.
+
+00:46.560 --> 00:51.100
+We did our first week, we did Linux installation and a little package management. We did
+
+00:51.100 --> 00:57.160
+hardware, the kernel and the boot process last week. And this week we're doing systemd and startup scripts.
+
+00:57.180 --> 01:04.540
+This is basically what happens after you boot up — what processes are running,
+
+01:04.780 --> 01:10.820
+why they're running. Next week we have shell scripting and we have a mini project
+
+01:10.820 --> 01:17.700
+that we'll have instead of a lab — a mini project trying to cover the first four
+
+01:17.700 --> 01:24.260
+weeks basically. It won't be due next week, but it'll be due the following week. And then week
+
+01:24.260 --> 01:27.140
+five is user groups and system security.
+
+01:27.180 --> 01:30.500
+Then week six, file permissions, ownerships, and networking fundamentals.
+
+01:31.260 --> 01:36.420
+Seven is network config, server setup and security. And week eight is our
+
+01:36.420 --> 01:40.420
+kind of integration. And we'll have another mini project.
+
+01:42.980 --> 01:49.080
+All right. So what we have to do is you want to review lesson 13, which was from week one,
+
+01:49.660 --> 01:53.880
+but we're still in that same area. I also added some supplemental resources.
+
+01:54.180 --> 01:55.660
+I'll show you those in a second.
+
+01:57.180 --> 02:04.320
+We have our lab assignment, which is systemd exploration. We have a discussion.
+
+02:05.620 --> 02:11.760
+Okay. And then also there's extra credit that's built into the lab.
+
+02:14.160 --> 02:17.180
+All right. So this talks about this stuff here.
+
+02:19.200 --> 02:26.820
+What I want to do is just go over the additional resources here.
+
+02:27.180 --> 02:35.620
+So I've added some things that can help you. I really think that this beginner's guide to Linux
+
+02:35.620 --> 02:46.840
+systemd and systemctl really explains what they are really well. You can read this. I feel like
+
+02:46.840 --> 02:54.460
+it's very clear in terms of what systemd is, what systemctl is, and why systemctl is important to us.
+
+02:57.180 --> 03:08.760
+And the big thing is systemd replaced something called init, okay? Because init had issues. It was slow. It didn't load well.
+
+03:09.360 --> 03:19.200
+And so now we use this a different way to control Ubuntu. It's our master controller. So it manages all our services, hardware, and that kind of stuff.
+
+03:20.340 --> 03:26.700
+Okay. But you don't talk to systemd directly. You use systemctl as your command line tool to talk to it.
+
+03:27.180 --> 03:30.780
+So that's the link between systemd and systemctl.
+
+03:31.900 --> 03:37.500
+systemctl is just how we communicate with systemd. And systemd does the actual work.
+
+03:38.620 --> 03:48.300
+All right. This is a pretty short article that you should read to get the basics of what systemd and systemctl are.
+
+03:50.780 --> 03:56.300
+We will talk about units a little bit today. And there's a second tutorial here from DigitalOcean
+
+03:56.300 --> 04:06.460
+that goes into more detail on how to manage systemd services with systemctl and a little bit on units.
+
+04:08.540 --> 04:09.840
+That's always good.
+
+04:11.740 --> 04:20.740
+systemd on Arch Linux is not necessary, but it just allows you to go deeper into the weeds on systemd if you really want.
+
+04:20.740 --> 04:25.580
+All right. So those are kind of the systemd systemctl references.
+
+04:26.300 --> 04:31.580
+That go beyond what's in our textbook, but allow you to view the material in a different way.
+
+04:39.580 --> 04:50.060
+All right. And then DigitalOcean has a tutorial on understanding systemd units and unit files.
+
+04:50.940 --> 05:04.140
+I'll touch on unit files briefly today. And then the extra credit is all about cron, which are basically time-based jobs — scheduling jobs and things like that.
+
+05:04.140 --> 05:12.060
+So crontab — this is the man page. And there's an interactive tool to create a cron schedule.
+
+05:13.900 --> 05:23.420
+And then the last one is a complete guide to how to automate tasks on Ubuntu using cron.
+
+05:24.540 --> 05:30.140
+Cron is like — I want to do a backup and you want to do it automatically. You can use cron to set up a backup job,
+
+05:30.940 --> 05:43.660
+or you need to reboot, or clean certain things, or delete certain things — you can use cron and set up a schedule to do those jobs automatically.
+
+05:43.660 --> 05:46.460
+And it will do those jobs for you.
+
+05:48.060 --> 05:53.740
+All right. So let's talk about cron — again, that's for our extra credit.
+
+05:56.140 --> 06:13.500
+Okay. What I want to talk about is what systemd is and why it replaced SysV. So we're going to start with the system we replaced. SysV — for System V — is a Unix system that had something called init.
+
+06:13.500 --> 06:29.240
+Okay. And it had run levels. So whenever you would start up, after boot, init would read this file called inittab to determine which run level to boot into.
+
+06:29.240 --> 07:01.020
+And run levels are just a number. Run level zero is power off. Run level six is reboot. And then one through five are various stages of user modes basically.
+
+07:01.020 --> 07:13.180
+So one is single user mode, which you usually don't use because that's usually a recovery mode. Multi-user mode without networking is level two. Level three was multi-user with networking without a graphical interface.
+
+07:13.180 --> 07:35.880
+Four wasn't used — undefined, reserved. Five was multi-user with networking and a graphical desktop. So those are the different modes you could use with the old SysV init.
+
+07:35.880 --> 08:17.740
+And every process can only have one run level at a time. But SysV had problems, so we needed to modify and update and get into a faster system.
+
+08:17.740 --> 08:34.200
+So systemd was created to solve some of those problems — the slowness, because init was sequential so it was slow. systemd can load different things in parallel so it can speed up that whole boot process.
+
+08:34.200 --> 08:51.900
+No standardized service script format across distributions. Weak dependency tracking — so you don't have to always rely on everything else to happen first before you can do something.
+
+08:51.960 --> 09:21.300
+And then limited logging integration. So these things all contributed to the need for a new approach. Instead of shell scripts, systemd uses unit files — structured text files that describe what a service is and how to manage it.
+
+09:51.660 --> 10:10.800
+A .target is a named state. .timer is a scheduled task. .mount is a filesystem mount point for adding hard drives and USB drives. .socket is for network or IPC sockets.
+
+10:20.300 --> 10:57.800
+So systemd targets — you'll still see people talk about run levels in older documentation. And what systemd did is they created target names that match the old run levels. So run level zero is now poweroff.target. Run level one is rescue.target — single user recovery mode. multi-user.target covers two, three, and four — with networking but no graphical interface.
+
+10:57.800 --> 11:39.200
+Five was multi-user with networking and a GUI — that's called graphical.target. And six was reboot — that's now reboot.target. But now instead of just having those seven run levels, we have other targets that go beyond that.
+
+11:50.300 --> 12:06.940
+Like network.target, which checks to make sure your network interface is up and running. basic.target — core system setup is complete and ready to go.
+
+12:06.940 --> 12:19.240
+So systemd is more capable than the old way. It's faster because you can do stuff in parallel, and it uses named targets rather than numbers.
+
+12:20.300 --> 12:47.700
+All right. So we can check our current target using systemctl. In the next video I'll go more into systemctl. But if we have our server up and running,
+
+13:03.360 --> 14:03.780
+we can log in and run the command systemctl get-default, which will bring back what the default target is.
+
+14:12.060 --> 14:37.620
+Okay, graphical.target — sure, why it's graphical I'm not certain. I would expect to see multi-user.target on a server install. If I was using a desktop with a GUI I would expect to see graphical. I'm not sure why I'm seeing it on the server but we can work with that.
+
+14:42.060 --> 15:11.940
+We can also list all the currently loaded and active targets using systemctl list-units --type=target. Here's all of our basic target types. We have basic.target for basic system setup. We have local-fs.target for local file systems.
+
+15:29.240 --> 16:07.440
+You can read the unit name and description columns to tell you what they are. Here's multi-user.target for multi-user systems. All loaded, all active.
+
+16:07.440 --> 16:41.120
+Now if I wanted to change my target from graphical — because you see my default is graphical — to multi-user, which is what it should really be, I can do that with sudo systemctl set-default multi-user.target.
+
+16:42.060 --> 17:11.400
+Enter your password. It should create this symbolic link that sets the default to multi-user.target. It doesn't edit any config file directly. It just updates a symbolic link at /etc/systemd/system/default.target. Just a reference to what the default should be.
+
+17:12.060 --> 17:39.120
+Okay. There is also systemctl isolate, which can change your running system to a different target state immediately without rebooting. It's good for dropping into rescue mode. But we're not going to do it here because it'll mess up our system.
+
+17:39.120 --> 18:22.800
+If you do want to try it, just create another VM and do it there. If it messes up you can just blow that VM away. But don't do it on the VM that you use all the time.
+
+18:22.800 --> 18:41.620
+Let's see — systemctl get-default, list-units, set-default — don't do isolate because you'll have some unintended consequences. But that's our basic introduction to systemd versus SysV, run levels versus targets.
+
+18:42.060 --> 19:04.920
+And in the next video I'll do more systemctl status, turn stuff on, turn stuff off, that kind of thing. All right, so we'll see you in the next video.`;
+
+  function timeToSeconds(timeStr) {
+    if (!timeStr) return 0;
+    var parts = timeStr.trim().split(':');
+    if (parts.length === 2) {
+      return (parseInt(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
+    } else if (parts.length === 3) {
+      return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
+    }
+    return 0;
+  }
+
+  function parseVtt(vttText) {
+    var cues = vttText.trim().split(/\n\n+/);
+    var parsed = [];
+    cues.forEach(function (block) {
+      if (block.startsWith('WEBVTT') || block.trim() === '') return;
+      var lines = block.trim().split('\n');
+      var timeLine = lines.find(function (l) { return l.includes('-->'); });
+      if (!timeLine) return;
+      var times = timeLine.split(' --> ');
+      var textLines = lines.slice(lines.indexOf(timeLine) + 1);
+      parsed.push({
+        start: timeToSeconds(times[0]),
+        end: timeToSeconds(times[1]),
+        text: textLines.join(' ').trim()
+      });
+    });
+    return parsed;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById('tc-1');
+    container.innerHTML = '';
+    parsedTranscript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      var seek = function () {
+        if (player && player.seekTo) {
+          player.seekTo(cue.start, true);
+          player.playVideo();
+        }
+      };
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var lines = document.querySelectorAll('#tc-1 .transcript-line');
+    lines.forEach(function (line) {
+      var s = parseFloat(line.dataset.start);
+      var e = parseFloat(line.dataset.end);
+      if (t >= s && t < e) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = document.querySelector('#tc-1 .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncTranscriptHeight() {
+    var mq = window.matchMedia('(min-width: 860px)');
+    var vc = document.getElementById('vc-1');
+    var tc = document.getElementById('tc-1');
+    if (!vc || !tc) return;
+    tc.style.maxHeight = mq.matches ? (vc.offsetHeight + 'px') : '22rem';
+  }
+
+  function onPlayerStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('yt-1', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onPlayerStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    parsedTranscript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncTranscriptHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncTranscriptHeight, 250);
+  });
+}());
+</script>
+</body>
+</html>
