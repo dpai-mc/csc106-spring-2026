@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 4 Free Resources &ndash; Bash Scripting Fundamentals | CSC106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:    #1a3a5c;
+      --accent:     #2878a0;
+      --bg:         #f2f5f9;
+      --card:       #ffffff;
+      --border:     #cdd6e0;
+      --text:       #1e2a38;
+      --muted:      #546070;
+      --green:      #1e6e45;
+      --green-bg:   #e5f5ed;
+      --warn-bg:    #fff8e6;
+      --warn-bdr:   #e6a800;
+      --warn-text:  #6b4800;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* ── Skip link ── */
+    .skip-link {
+      position: absolute;
+      top: -48px;
+      left: 0;
+      z-index: 9999;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.875rem;
+      padding: 10px 18px;
+      text-decoration: none;
+      border-radius: 0 0 6px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Sticky nav ── */
+    nav[aria-label="Page sections"] {
+      background: var(--primary);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-inner {
+      max-width: 940px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .nav-course {
+      color: #7fb4d4;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
+    nav a {
+      color: #b6d3e8;
+      font-size: 0.8rem;
+      text-decoration: none;
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    nav a:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.55);
+      outline-offset: -2px;
+      color: #fff;
+    }
+
+    /* Scroll offset so sticky nav does not cover section headings */
+    .hero, .card { scroll-margin-top: 50px; }
+
+    /* ── Main ── */
+    main {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(140deg, #19395a 0%, #265d8a 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 36px 36px 30px;
+      margin-bottom: 24px;
+    }
+    .week-pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.14);
+      color: #a8d4ee;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      padding: 3px 11px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero p { font-size: 0.96rem; color: #cce2f5; line-height: 1.72; max-width: 680px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 28px 30px;
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .card-intro {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+      font-size: 0.87em;
+      background: #eef2f8;
+      color: #1a3a5c;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Resource list ── */
+    .resource-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .resource-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      background: var(--bg);
+      transition: border-color 0.15s;
+    }
+    .resource-item:hover { border-color: var(--accent); }
+
+    .resource-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .resource-link {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      line-height: 1.35;
+    }
+    .resource-link:hover { text-decoration: underline; color: var(--primary); }
+    .resource-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+    .resource-link .ext-icon {
+      font-style: normal;
+      font-size: 0.75em;
+      margin-left: 3px;
+      opacity: 0.7;
+    }
+
+    .resource-source {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .resource-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    /* Priority badges */
+    .rpill {
+      display: inline-block;
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .rpill-start    { background: #dcfce7; color: #14532d; }
+    .rpill-deeper   { background: #dbeafe; color: #1e3a8a; }
+    .rpill-ref      { background: #fef3c7; color: #92400e; }
+    .rpill-tool     { background: #f3e8ff; color: #581c87; }
+    .rpill-steps    { background: #ccfbf1; color: #134e4a; }
+
+    .resource-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Sub-section link list (inside a resource description) ── */
+    .section-links {
+      list-style: none;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .section-links li {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .section-links li::before {
+      content: "›";
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section-link {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .section-link:hover { text-decoration: underline; color: var(--primary); }
+    .section-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+    .section-link-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      font-size: 0.76rem;
+      color: #9aaab8;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 1.3rem; }
+      .card { padding: 20px 16px; }
+      .nav-course { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav aria-label="Page sections">
+  <div class="nav-inner">
+    <span class="nav-course">CSC106 / Wk 4</span>
+    <a href="#intro">Intro</a>
+    <a href="#bash-guides">Bash Scripting Guides</a>
+    <a href="#error-handling">Error Handling</a>
+    <a href="#readme">Writing a README</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Hero ── -->
+  <div class="hero" id="intro">
+    <div class="week-pill">Week 4</div>
+    <h1>Free Resources: Bash Scripting Fundamentals</h1>
+    <p>
+      These free web resources cover the advanced bash features you need for Mini-Project&nbsp;1.
+      You do not need to read all of them cover to cover&mdash;treat them as references to
+      consult as you plan and build your script. The
+      <strong>Start here</strong> items in each section are the highest-value starting points.
+      The <strong>Reference</strong> items are for looking up specific syntax questions as they
+      come up.
+    </p>
+  </div>
+
+  <!-- ── Card 1: Bash Scripting Guides ── -->
+  <section class="card" id="bash-guides" aria-labelledby="bash-guides-hd">
+    <h2 id="bash-guides-hd">Bash Scripting Fundamentals and Advanced Features</h2>
+    <p class="card-intro">
+      The Advanced Bash-Scripting Guide is the best starting point for the techniques
+      you need this week&mdash;it is example-heavy and organized by topic.
+      The GNU Bash Reference Manual is the authoritative technical reference; use it when
+      you need a precise answer about specific syntax or behavior.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://tldp.org/LDP/abs/html/"
+             target="_blank"
+             rel="noopener noreferrer">
+            Advanced Bash-Scripting Guide
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">The Linux Documentation Project (TLDP)</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-start">Start here</span>
+        </div>
+        <p class="resource-desc">
+          A comprehensive, example-heavy guide to bash scripting. Unlike the official
+          reference manual, this guide explains concepts through worked examples, making
+          it much easier to learn from. The four sections below are the most directly
+          useful for Mini-Project&nbsp;1&mdash;jump to whichever topic you are working on:
+        </p>
+        <ul class="section-links" aria-label="Useful sections of the Advanced Bash-Scripting Guide">
+          <li>
+            <a class="section-link"
+               href="https://tldp.org/LDP/abs/html/functions.html"
+               target="_blank"
+               rel="noopener noreferrer">
+              Functions <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+            </a>
+            <span class="section-link-label">&mdash; defining, calling, arguments, return values, and local variables</span>
+          </li>
+          <li>
+            <a class="section-link"
+               href="https://tldp.org/LDP/abs/html/arrays.html"
+               target="_blank"
+               rel="noopener noreferrer">
+              Arrays <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+            </a>
+            <span class="section-link-label">&mdash; declaring, accessing elements, looping, and practical use cases</span>
+          </li>
+          <li>
+            <a class="section-link"
+               href="https://tldp.org/LDP/abs/html/io-redirection.html"
+               target="_blank"
+               rel="noopener noreferrer">
+              I/O Redirection <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+            </a>
+            <span class="section-link-label">&mdash; redirecting stdout/stderr to log files; the <code>tee</code> pattern</span>
+          </li>
+          <li>
+            <a class="section-link"
+               href="https://tldp.org/LDP/abs/html/debugging.html"
+               target="_blank"
+               rel="noopener noreferrer">
+              Debugging <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+            </a>
+            <span class="section-link-label">&mdash; <code>bash -x</code>, <code>set -e</code>, and tracing techniques</span>
+          </li>
+        </ul>
+      </li>
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://www.gnu.org/software/bash/manual/bash.html"
+             target="_blank"
+             rel="noopener noreferrer">
+            GNU Bash Reference Manual
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">gnu.org</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-ref">Reference</span>
+        </div>
+        <p class="resource-desc">
+          The authoritative reference for bash syntax and behavior. Dense and precise&mdash;this
+          is not a tutorial. Use it to look up exactly how a specific construct works when
+          you need a definitive answer: special parameters (<code>$#</code>, <code>$@</code>,
+          <code>$?</code>), conditional constructs, arrays, and function syntax are all
+          documented here with full detail. Good to have open in a tab while you are writing.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- ── Card 2: Error Handling ── -->
+  <section class="card" id="error-handling" aria-labelledby="error-handling-hd">
+    <h2 id="error-handling-hd">Error Handling and Best Practices</h2>
+    <p class="card-intro">
+      Mini-Project&nbsp;1 requires at least one error-handling check.
+      This short article explains a simple pattern that makes scripts fail loudly
+      instead of silently&mdash;a habit that saves a lot of debugging time.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="http://redsymbol.net/articles/unofficial-bash-strict-mode/"
+             target="_blank"
+             rel="noopener noreferrer">
+            Unofficial Bash Strict Mode
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">redsymbol.net &mdash; Aaron Maxwell</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-start">Start here</span>
+        </div>
+        <p class="resource-desc">
+          A short, practical article explaining <code>set&nbsp;-euo&nbsp;pipefail</code>
+          and why adding it near the top of your script helps catch bugs early.
+          With this setting, a command that fails will stop the script immediately
+          rather than letting subsequent commands run on bad state.
+          Recommended reading if you want your script to fail loudly and clearly
+          rather than silently producing wrong results.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- ── Card 3: Writing a README ── -->
+  <section class="card" id="readme" aria-labelledby="readme-hd">
+    <h2 id="readme-hd">Writing a Good README</h2>
+    <p class="card-intro">
+      A README is a required deliverable for Mini-Project&nbsp;1. This guide explains
+      what makes a README useful and walks you through writing one. The principles apply
+      directly to documenting your post-install script.
+    </p>
+    <ul class="resource-list" role="list">
+
+      <li class="resource-item" role="listitem">
+        <div class="resource-title-row">
+          <a class="resource-link"
+             href="https://www.makeareadme.com/"
+             target="_blank"
+             rel="noopener noreferrer">
+            Make a README
+            <span class="ext-icon" aria-label="opens in new tab">&#8599;</span>
+          </a>
+          <span class="resource-source">makeareadme.com</span>
+        </div>
+        <div class="resource-badges">
+          <span class="rpill rpill-steps">Step-by-step</span>
+        </div>
+        <p class="resource-desc">
+          A simple, readable guide to writing effective README files. Not Linux-specific,
+          but the advice applies directly to the Mini-Project&nbsp;1 README deliverable.
+          It covers what to include (description, prerequisites, usage instructions,
+          examples), why each section matters, and how to format the file clearly.
+          The person running your script is often not the person who wrote it&mdash;a
+          good README makes that handoff work.
+        </p>
+      </li>
+
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  CSC106 &ndash; Introduction to Linux II &nbsp;|&nbsp; Week 4 Free Resources &nbsp;|&nbsp;
+  Check Canvas for current due dates and assignment details.
+</footer>
+
+</body>
+</html>
