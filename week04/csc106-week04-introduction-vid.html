@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4 Introduction: Bash Scripting and Mini-Project 1 | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  scroll-margin-top: 3.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video Section ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.section-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+.section-content { padding: 1.25rem; }
+
+/* ── Command List ── */
+ol.cmd-list {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0 1rem;
+}
+ol.cmd-list li {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+ol.cmd-list li .cmd-note {
+  display: block;
+  font-size: 0.88rem;
+  color: #475569;
+  margin-top: 0.2rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Info / Tip Boxes ── */
+.info-box {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.info-box strong { color: #3730a3; }
+
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Key Commands</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ─────────────────────────────────────────────────── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Week 4 &middot; Introduction</p>
+    <h1 id="page-heading">Week 4 Overview: Bash Scripting and Mini-Project 1</h1>
+    <p>Week 4 shifts focus from system setup to automation &mdash; this week is all about bash scripting. Building on the shell basics from CSC 105, you will extend your skills into functions, arrays, command-line arguments, error handling, and logging. Your main deliverable is <strong>Mini-Project 1</strong>, a post-install configuration script that automates the setup tasks you have been doing by hand. This video orients you to the week&rsquo;s topics, supplemental resources, and how to get help when you need it.</p>
+  </section>
+
+  <!-- ── Video ─────────────────────────────────────────────────────────── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Introduction Video</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">The instructor provides an overview of Week 4: what bash scripting topics are covered, what Mini-Project 1 requires, where to find supplemental resources, and how to schedule a student-hours appointment. Use the transcript panel to follow along or jump to any section of the video.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/rd_iE35BcSk?enablejsapi=1"
+                  title="Week 4 Introduction: Bash Scripting and Mini-Project 1"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for Week 4 Introduction video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Key Commands ───────────────────────────────────────────────────── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <div class="section-header">
+      <h2 id="commands-heading">Key Commands &amp; Concepts Referenced</h2>
+    </div>
+    <div class="section-content">
+      <div class="info-box" role="note">
+        <strong>Note:</strong> This video is an orientation overview with no live terminal session. The commands below are the bash scripting techniques discussed in the video, listed in the order they are introduced. They map directly to the Mini-Project 1 requirements.
+      </div>
+      <ol class="cmd-list">
+        <li>
+          <code>nano script.sh</code>
+          <span class="cmd-note">Create or open a script file in the nano text editor. The <code>.sh</code> extension indicates this is a shell script.</span>
+        </li>
+        <li>
+          <code>chmod +x script.sh</code>
+          <span class="cmd-note">Make the script executable so it can be run directly. Do this once after creating the file.</span>
+        </li>
+        <li>
+          <code>sudo ./script.sh &lt;argument&gt;</code>
+          <span class="cmd-note">Run the script with administrative privileges. Mini-Project 1 must accept at least one command-line argument (e.g., a username).</span>
+        </li>
+        <li>
+          <code>sudo apt update</code>
+          <span class="cmd-note">Refresh the package index. This should be one of the first actions in your post-install script.</span>
+        </li>
+        <li>
+          <code>sudo apt upgrade -y</code>
+          <span class="cmd-note">Upgrade all installed packages. The <code>-y</code> flag automatically answers &ldquo;yes&rdquo; to the confirmation prompt.</span>
+        </li>
+        <li>
+          <code>sudo apt install -y &lt;package1&gt; &lt;package2&gt;</code>
+          <span class="cmd-note">Install one or more packages. Your script must install at least three packages.</span>
+        </li>
+        <li>
+          <code>sudo useradd -m -s /bin/bash &lt;username&gt;</code>
+          <span class="cmd-note">Create a new non-root user with a home directory. Mini-Project 1 requires creating at least one user.</span>
+        </li>
+        <li>
+          <code>sudo usermod -aG sudo &lt;username&gt;</code>
+          <span class="cmd-note">Add the user to the sudo group, granting administrative access.</span>
+        </li>
+        <li>
+          <code>sudo systemctl enable &lt;service&gt;</code>
+          <span class="cmd-note">Enable a service to start automatically at boot.</span>
+        </li>
+        <li>
+          <code>sudo systemctl start &lt;service&gt;</code>
+          <span class="cmd-note">Start a service immediately. Your script must enable and start at least one service.</span>
+        </li>
+        <li>
+          <code>bash -x script.sh</code>
+          <span class="cmd-note">Run a script in trace/debug mode &mdash; each command is printed before it executes. Useful for finding exactly where a script breaks.</span>
+        </li>
+      </ol>
+      <div class="tip-box">
+        <strong>Mini-Project 1 checklist:</strong> Your script must include at least one command-line argument, a package index update and upgrade, installation of 3&nbsp;or&nbsp;more packages, a non-root user with sudo access, enabling and starting a service, a timestamped action log, at least one function, one array, one conditional, comments throughout, and at least one error-handling check. A README file explaining how to run the script is also required.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.160 --> 00:03.700
+Aloha and welcome to week four.
+
+00:04.020 --> 00:07.120
+So we're about halfway through the semester or this class,
+
+00:07.240 --> 00:09.280
+not the semester, but this half semester class.
+
+00:10.380 --> 00:12.280
+It's eight weeks and this is week four.
+
+00:13.140 --> 00:15.880
+And so this week we're moving on to shell scripting.
+
+00:16.140 --> 00:17.760
+So in the past three weeks,
+
+00:18.920 --> 00:25.860
+we should have gone over a lot about booting and how to install our system
+
+00:25.860 --> 00:28.060
+and how to boot it and stuff like that.
+
+00:28.060 --> 00:33.320
+And now we're moving on to actually doing automating stuff
+
+00:33.320 --> 00:40.800
+and making it more usable and being able to work with the server better.
+
+00:41.880 --> 00:46.560
+All right, so we're gonna do a lot on bash scripting this week. It's all about scripting.
+
+00:47.040 --> 00:56.500
+Your mini project is to create some scripts that would be useful if you were an administrator to make things easy.
+
+00:57.380 --> 00:59.700
+And you'll also learn how to write a readme.
+
+01:01.260 --> 01:02.100
+Readme documents.
+
+01:04.880 --> 01:09.820
+So definitely the first thing you should do is read Linux essentials chapter 11.
+
+01:10.860 --> 01:16.080
+If you've done scripting, you should have done some scripting in 105.
+
+01:17.260 --> 01:19.060
+If you have, this is a great review.
+
+01:20.620 --> 01:27.920
+And then I have some supplemental information and a scripting guide that helps, can help you learn,
+
+01:28.060 --> 01:33.060
+or you can use as you're doing your actual mini project.
+
+01:33.060 --> 01:35.060
+I have two videos.
+
+01:35.580 --> 01:38.500
+One will be the overview, which will be this video.
+
+01:39.180 --> 01:44.660
+And then there'll also be another one about planning and debugging your script,
+
+01:44.760 --> 01:45.840
+but it's actually not gonna be that.
+
+01:46.120 --> 01:57.280
+But it is about doing the mini project as well as making some configuration modifications to your server to make it more useful and easier to use.
+
+01:58.900 --> 01:59.740
+All right.
+
+01:59.740 --> 02:04.540
+Linux essentials chapter 11 lab, it's totally optional.
+
+02:04.540 --> 02:11.060
+It might be, if you're struggling a little bit with scripting, it might be good to go through the lab so you get some actual practice scripting.
+
+02:12.380 --> 02:18.000
+Do the mini project one, which is a configuration script for post installation.
+
+02:18.000 --> 02:29.880
+So once you've installed your server, you have a bunch of setup stuff you might wanna do, and you're gonna create a script to do that setup stuff. So that all you have to do is run the script.
+
+02:31.220 --> 02:43.260
+And then there's advanced shell features extra credit that you can use the advanced scripting guides to help you do that. If you wanna do that, it's part of the mini project right now.
+
+02:45.440 --> 02:48.600
+So you're gonna do a lot of things in your mini project.
+
+02:50.060 --> 03:03.020
+Package index update, install three or more packages, non root user, enable start one service, timestamp action logs, at least one function, one array, one conditional, comments, at least one error handling check.
+
+03:03.020 --> 03:08.940
+Okay. So there's a bunch of stuff there, but when you get to the lab, it does help you through all those things.
+
+03:09.820 --> 03:19.060
+So you shouldn't be like too intimidated by doing it. The best thing you can do is just go do it.
+
+03:21.960 --> 03:26.480
+All right. So some key concepts will be command line arguments. How do you pass them? How do you use them?
+
+03:26.480 --> 03:36.860
+How do you break scripts into functions, into named usable blocks? How do you declare an array? What is an array and how do you declare one? How do you do error handling?
+
+03:36.860 --> 03:44.200
+How do you do logging and how do you do documentation? Okay. So that's pretty much what this is all about this week.
+
+03:44.200 --> 03:51.000
+Okay. Then next week, we'll shift to users group and system security. And how do we manage them?
+
+03:53.620 --> 04:06.080
+And so this week it's all about this. So let me go back here and look at the structure for this week.
+
+04:07.880 --> 04:12.620
+So this introduction review video, I just went over the overview.
+
+04:14.060 --> 04:18.320
+Linux essentials, module 11. You click on that, it's gonna take you to Cisco. You're gonna have to log in.
+
+04:20.240 --> 04:24.240
+But if you go to module 11, basic scripting,
+
+04:26.480 --> 04:35.020
+it's gonna take you there and we look at chapter 11 stuff.
+
+04:37.860 --> 04:42.860
+All right. Let me log in.
+
+04:45.920 --> 04:48.960
+So if you look at the objectives here, it's turning commands into scripts.
+
+04:48.960 --> 05:12.440
+Okay. So basically when you're running a lot of the same commands over and over you might want to script them to make it easier to do and to always remember but you just set up once and then instead of looking up the commands taking 10-15 minutes to do that then writing the code to do it
+
+05:12.440 --> 05:21.800
+you know save it build it once save it run it done in 20 seconds kind of a thing okay
+
+05:36.540 --> 05:47.300
+basic scripting shell scripts in a nutshell so it explains what they are, editing how to edit and we will talk about this later but I use nano
+
+05:47.300 --> 06:03.800
+and we'll talk about how to use nano maybe in the second video I'll talk a little bit about nano and using nano in your VM environment
+
+06:03.800 --> 06:18.300
+all right scripting basics variables conditionals loops okay so this is the primary basics and we're gonna go beyond the basics okay
+
+06:18.300 --> 06:34.540
+and so that's why after you're done with this the additional resources are after that because you should read that watch that video first
+
+06:34.540 --> 06:51.520
+and then come to here and you want to do is just familiarize yourself with what these are okay so probably the best is this advanced bash scripting guide okay
+
+06:51.520 --> 07:09.900
+on shell scripting techniques the exercises and heavily combinated examples invite active reader participation and then the premise the only way to really learn scripting is to write scripts, learn by doing
+
+07:09.900 --> 07:27.460
+and so you can go to the best shell scripting guide and it's here in depth lots of stuff quoting strings status conditionals you know operations variable internal variable types doing random loops loop control branching
+
+07:27.460 --> 07:43.140
+okay so there's lots of stuff internal advanced topics globbing here strings io redirection functions complex functions local variables aliases arrays indirect references okay bunch of stuff and we're going to use some of them
+
+07:47.220 --> 07:57.320
+okay I identified four that you probably will use: functions, and this is part of that guide
+
+07:57.320 --> 08:17.220
+if you go here and you go to advanced topics functions is right here, this is exactly the same pages I linked. The pages are identical I just linked to those directly so you don't have to look through the table of contents to find them
+
+08:52.700 --> 09:05.320
+error handling and best practices so you're gonna have to do one error handling check so you can look at using bash strict mode to help you do error handling
+
+09:05.320 --> 09:24.700
+so writing a good readme file so you have to write a readme file so this walks you through what's a readme file, why you should make it, when you should make one, how should I make it
+
+09:24.700 --> 09:35.080
+and it has a markdown template kind of headers installation usage okay
+
+09:42.060 --> 09:54.840
+suggestions you know name description badges visuals installation usage support roadmap contributing you don't have to have all these but have the ones that make sense for your situation
+
+10:05.460 --> 10:21.120
+so write readme is typically on github everyone writes them in markdown format MD format okay and basically what you do MD format if you precede something with a hashtag one hashtag that's like a level one header okay two hashtags the level two header okay
+
+10:28.680 --> 10:50.000
+if you put triple single quotes on both ends that basically is code so everything in that will be displayed as code so you see that dash bash pip install foobar that shows up in a markdown reader as formatted code
+
+10:50.000 --> 11:13.240
+and typically you do put the language you're using in this case this is bash in this case this is Python so that people look at it they can look at the markdown itself and see what you're actually doing
+
+11:24.900 --> 11:35.500
+I would suggest markdown if you can. If you send it in as a dot MD file readme dot MD then I'll read it that way with a markdown reader
+
+11:36.220 --> 11:49.500
+all right so that's kind of writing a good readme file that's all in the additional resources that go beyond basic scripting.
+
+11:49.500 --> 12:02.940
+The next video that I create will be about MiniProject 01 and I said installing a GUI, so I'm going to talk about how to install a GUI onto your server to make life easier for you.
+
+12:03.840 --> 12:16.320
+Then MiniProject 01, this just walks through all the requirements for the project. What you're supposed to do, which I'll demonstrate.
+
+12:16.320 --> 12:27.400
+The first part is plan your script, design it. This is part of the plan here. You want to plan what you're going to do before you try to do it.
+
+12:28.660 --> 12:40.520
+By planning, you tend to bypass errors that you create in your code because you didn't plan it, you just tried to do it and you missed stuff. Plan it first, and then do it.
+
+12:40.520 --> 12:48.280
+There's some questions to answer about script structure.
+
+13:07.260 --> 13:21.060
+It has some examples, command line arguments, how to do that. Create the script file and make it executable. Again, we're talking about using Nano. But after you create a file, usually you'll end with .sh for shell script.
+
+13:21.060 --> 13:38.960
+You're going to do a chmod plus x to make it executable. And then you run it with a dot slash then the name of your script.
+
+13:40.280 --> 13:58.040
+You put sudo in front because you typically have to be an admin to run it and now here we still have the screenshots so you choose your file upload your screenshots paste your current script skeleton from shebang through the argument check
+
+14:04.700 --> 14:15.900
+and so by adding the GUI we'll be able to do this. This will allow us to do that so that's why we're gonna add the GUI to make life easier all the way around
+
+14:28.600 --> 14:49.320
+right so you go through these and sometimes these grayed out things actually give you the answer and then when you're done you want to print as a PDF, you do save this PDF and it should save your whole file as a PDF and you should be able to upload that PDF. I know some of you reported problems with that.
+
+14:49.320 --> 15:07.020
+I haven't figured out why but if you've really tried and you can't you can always email it to me and that's fine but try to upload it first. Alright and so that's this week it's all about scripting.
+
+15:07.020 --> 15:17.660
+Good luck and as always you can reach out and if you have any questions feel free to reach out to me. And if you really have dire problems the best thing
+
+15:17.660 --> 15:35.140
+I can tell you to do is go to the syllabus click instructor and course info, student hours, go to my calendar. And on my calendar I have more hours than my office hours. Just pick times.
+
+15:35.140 --> 15:52.080
+With the blue circle it means there's times available on those days. Pick a day, find a time that works for you. Hopefully there's one that works for you. And we will meet online.
+
+15:52.080 --> 16:07.660
+When you fill one out it's going to email you so whatever email address you put in here make sure it's one you read. It's gonna send you an email and in that email this link will be in there
+
+16:07.660 --> 16:19.420
+which is the link to the Zoom where we will meet at the time that you've selected.
+
+16:19.420 --> 16:34.000
+Okay notice this time I selected is a half hour. You can start it whenever you want it runs for half hour. As soon as I select that
+
+16:34.000 --> 16:44.620
+like if I select 2:15 then 2:30 will be gone and maybe even 2:45 because I tend to leave a little extra space in case we run over.
+
+16:44.620 --> 16:56.420
+All right so that's the best thing to do if you have any issues, make an appointment with me, we'll meet and walk through and talk through any issue you have. Okay good luck.`;
+
+  /* ── YouTube single-player setup ─────────────────────────────────────── */
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.innerHTML = '';
+    transcript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
+
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4: Installing a GUI on Ubuntu Server | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  scroll-margin-top: 3.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video Section ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.section-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+.section-content { padding: 1.25rem; }
+
+/* ── Command List ── */
+ol.cmd-list {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0 1rem;
+}
+ol.cmd-list li {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+ol.cmd-list li .cmd-note {
+  display: block;
+  font-size: 0.88rem;
+  color: #475569;
+  margin-top: 0.2rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Info / Tip / Warning Boxes ── */
+.info-box {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.info-box strong { color: #3730a3; }
+
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+
+.warn-box {
+  background: #fff7ed;
+  border-left: 4px solid #f97316;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.warn-box strong { color: #9a3412; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands Used</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ─────────────────────────────────────────────────── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Week 4 &middot; GUI Install</p>
+    <h1 id="page-heading">Installing a Graphical Interface on Ubuntu Server</h1>
+    <p>This video demonstrates how to install the Xubuntu graphical desktop environment on your Ubuntu Server VM in VirtualBox. The instructor walks through updating the system, installing the XFCE-based desktop with <code>apt</code>, configuring the LightDM display manager, and setting the default boot target to graphical mode. Having a GUI makes it easier to write and test scripts, copy and paste code between your host machine and the VM, and access a web browser from within the server environment. Once installed, you can use the GUI&rsquo;s built-in terminal emulator to continue working on Mini-Project 1.</p>
+  </section>
+
+  <!-- ── Video ─────────────────────────────────────────────────────────── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">GUI Install Video</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">The instructor installs Xubuntu desktop on a running Ubuntu Server VM, troubleshoots a failed <code>tasksel</code> approach, switches to <code>apt install</code>, configures the display manager, sets graphical boot as the default, and demonstrates the resulting GUI. Use the transcript panel to follow along or jump to any part of the video.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/OuFnYtssVEk?enablejsapi=1"
+                  title="Week 4: Installing a Graphical Interface on Ubuntu Server"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for GUI install video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands Used ──────────────────────────────────────────────────── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <div class="section-header">
+      <h2 id="commands-heading">Commands Used</h2>
+    </div>
+    <div class="section-content">
+      <div class="warn-box" role="note">
+        <strong>Heads up:</strong> In the video the instructor first tries <code>sudo tasksel install xubuntu-desktop</code>, which does not work as expected. Skip steps using <code>tasksel</code> and go straight to <code>sudo apt install xubuntu-desktop</code> (step&nbsp;3 below) &mdash; that is the method that works.
+      </div>
+      <ol class="cmd-list">
+        <li>
+          <code>sudo apt update</code>
+          <span class="cmd-note">Refresh the package index before installing anything new.</span>
+        </li>
+        <li>
+          <code>sudo apt upgrade -y</code>
+          <span class="cmd-note">Upgrade all currently installed packages to their latest versions.</span>
+        </li>
+        <li>
+          <code>sudo apt install xubuntu-desktop</code>
+          <span class="cmd-note">Install the full Xubuntu desktop environment (XFCE-based). This downloads several hundred megabytes and takes a few minutes. When prompted whether to continue, type <code>y</code> and press Enter (or add <code>-y</code> to skip the prompt).</span>
+        </li>
+        <li>
+          <code>sudo dpkg-reconfigure lightdm</code>
+          <span class="cmd-note">Configure the LightDM display manager, which handles the graphical login screen. Run this if the installer did not prompt you to choose a display manager during installation.</span>
+        </li>
+        <li>
+          <code>sudo systemctl status lightdm</code>
+          <span class="cmd-note">Verify that the LightDM service is loaded and enabled. You should see <em>Active: active</em> or <em>enabled</em> in the output.</span>
+        </li>
+        <li>
+          <code>sudo systemctl set-default graphical.target</code>
+          <span class="cmd-note">Set the system to boot into graphical (GUI) mode by default instead of the text console. A symbolic link confirmation message means it worked.</span>
+        </li>
+        <li>
+          <code>sudo reboot</code>
+          <span class="cmd-note">Reboot the VM. If everything is configured correctly, the system will boot into the Xubuntu graphical login screen.</span>
+        </li>
+      </ol>
+      <div class="tip-box">
+        <strong>After the GUI loads:</strong> Use the <strong>Terminal Emulator</strong> application inside the GUI to run all your normal Linux commands. The terminal behaves identically to the text-only console you have been using &mdash; the GUI just makes it easier to open multiple windows, copy and paste, and use a text editor with a mouse.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.000 --> 00:08.480
+Aloha! So this is the video on week 4 mini project 01 and installing a GUI.
+
+00:08.480 --> 00:19.320
+Okay so what I want to talk about is trying to make it easier to do mini project 01. We've suffered for several weeks through using this server interface only.
+
+00:19.320 --> 00:32.840
+So what we're going to do is we're going to change this to make it easier for us. Okay so in VirtualBox before you start your VM what we want to do is first thing I want to do is go to settings.
+
+00:32.840 --> 00:47.560
+Okay and then there's a shared folders setting and there's a similar thing on UTM for shared folders. We would do the same kind of thing. Okay and so we want to do is we're going to add a shared folder.
+
+00:47.560 --> 00:55.220
+So select the path other and then find your shared folder.
+
+00:55.280 --> 01:06.660
+Okay so there's a folder that you want to share. So I'm going to share a folder that I made just for this.
+
+01:10.520 --> 01:24.900
+Week 4 this one week 4 shared. Okay I don't think I need to put a mount point.
+
+01:25.280 --> 01:41.120
+We'll just do auto mount okay and we'll see how it happens okay hopefully it works okay so we want to create a shared folder and we'll say okay we have that shared folder now we can start our server.
+
+01:47.620 --> 02:00.040
+Okay and once we start our server the first thing we're gonna do is we're going to try to install a graphical interface now I'm doing this today without having tested this so we'll see what happens.
+
+02:00.040 --> 02:19.220
+Okay so first I'm gonna log in. All right I'm logged in and now I'm just gonna follow these instructions and these instructions will be in hopefully the successful instructions will be in this video.
+
+02:23.900 --> 02:36.680
+Okay so the first thing I want to do is sudo apt update and sudo apt upgrade -y so that everything's updated properly okay.
+
+02:53.900 --> 03:23.380
+Let's see. Let's do that. Okay so now I'm going to do my next step.
+
+03:23.380 --> 03:47.060
+So I'm back, that took about honestly that took like two minutes okay. I have a decent home connection I'm at home I have a decent download speed connection usually running about 600 megabits per second and I have a fast computer so with lots of RAM and so it ran pretty good okay so that's the first thing.
+
+03:47.060 --> 04:14.360
+So let me click in here and clear my screen. All right so I have updated and upgraded. So now I need to install tasksel just to make it easier for me to do stuff okay so I'm gonna do that — sudo apt install tasksel.
+
+04:17.060 --> 04:29.120
+sudo apt install tasksel — notice it didn't ask me for my password because I just gave it for the update and upgrade. All right so that work seemed to work fine.
+
+04:29.120 --> 04:57.380
+All right so I have tasksel now. I'm gonna use Xubuntu — it's a lighter weight interface than the actual Ubuntu interface and I'm going to install the full one rather than the minimal one. Either will work but let's do the full one.
+
+05:09.560 --> 05:28.180
+Since I installed tasksel so that I get sudo tasksel install xubuntu-desktop — the full graphical interface for the Xubuntu meaning XFCE GUI Ubuntu interface.
+
+06:02.960 --> 06:25.060
+install xubuntu-desktop. Since we're doing this, let me double check that. sudo tasksel install xubuntu-desktop. Okay, it says it already finished. That's amazing. It seems like too fast.
+
+06:25.060 --> 06:35.760
+Okay it didn't. I wonder if it actually worked.
+
+06:51.720 --> 07:24.280
+Let's find out. It didn't ask for lightdm. So I want to check the status — sudo systemctl status lightdm.
+
+07:24.280 --> 07:44.280
+lightdm service cannot be found. So it didn't install it. It didn't ask for it.
+
+08:43.280 --> 09:05.980
+Didn't install. It didn't ask for lightdm and no service found.
+
+09:05.980 --> 09:19.380
+Let's see what it says. Okay so now let me check.
+
+09:42.520 --> 12:05.520
+Checking if XFCE and lightdm are installed. Neither are installed.
+
+13:03.140 --> 13:24.580
+So I'm not gonna update I'm just gonna install it okay so this is the way I've always installed in the past. So sudo apt install xubuntu-desktop — I'm going to leave the dash Y off just to show you what happens.
+
+13:24.580 --> 13:38.340
+Okay so I have to say do I want to continue? Yes — that's what the dash Y does. All it does is answer yes for you automatically.
+
+13:38.340 --> 13:54.720
+It's back up so we can see it just installing everything like it should have done before. So don't use the tasksel like stuff — don't have to install it, you just jump into apt install xubuntu-desktop.
+
+13:54.720 --> 14:06.300
+And it will take a while because we're installing the full desktop and not just the minimal desktop.
+
+14:06.300 --> 14:35.260
+Okay so it's gonna download some software. I saw it's going to install Firefox and some other software that makes it easy to run stuff. So I'm gonna pause the recording while it's doing that and I'll come back when it's done.
+
+14:36.200 --> 15:01.220
+All right I'm back that didn't take too long, a few minutes okay so I just installed it okay.
+
+15:01.220 --> 15:19.380
+Okay so it suggests that I should run sudo dpkg-reconfigure lightdm to choose it because it didn't ask me that.
+
+15:19.380 --> 15:37.280
+Okay so I'm gonna do that and I will do that. It's right here — this is the sudo dpkg-reconfigure lightdm. And by the way I should tell you this is an excellent example of why you don't just do whatever an AI tells you to do and assume it's gonna be right.
+
+15:37.280 --> 15:54.820
+Because as you saw the AI said you should use tasksel so that it's you know done in the background and guess what it didn't work. And so when you use AI sometimes it goes through and you'll end up in a loop.
+
+15:54.820 --> 16:06.740
+I've had this happen to me where I'm doing something, ends up in a loop and we keep going round and round, and sometimes you just have to tell it to stop. Go hey why do we keep going in circles, let's just start over.
+
+16:06.740 --> 16:23.420
+And amazingly sometimes you start over and everything's great. All right so let me back here and reconfigure lightdm because it's a nice lightweight display manager so sudo dpkg-reconfigure lightdm.
+
+16:23.420 --> 16:41.520
+Okay it looks like it did it.
+
+16:41.640 --> 17:17.120
+And then what we'll do is we will check this to see if it's there. Okay so lots of Xubuntu stuff there, you can see all this Xubuntu stuff. So be happy that it's there.
+
+17:17.120 --> 17:35.900
+And then systemctl status lightdm. lightdm service is enabled. Okay it's loaded it's enabled.
+
+17:35.900 --> 17:51.100
+Okay then we need sudo systemctl set-default graphical.target so it will boot to the GUI now rather than the CLI.
+
+17:51.100 --> 18:22.200
+Set default graphical.target. Okay so it's set graphical.target with a symbolic link.
+
+18:22.200 --> 18:38.540
+And now I can reboot and hopefully it works. Okay sudo reboot.
+
+18:38.540 --> 19:05.180
+Okay so it's rebooting. And hopefully if we did it right it'll reboot into a graphical interface.
+
+19:06.240 --> 19:25.780
+Okay so we'll stay here and see how long it takes. Here we are rebooting in VirtualBox got my fingers crossed. There we go so we're in our graphical interface and now I can log in.
+
+19:25.780 --> 19:41.700
+All right so I'm in! I have a graphical interface. Okay so now we have an interface.
+
+19:41.820 --> 20:07.160
+Now, what we're going to do is we're going to use the terminal emulator. Okay. For everything. This is just like the console that we had before. This is the CLI. So we'll build our scripts here. We'll do all that stuff from this interface rather than direct.
+
+20:11.560 --> 20:33.020
+Now, what does that mean? Well, hopefully what that means is, so this is on my desktop. It's just a text editor. So let's see if I can copy and paste from there.
+
+20:51.440 --> 22:00.700
+I'm probably going to have to go back to it and see it again. So what you can do is create a new document, let's say a plain text document. And in this document, now you could write your code that you want to have, okay?
+
+22:00.700 --> 22:18.440
+And then you can from in here, you should be able to copy them and paste them in here so that you can get them, okay? So that's one helpful thing that you could do.
+
+22:19.220 --> 22:54.020
+I'll have to figure out the share thing and I'll post something about share in terms of how to make it show up on your desktop. Because once you have your shared folder, what you can do then is you can copy files back and forth between the share and your system. I just didn't pick a mount point and because I didn't pick a mount point it didn't mount anywhere.
+
+23:00.700 --> 23:39.800
+So let's see if it's in here. Share. Doesn't look like it. I don't think it's in here so — these are system share folders. Anyway I'll find that.
+
+23:58.600 --> 24:26.440
+Anyway. So that you can figure out how to share them back and forth. But what you can do is create your files on your drive, copy and paste into this document.
+
+24:26.440 --> 24:58.220
+And if you really wanted to you could actually log into Canvas through the browser. Firefox was installed. This is now the default. And you could actually log in to Canvas from here and actually do it on this server if you really wanted to, and then you wouldn't ever have to come off it.
+
+24:58.220 --> 25:52.340
+Okay. So this is what I wanted to show — that you can use the graphical interface, install the graphical interface and use it, copy and paste from it to it and from it, at least on this server itself.
+
+25:52.340 --> 26:08.060
+And then I'll post the directions of how to get the share to work so that you could just drag and drop files back and forth between your Windows 11 machine and your Ubuntu server, if you want.
+
+26:08.240 --> 26:32.940
+All right. So that's really what I wanted to say about the actual assignment because all the instructions are there and there's lots of instructions, but I wanted to share this about how to make your life a little easier in order to do these assignments from now and in the future.
+
+26:34.720 --> 26:47.700
+Right. So that's what I got and good luck. And like I said, I will post a separate document about getting the share to work. Good luck and talk to you next week.`;
+
+  /* ── YouTube single-player setup ─────────────────────────────────────── */
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.innerHTML = '';
+    transcript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
+
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>

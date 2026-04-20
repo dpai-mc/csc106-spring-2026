@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4: Setting Up a Shared Folder in VirtualBox | CSC 106</title>
+<style>
+/* ── Reset and Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+/* ── Skip Link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus style ── */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Top Nav ── */
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+/* ── Main Container ── */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Headings ── */
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  scroll-margin-top: 3.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video Section ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.section-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+.section-content { padding: 1.25rem; }
+
+/* ── Step list (mix of GUI actions and commands) ── */
+ol.cmd-list {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0 1rem;
+}
+ol.cmd-list li {
+  margin-bottom: 0.85rem;
+  font-size: 0.95rem;
+}
+ol.cmd-list li .cmd-note {
+  display: block;
+  font-size: 0.88rem;
+  color: #475569;
+  margin-top: 0.25rem;
+}
+ol.cmd-list li .gui-action {
+  display: inline-block;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.1em 0.45em;
+  border-radius: 3px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Info / Tip / Warning Boxes ── */
+.info-box {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.info-box strong { color: #3730a3; }
+
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Steps &amp; Commands</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ─────────────────────────────────────────────────── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Week 4 &middot; Shared Folder Setup</p>
+    <h1 id="page-heading">Setting Up a Shared Folder in VirtualBox</h1>
+    <p>This video walks through setting up a shared folder between your Windows (or Mac) host machine and your Ubuntu Server VM in VirtualBox. You will install the VirtualBox Guest Additions, add your user to the <code>vboxsf</code> group, and configure a shared folder in VirtualBox settings so files can be transferred between the two systems. This is especially useful for copying scripts into your server without retyping them &mdash; once the share is working, you can write a script on your host machine and drop it directly into your VM.</p>
+  </section>
+
+  <!-- ── Video ─────────────────────────────────────────────────────────── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Shared Folder Setup Video</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">The instructor demonstrates the complete shared folder setup: inserting the Guest Additions CD, running the installer script, configuring the shared folder in VirtualBox settings, adding the user to the required group, and verifying that files can be copied in both directions. Use the transcript panel to follow along or jump to any step.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/jcXNoasHswI?enablejsapi=1"
+                  title="Week 4: Setting Up a Shared Folder in VirtualBox"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for shared folder setup video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Steps & Commands ───────────────────────────────────────────────── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <div class="section-header">
+      <h2 id="commands-heading">Steps &amp; Commands Used</h2>
+    </div>
+    <div class="section-content">
+      <div class="info-box" role="note">
+        <strong>Prerequisites:</strong> Your VM must be running the graphical desktop (from the GUI install video) before starting this process. Steps marked <span class="gui-action">VirtualBox</span> are performed in the VirtualBox application on your host machine, not inside the VM.
+      </div>
+
+      <h3>Part 1 &mdash; Install VirtualBox Guest Additions</h3>
+      <ol class="cmd-list">
+        <li>
+          <span class="gui-action">VirtualBox</span>
+          With the VM running, click the <strong>Devices</strong> menu in the VirtualBox window and choose <strong>Insert Guest Additions CD Image&hellip;</strong>
+          <span class="cmd-note">The CD image mounts automatically inside the VM. A file manager window may pop up. If it does, right-click the CD icon and choose <strong>Properties</strong> to see the full mount path (something like <code>/media/your-username/VBox_GAs_7.x.x</code>).</span>
+        </li>
+        <li>
+          Open a terminal inside the VM, then navigate to the Guest Additions CD:
+          <br><code>cd /media/your-username/VBox_GAs_7.x.x</code>
+          <span class="cmd-note">Replace <code>your-username</code> and the version number with what you see in Properties. Capitalization matters &mdash; use Tab to auto-complete the path.</span>
+        </li>
+        <li>
+          Run the Guest Additions installer:
+          <br><code>sudo sh ./VBoxLinuxAdditions.run</code>
+          <span class="cmd-note">Enter your password when prompted. The installer sets up shared folder support, clipboard sharing, and dynamic screen resizing. This takes about 30&ndash;60 seconds.</span>
+        </li>
+        <li>
+          Shut down the VM cleanly:
+          <br><code>sudo poweroff</code>
+          <span class="cmd-note">You need to power off (not just reboot) before changing the shared folder settings in VirtualBox.</span>
+        </li>
+      </ol>
+
+      <h3>Part 2 &mdash; Configure the Shared Folder in VirtualBox</h3>
+      <ol class="cmd-list" start="5">
+        <li>
+          <span class="gui-action">VirtualBox</span>
+          With the VM powered off, open <strong>Settings &rarr; Shared Folders</strong>. Remove any existing shared folder entry, then click the <strong>Add</strong> icon (folder with a plus sign).
+          <span class="cmd-note">Choose the folder on your host machine you want to share (e.g., a folder on your Windows desktop or Documents). Leave <strong>Mount Point</strong> blank and check <strong>Auto-mount</strong>. Click OK twice to save.</span>
+        </li>
+        <li>
+          <span class="gui-action">VirtualBox</span>
+          Start the VM and log in to the graphical desktop.
+          <span class="cmd-note">The shared folder should appear under <code>/media/</code> as a folder named <code>sf_YourFolderName</code>. If you get a &ldquo;Permission denied&rdquo; error when you try to open it, continue to Part 3.</span>
+        </li>
+      </ol>
+
+      <h3>Part 3 &mdash; Grant Your User Access to the Shared Folder</h3>
+      <ol class="cmd-list" start="7">
+        <li>
+          Open a terminal and add your user to the <code>vboxsf</code> group:
+          <br><code>sudo usermod -aG vboxsf your-username</code>
+          <span class="cmd-note">Replace <code>your-username</code> with your actual Linux username. The <code>vboxsf</code> group controls access to VirtualBox shared folders &mdash; without this step you will get &ldquo;Permission denied&rdquo; errors.</span>
+        </li>
+        <li>
+          Reboot so the new group membership takes effect:
+          <br><code>sudo reboot</code>
+          <span class="cmd-note">You must reboot (not just log out) for the group change to apply to your session.</span>
+        </li>
+        <li>
+          After rebooting, open the file manager and navigate to <code>/media/sf_YourFolderName</code> to verify access.
+          <span class="cmd-note">You should now be able to open, copy, and paste files in both directions. Try creating a test file on your host, copying it to the shared folder, and opening it inside the VM &mdash; and vice versa.</span>
+        </li>
+      </ol>
+
+      <div class="tip-box">
+        <strong>Workflow tip:</strong> Once the shared folder is working, you can write your Mini-Project 1 script in a text editor on your Windows or Mac host (where copy/paste is easy), save it to the shared folder, then access it inside the VM at <code>/media/sf_YourFolderName/script.sh</code>. Copy it to your home directory with <code>cp /media/sf_YourFolderName/script.sh ~/</code>, then run it from there with <code>chmod +x ~/script.sh &amp;&amp; sudo ~/script.sh</code>.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.000 --> 00:13.700
+Okay so to set up your shared drive — sorry, this is something I forgot that you had to do. So the first thing you have to do is from VirtualBox, you do exactly what we did before and I'll go back and we'll double check it to make sure it's all right.
+
+00:13.700 --> 00:28.160
+But what we need to do inside Ubuntu after you got the GUI going — you need to go to Devices, Insert Guest Additions CD Image.
+
+00:28.160 --> 00:50.180
+Okay it's going to insert and pop up and automatically mount. And what we want is VBoxLinuxAdditions.run okay. Now when you do this you really can't do anything so you need to go to Properties — right click, go to Properties — and we need this location here.
+
+00:54.920 --> 01:09.000
+Okay slash media slash your-username slash VBox underscore GAs underscore 7.2.6. So I have 7.2.6. Okay.
+
+01:10.580 --> 01:21.920
+And then what we want to do is open a terminal. Okay so here's our terminal. Now let's see if I can make sure I get this right.
+
+01:23.280 --> 01:46.080
+So we want to go to the location where our file is. Okay so we want to go to cd slash media slash username slash VBox underscore GAs underscore 7.2.6. Okay. Here it is. And here we are.
+
+01:55.820 --> 02:10.380
+Then we want to run our shell script so we're going to do sudo sh dot slash VBoxLinuxAdditions.run. Okay so that's this file here.
+
+02:10.380 --> 02:36.620
+Not the arm one but VBoxLinuxAdditions.run — okay, so sudo sh space dot slash VBoxLinuxAdditions.run. Okay capitalization matters — VBoxLinuxAdditions.run.
+
+02:38.620 --> 02:49.800
+And put in our password. Okay so it should install a bunch of stuff and one of the things it's going to install is our ability to share folders.
+
+02:49.800 --> 03:05.200
+And so this should work and we'll reboot after.
+
+03:05.200 --> 03:25.500
+All right. So this will also do something I forgot to mention — this will also update all your screen mode settings. See all these things are available now that weren't available before.
+
+03:25.500 --> 03:43.500
+So let's blow it up to a different size okay. So I don't want to reboot because I just need to shut down and then I'll restart it from VirtualBox after we double check our shared folder settings.
+
+03:43.500 --> 03:58.520
+Okay so sudo shutdown — should work. No — sudo poweroff. Okay so this should shut down.
+
+03:58.520 --> 04:11.980
+And now we want to go into our settings, our shared folder.
+
+04:15.140 --> 04:30.360
+So let's basically let's remove this one. Remove it okay. And then let's add a new one.
+
+04:30.360 --> 04:58.220
+Your global machine will add a new one. Folder path, find the path you want — mine is a folder inside my drives. It's kind of a crazy path but there we go for artifacts. This one I want.
+
+04:58.220 --> 05:16.440
+Auto-mount. Let's make it global just in case. I don't need to select a mount point, shouldn't need to, just say OK. And then we just say OK. Now we will start it.
+
+05:16.440 --> 06:16.780
+And then we'll see if the folder exists in our system. Let's go see. Let's make the window a decent size. Okay anyway so now we go into our folder structure.
+
+06:16.780 --> 06:33.460
+You can see here — sf — the shared file system should be under media. Should be here.
+
+06:47.800 --> 07:02.040
+Permission denied. Permission denied. Not sure why I got denied but basically you can see I got it here.
+
+07:52.840 --> 08:11.740
+All right I forgot about that step. I've done this a while and I forgot about that step. So you need to open a terminal. All right and we need to — the user needs to be in a certain group called vboxsf.
+
+08:11.740 --> 08:30.400
+Okay so we need to add ourselves to that group.
+
+08:30.400 --> 08:54.480
+Okay so to do usermod -aG vboxsf and then my username.
+
+08:54.480 --> 09:20.960
+Reboot to make sure that I have those permissions and they're instantiated and given to me. Then we will log in again.
+
+09:30.400 --> 09:59.520
+Let's see if we can get in here. File system, under file system, media, as I've shared — here's my file! Just copied it over here to the desktop.
+
+09:59.520 --> 10:17.120
+Let me add some text to this. Okay save it, close it. I'll go on my Windows machine, go to the same folder.
+
+10:22.400 --> 10:40.700
+And then let me open it on my Windows machine — and it updated! Good.
+
+11:00.400 --> 11:25.920
+Oh there it is — this one updated. This one right here. Let me put it over here, replace it.
+
+11:30.400 --> 11:54.060
+You can see the file now has the new text. So now I got the updated content. Let me rename it — rename it to test2.txt — and then we'll copy it here.
+
+12:00.400 --> 12:20.240
+And then we'll go into our folder and let's open this file folder again. And now I have test2 and it has the new text. So you can copy and paste back and forth now between the two machines.
+
+12:20.240 --> 12:37.780
+For some reason it should allow me to overwrite it and I can keep the same name but if you can't they just add in one two three or something like that or delete the ones you don't want anymore. So you only have one file left.
+
+12:39.540 --> 12:51.280
+Okay so that should help you. You could write them in Windows or Mac and then copy and paste them into your Ubuntu server this way using a shared folder.
+
+12:55.100 --> 13:05.260
+All right so that's my shared folder video. Hopefully that makes sense to everybody. Good luck.`;
+
+  /* ── YouTube single-player setup ─────────────────────────────────────── */
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.innerHTML = '';
+    transcript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
+
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>
