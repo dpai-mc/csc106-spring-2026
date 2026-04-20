@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Project 1: Post-Install Configuration Script — CSC 106 Week 4</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f6f8;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #1e4d8c;
+      color: #fff;
+      padding: 8px 16px;
+      z-index: 1000;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Sticky nav */
+    .sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1e4d8c;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .sticky-nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      gap: 2px;
+      padding: 6px 12px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .sticky-nav a {
+      display: block;
+      color: #d6e4ff;
+      text-decoration: none;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .sticky-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .sticky-nav a:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 1px;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+    .sticky-nav a.active { background: rgba(255,255,255,0.25); color: #fff; }
+
+    /* Layout */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* Page header */
+    .page-header {
+      background: #1e4d8c;
+      color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .page-header .course-meta { font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px; }
+    .page-header h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+    .points-badge {
+      display: inline-block;
+      background: #fff;
+      color: #1e4d8c;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 3px 14px;
+      border-radius: 99px;
+    }
+
+    /* Sections */
+    .content-section {
+      background: #fff;
+      border: 1px solid #d8dde6;
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      scroll-margin-top: 52px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e4d8c;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f4;
+    }
+    h3 { font-size: 1rem; font-weight: 700; color: #1a3660; margin: 18px 0 8px; }
+
+    p { margin-bottom: 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 1.5em; margin-bottom: 10px; }
+    li { margin-bottom: 4px; }
+
+    /* Phase header */
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f4;
+    }
+    .phase-badge {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: #1e4d8c;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .phase-title { font-size: 1.2rem; font-weight: 700; color: #1e4d8c; }
+    .phase-subtitle { font-size: 0.83rem; color: #555; margin-top: 2px; }
+
+    /* Code */
+    pre {
+      background: #1e2535;
+      color: #e2e8f0;
+      padding: 14px 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0 14px;
+      font-size: 0.87rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    code { font-family: 'Courier New', Courier, monospace; }
+    p code, li code {
+      background: #eef1f8;
+      color: #1a3660;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    /* Callouts */
+    .callout {
+      border-left: 4px solid;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.93rem;
+    }
+    .callout-info  { border-color: #3b82f6; background: #eff6ff; color: #1e3a5f; }
+    .callout-tip   { border-color: #10b981; background: #ecfdf5; color: #064e3b; }
+    .callout strong { font-weight: 700; }
+
+    /* Hints */
+    details.hint {
+      border: 1px solid #c7d2e8;
+      border-radius: 6px;
+      margin: 12px 0;
+      background: #f8faff;
+    }
+    details.hint > summary {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #1e4d8c;
+      font-size: 0.91rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details.hint > summary::-webkit-details-marker { display: none; }
+    details.hint > summary::before {
+      content: '\25B6';
+      font-size: 0.68em;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details.hint[open] > summary::before { transform: rotate(90deg); }
+    details.hint > summary:focus-visible {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body {
+      padding: 0 16px 14px;
+      font-size: 0.91rem;
+      color: #2d3748;
+    }
+    .hint-body p { margin-bottom: 6px; }
+    .hint-body pre { font-size: 0.83rem; }
+
+    /* Task steps */
+    .task-step {
+      background: #f8f9fb;
+      border: 1px solid #dde3ef;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 12px 0;
+    }
+    .task-step-label {
+      font-size: 0.77rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #1e4d8c;
+      margin-bottom: 6px;
+    }
+
+    /* Response fields */
+    .response-field { margin: 16px 0; }
+    .response-field label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #1a3660;
+      margin-bottom: 6px;
+    }
+    .req { color: #c0392b; margin-left: 2px; }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 10px 12px;
+      border: 1px solid #b0bcd4;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: 0.91rem;
+      color: #1a1a1a;
+      background: #fefefe;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    textarea:focus {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 1px;
+      border-color: #1e4d8c;
+    }
+    textarea.code-input {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      min-height: 130px;
+    }
+
+    /* Screenshot upload */
+    .screenshot-upload {
+      margin: 14px 0;
+      border: 1px solid #b0bcd4;
+      border-radius: 6px;
+      padding: 12px 16px;
+      background: #fafbfd;
+    }
+    .screenshot-upload label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.91rem;
+      color: #1a3660;
+      margin-bottom: 8px;
+    }
+    .screenshot-upload input[type="file"] {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.87rem;
+    }
+    .screenshot-upload input[type="file"]:focus-visible {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+    .ss-preview {
+      display: none;
+      max-width: 100%;
+      border: 1px solid #c7d2e8;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    .ss-preview.visible { display: block; }
+
+    /* Objectives list */
+    .obj-list { list-style: none; padding: 0; }
+    .obj-list li {
+      padding: 7px 0 7px 28px;
+      position: relative;
+      border-bottom: 1px solid #eef0f4;
+    }
+    .obj-list li:last-child { border-bottom: none; }
+    .obj-list li::before { content: '\2713'; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+
+    /* Rubric table */
+    .rubric-table { width: 100%; border-collapse: collapse; font-size: 0.89rem; margin: 12px 0; }
+    .rubric-table th, .rubric-table td {
+      border: 1px solid #c7d2e8;
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .rubric-table th { background: #1e4d8c; color: #fff; font-weight: 600; }
+    .rubric-table tr:nth-child(even) td { background: #f5f8ff; }
+
+    /* Save as PDF button */
+    .pdf-btn-wrap { text-align: center; padding: 20px 0 8px; }
+    .btn-pdf {
+      display: inline-block;
+      background: #1e4d8c;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-pdf:hover { background: #163d72; }
+    .btn-pdf:focus-visible { outline: 3px solid #1e4d8c; outline-offset: 3px; background: #163d72; }
+    .pdf-note { font-size: 0.84rem; color: #555; margin-top: 8px; }
+
+    /* Print */
+    @media print {
+      .skip-link, .sticky-nav, .pdf-btn-wrap, details.hint,
+      input[type="file"], .pdf-note { display: none !important; }
+
+      body { background: #fff; font-size: 11pt; color: #000; }
+      .page-wrap { max-width: 100%; padding: 0; }
+
+      .page-header {
+        background: #1e4d8c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border-radius: 0;
+        margin-bottom: 12pt;
+        padding: 16pt 20pt;
+      }
+
+      .content-section {
+        border: 1pt solid #aaa;
+        border-radius: 0;
+        margin-bottom: 10pt;
+        padding: 12pt 16pt;
+        page-break-inside: avoid;
+      }
+
+      .phase-badge {
+        background: #1e4d8c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      pre {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-size: 8.5pt;
+        border: 1pt solid #ccc;
+      }
+
+      h2 { color: #1e4d8c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      h3 { color: #1a3660 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .rubric-table th {
+        background: #1e4d8c !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      textarea { display: none !important; }
+
+      .print-response {
+        border: 1pt solid #999;
+        padding: 8pt 10pt;
+        min-height: 36pt;
+        font-size: 10pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #fafafa;
+        color: #000;
+      }
+
+      .screenshot-upload { border: 1pt solid #aaa; }
+      .ss-preview.visible { max-width: 100%; }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .content-section { padding: 18px 14px; }
+      .page-header { padding: 20px 16px; }
+      .page-header h1 { font-size: 1.3rem; }
+      .phase-title { font-size: 1.05rem; }
+      pre { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="sticky-nav" aria-label="Page sections">
+  <ul>
+    <li><a href="#scenario">Scenario</a></li>
+    <li><a href="#objectives">Objectives</a></li>
+    <li><a href="#phase1">Phase 1: Plan</a></li>
+    <li><a href="#phase2">Phase 2: Structure</a></li>
+    <li><a href="#phase3">Phase 3: Functions &amp; Arrays</a></li>
+    <li><a href="#phase4">Phase 4: Packages &amp; Users</a></li>
+    <li><a href="#phase5">Phase 5: Services &amp; Logging</a></li>
+    <li><a href="#phase6">Phase 6: Test &amp; Document</a></li>
+    <li><a href="#submission">Submission</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="page-header" id="main-content" tabindex="-1">
+    <p class="course-meta">CSC 106 – Introduction to Linux II &nbsp;&middot;&nbsp; Week 4</p>
+    <h1>Mini Project 1: Post-Install Configuration Script</h1>
+    <span class="points-badge">60 Points &nbsp;&middot;&nbsp; CSLOs 1, 2, 3</span>
+  </header>
+
+  <!-- SCENARIO -->
+  <section class="content-section" id="scenario" aria-labelledby="scenario-h">
+    <h2 id="scenario-h">Scenario &amp; Context</h2>
+    <p>Your team manages infrastructure for a small nonprofit. Every few months, someone provisions a fresh Ubuntu Server VM — for a new project, a replacement after a failure, or a test environment. Each time, the same work follows: update the package index, install a handful of tools, create an admin account, and start the services the team relies on. Done by hand, this takes 30–45 minutes and is easy to get wrong.</p>
+    <p>Your job is to write a <strong>post-install configuration script</strong> that automates all of this. When a fresh Ubuntu Server VM comes online, your script should bring it to a fully configured state with a single command. This is exactly the kind of automation that Linux system administrators write and reuse — and it pulls together everything you have built since Week 1.</p>
+    <p><strong>Why a Linux server specifically?</strong> Linux servers are free and open-source, run reliably without a GUI, are scriptable end-to-end with bash, and power the vast majority of server infrastructure worldwide. Automation on Linux is not an advanced skill — it is a baseline expectation.</p>
+  </section>
+
+  <!-- OBJECTIVES -->
+  <section class="content-section" id="objectives" aria-labelledby="objectives-h">
+    <h2 id="objectives-h">What You Will Demonstrate</h2>
+    <p>By completing this project you will show that you can:</p>
+    <ul class="obj-list">
+      <li>Write a bash script that accepts command-line arguments and uses them to control behavior.</li>
+      <li>Define and call functions within a bash script to organize code into reusable blocks.</li>
+      <li>Use arrays in bash to manage lists of data such as packages to install.</li>
+      <li>Implement conditional logic and basic error handling to make scripts more robust.</li>
+      <li>Create a timestamped log of script actions for troubleshooting and documentation.</li>
+      <li>Automate post-installation tasks: package installation, user creation, and service management.</li>
+      <li>Write a clear README explaining how to run your script and what it does.</li>
+    </ul>
+  </section>
+
+  <!-- PHASE 1 -->
+  <section class="content-section" id="phase1" aria-labelledby="phase1-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">1</div>
+      <div>
+        <div class="phase-title" id="phase1-h">Plan Your Script</div>
+        <div class="phase-subtitle">Topic 7 — Design before you code</div>
+      </div>
+    </div>
+
+    <p>Before writing a single line of bash, spend 10–15 minutes deciding what your script will do. Students who plan first write scripts that read like a coherent procedure; students who skip planning write scripts that are harder to debug and harder to grade.</p>
+    <p>Your script must accomplish all of the following:</p>
+    <ul>
+      <li>Accept at least one command-line argument (a username for the admin account to create)</li>
+      <li>Update the package index and upgrade installed packages</li>
+      <li>Install at least 3 packages of your choosing</li>
+      <li>Create a non-root user account and add it to the <code>sudo</code> group</li>
+      <li>Enable and start at least one service</li>
+      <li>Write a timestamped log of all actions to a file</li>
+      <li>Include at least one function, one array, one conditional, and one error-handling check</li>
+      <li>Include comments throughout the script</li>
+    </ul>
+
+    <details class="hint">
+      <summary>Hint: Choosing packages and services</summary>
+      <div class="hint-body">
+        <p>Pick packages that make sense together for a server environment. The course outline uses <code>nginx</code>, <code>curl</code>, <code>git</code>, and <code>ufw</code> as examples — but choose whatever fits your planned scenario. Three packages is the minimum.</p>
+        <p>For a service, any package that registers a systemd unit works. <code>nginx</code> and <code>ssh</code> (OpenSSH) are common choices. After installing a package, you can check for its service unit with <code>systemctl list-units --type=service | grep nginx</code>.</p>
+      </div>
+    </details>
+
+    <div class="response-field">
+      <label for="p1-packages">1a. What packages will your script install? (at least 3, one per line) <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-packages" rows="5" placeholder="nginx&#10;curl&#10;git&#10;ufw"></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p1-user">1b. What username will your script create? What group(s) will the user belong to? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-user" rows="3" placeholder="Example: username passed as $1 argument; added to sudo group"></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p1-service">1c. What service(s) will your script enable and start? Why did you choose that service? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-service" rows="3" placeholder="Example: nginx — it is in my package list and represents a common web server service on Ubuntu Server."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p1-structure">1d. Sketch your script's structure. What functions do you plan to define, and in what order will they run? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-structure" rows="7" placeholder="Example:&#10;- check_root()     — verify running as root&#10;- update_system()  — apt update + upgrade&#10;- install_pkgs()   — loop through PACKAGES array&#10;- create_user()    — create user, add to sudo&#10;- enable_svcs()    — enable + start service&#10;- main()          — calls all of the above in order"></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 2 -->
+  <section class="content-section" id="phase2" aria-labelledby="phase2-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">2</div>
+      <div>
+        <div class="phase-title" id="phase2-h">Script Structure: Shebang, Root Check &amp; Arguments</div>
+        <div class="phase-subtitle">Topics 1–2 — The foundation every administration script needs</div>
+      </div>
+    </div>
+
+    <p>Build this skeleton first and test it before adding any other logic. Starting with a solid foundation — the shebang, a root check, and argument validation — means you catch problems early when the script is still small.</p>
+
+    <h3>The Shebang and Root Check</h3>
+    <p>The shebang tells the OS which interpreter to use. The root check exits with a clear error message if the script is not run with <code>sudo</code>, which is required for <code>apt</code> and <code>useradd</code>.</p>
+
+<pre><code>#!/bin/bash
+# post-install.sh — Automated post-install configuration script
+# Usage: sudo ./post-install.sh &lt;new-username&gt;
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root. Use: sudo $0 &lt;username&gt;"
+    exit 1
+fi</code></pre>
+
+    <h3>Command-Line Arguments</h3>
+    <p>Accept the admin username as <code>$1</code>. Validate that it was provided before proceeding. This is also where you print a usage message so the script is self-documenting.</p>
+
+<pre><code>if [ $# -lt 1 ]; then
+    echo "Usage: sudo $0 &lt;new-username&gt;"
+    exit 1
+fi
+
+USERNAME="$1"
+echo "Configuration will create user: $USERNAME"</code></pre>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 2.1 — Create the script file and make it executable</div>
+      <p>On your Ubuntu Server VM, create the script file and make it executable:</p>
+<pre><code>nano post-install.sh
+chmod +x post-install.sh</code></pre>
+      <p>Add the shebang, root check, and argument check shown above. Save the file.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 2.2 — Test the argument check</div>
+      <p>Run your script with no arguments to confirm the usage message appears and the script exits cleanly:</p>
+<pre><code>sudo ./post-install.sh</code></pre>
+      <p>You should see your usage message. Immediately after, run <code>echo $?</code> — the exit code should be <code>1</code>.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: What to look for when testing the argument check</summary>
+      <div class="hint-body">
+        <p>If you get <em>permission denied</em> when running <code>sudo ./post-install.sh</code>, confirm that <code>chmod +x post-install.sh</code> ran successfully. Check with <code>ls -l post-install.sh</code> — you should see <code>-rwxr-xr-x</code> (the <code>x</code> bits).</p>
+        <p>If you get <em>command not found</em>, make sure your terminal is in the same directory as the file. Run <code>pwd</code> and <code>ls</code> to confirm.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p2">Screenshot: Terminal showing the usage message output when the script is run with no arguments</label>
+      <input type="file" id="ss-p2" accept="image/*" aria-describedby="ss-p2-note">
+      <p id="ss-p2-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p2-img" src="" alt="Terminal output showing usage message">
+    </div>
+
+    <div class="response-field">
+      <label for="p2-skeleton">2a. Paste your current script skeleton — from the shebang through the argument check. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p2-skeleton" class="code-input" rows="14" placeholder="#!/bin/bash&#10;# post-install.sh ...&#10;"></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 3 -->
+  <section class="content-section" id="phase3" aria-labelledby="phase3-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">3</div>
+      <div>
+        <div class="phase-title" id="phase3-h">Functions and Arrays</div>
+        <div class="phase-subtitle">Topics 3–4 — Organize your code; manage lists</div>
+      </div>
+    </div>
+
+    <p>Functions and arrays are what turn a script from a pile of commands into an organized, maintainable program. Add them to your script now, before you write the actual system tasks — this way the structure is in place before the complexity increases.</p>
+
+    <h3>Defining Functions</h3>
+    <p>Define all functions near the top of your script, then call them in order from a <code>main()</code> function at the bottom. This pattern makes the script's flow easy to read at a glance.</p>
+
+<pre><code>update_system() {
+    echo "Updating package index and upgrading packages..."
+    apt update -y
+    apt upgrade -y
+}
+
+create_user() {
+    local new_user="$1"    # local keeps this variable inside the function
+    echo "Creating user: $new_user"
+    useradd -m -s /bin/bash "$new_user"
+    usermod -aG sudo "$new_user"
+}
+
+main() {
+    update_system
+    install_packages    # you will define this next
+    create_user "$USERNAME"
+    enable_services     # you will define this in Phase 5
+}
+
+main</code></pre>
+
+    <h3>Declaring and Iterating an Array</h3>
+    <p>Use an array to hold your package list. This avoids calling <code>apt install</code> separately for each package and makes it easy to add or remove packages by editing one line.</p>
+
+<pre><code># Declare at the top of your script, after the argument check
+PACKAGES=("nginx" "curl" "git" "ufw")   # replace with your choices
+
+install_packages() {
+    echo "Installing ${#PACKAGES[@]} packages..."
+    for pkg in "${PACKAGES[@]}"; do
+        echo "  -> $pkg"
+        apt install -y "$pkg"
+    done
+}</code></pre>
+
+    <details class="hint">
+      <summary>Hint: Array syntax pitfalls</summary>
+      <div class="hint-body">
+        <p>Always quote array expansion: <code>"${PACKAGES[@]}"</code> not <code>${PACKAGES[@]}</code>. Without quotes, package names containing spaces would be split incorrectly. It is a good habit even when your package names are simple.</p>
+        <p><code>${#PACKAGES[@]}</code> gives the count of elements — useful for a log message like <em>"Installing 4 packages..."</em>. <code>${PACKAGES[0]}</code> accesses a single element by index (zero-based).</p>
+      </div>
+    </details>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 3.1 — Add your PACKAGES array and function definitions</div>
+      <p>Add the <code>PACKAGES</code> array (using your Phase 1 choices) and define your functions in the script. Do <em>not</em> call them yet — just define them. Then verify the script still runs and exits cleanly by testing the argument check again.</p>
+    </div>
+
+    <div class="response-field">
+      <label for="p3-array">3a. Paste your PACKAGES array declaration exactly as it appears in your script. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p3-array" class="code-input" rows="4" placeholder='PACKAGES=("nginx" "curl" "git")'></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p3-funcs">3b. Paste the functions you have defined so far. Briefly explain what each one does. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p3-funcs" class="code-input" rows="20" placeholder="update_system() {&#10;    # Updates package index and upgrades installed packages&#10;    ...&#10;}&#10;&#10;install_packages() {&#10;    # Loops through PACKAGES array and installs each one&#10;    ...&#10;}"></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 4 -->
+  <section class="content-section" id="phase4" aria-labelledby="phase4-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">4</div>
+      <div>
+        <div class="phase-title" id="phase4-h">Package Management and User Creation</div>
+        <div class="phase-subtitle">Topics 4–5 — CSLO 1 &amp; CSLO 2</div>
+      </div>
+    </div>
+
+    <p>This phase executes the functions you defined in Phase 3 on your VM and connects two of the three course-level outcomes: installing and configuring software, and preparing the system as a platform.</p>
+
+    <h3>Running Your Update and Install Functions</h3>
+    <p>Add calls to your <code>update_system()</code> and <code>install_packages()</code> functions (or call them from <code>main()</code>) and run the script with a test username:</p>
+
+<pre><code>sudo ./post-install.sh testadmin</code></pre>
+
+    <p>Watch the output. Every package should install successfully. If a package name is not found, double-check spelling — apt package names are case-sensitive.</p>
+
+    <div class="screenshot-upload">
+      <label for="ss-p4a">Screenshot: Terminal output showing successful package installation</label>
+      <input type="file" id="ss-p4a" accept="image/*" aria-describedby="ss-p4a-note">
+      <p id="ss-p4a-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p4a-img" src="" alt="Terminal output of package installation">
+    </div>
+
+    <h3>Creating a Non-Root User with Sudo Access</h3>
+    <p>Your <code>create_user()</code> function creates the user from your <code>$USERNAME</code> argument and adds them to the <code>sudo</code> group. Add a check so the script handles the case where the user already exists — this makes the script safe to re-run.</p>
+
+<pre><code>create_user() {
+    local user="$1"
+
+    if id "$user" &gt;/dev/null 2&gt;&amp;1; then
+        echo "User '$user' already exists — skipping creation."
+    else
+        useradd -m -s /bin/bash "$user"
+        usermod -aG sudo "$user"
+        echo "User '$user' created and added to sudo group."
+    fi
+}</code></pre>
+
+    <p>After running the function, verify from the terminal:</p>
+<pre><code>id testadmin
+groups testadmin</code></pre>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 4.1 — Add user creation and verify</div>
+      <p>Update your <code>create_user()</code> function with the existence check shown above. Re-run the script. Then confirm the user exists and belongs to the sudo group by running <code>id testadmin</code>.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Re-running the script with the same username</summary>
+      <div class="hint-body">
+        <p>Run the script twice with the same username. The second run should print "already exists — skipping" rather than failing with an error. This is a simple form of idempotency — making the script safe to run more than once on the same system.</p>
+        <p>To verify sudo access is correctly assigned: <code>sudo -l -U testadmin</code>. You should see a line containing <code>(ALL : ALL) ALL</code>.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p4b">Screenshot: <code>id &lt;username&gt;</code> output confirming the user exists and belongs to the sudo group</label>
+      <input type="file" id="ss-p4b" accept="image/*" aria-describedby="ss-p4b-note">
+      <p id="ss-p4b-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p4b-img" src="" alt="id command output confirming user and sudo group">
+    </div>
+
+    <div class="response-field">
+      <label for="p4-obs">4a. What packages did you install? Did any fail or require troubleshooting? Describe what you observed in the output. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p4-obs" rows="5" placeholder="Describe the packages that installed, any errors you saw, and whether the user was created correctly."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 5 -->
+  <section class="content-section" id="phase5" aria-labelledby="phase5-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">5</div>
+      <div>
+        <div class="phase-title" id="phase5-h">Service Management, Error Handling &amp; Logging</div>
+        <div class="phase-subtitle">Topics 5–6 — CSLO 3</div>
+      </div>
+    </div>
+
+    <p>This phase connects directly to CSLO 3 — runlevels and startup scripts. You will enable a service so it starts at boot and starts it now, add error handling so failures are visible rather than silent, and create a timestamped log so there is a permanent record of what the script did.</p>
+
+    <h3>Enabling and Starting a Service</h3>
+    <p><code>systemctl enable</code> configures the service to start at boot; <code>systemctl start</code> starts it in the current session. Your script must do both — this is the same distinction you practiced in Week 3.</p>
+
+<pre><code>SERVICES=("nginx")   # add to this array if you want to enable multiple services
+
+enable_services() {
+    for svc in "${SERVICES[@]}"; do
+        echo "Enabling and starting $svc..."
+        systemctl enable "$svc"
+        systemctl start "$svc"
+    done
+}</code></pre>
+
+    <p>Verify after running:</p>
+<pre><code>systemctl is-enabled nginx    # expected output: enabled
+systemctl is-active nginx     # expected output: active
+systemctl status nginx</code></pre>
+
+    <h3>Error Handling</h3>
+    <p>Add at least one check that tests whether a command succeeded and exits (or logs a warning) if it did not. Either pattern below satisfies the requirement:</p>
+
+<pre><code># Pattern 1: if/else block
+if apt install -y nginx; then
+    echo "nginx installed successfully."
+else
+    echo "ERROR: nginx installation failed." &gt;&amp;2
+    exit 1
+fi
+
+# Pattern 2: inline with ||
+systemctl start nginx || { echo "ERROR: failed to start nginx"; exit 1; }</code></pre>
+
+    <h3>Timestamped Logging</h3>
+    <p>Define a <code>log_action()</code> function near the top of your script and call it at the start of each major step. The <code>tee -a</code> command prints to the terminal <em>and</em> appends to the log file simultaneously.</p>
+
+<pre><code>LOGFILE="/var/log/post-install-$(date +%Y%m%d-%H%M%S).log"
+
+log_action() {
+    local msg="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $msg" | tee -a "$LOGFILE"
+}
+
+# Call it before each major step:
+log_action "Starting post-install configuration for user: $USERNAME"
+log_action "Updating package index..."
+log_action "Installing packages: ${PACKAGES[*]}"</code></pre>
+
+    <p>After running your script, view the log:</p>
+<pre><code>cat /var/log/post-install-*.log</code></pre>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.1 — Add logging, error handling, and service management</div>
+      <ol>
+        <li>Add the <code>LOGFILE</code> variable and <code>log_action()</code> function near the top of your script.</li>
+        <li>Add a <code>log_action</code> call at the start of each function.</li>
+        <li>Add at least one <code>if/else</code> or <code>||</code> error check around a command that could fail.</li>
+        <li>Add an <code>enable_services()</code> function that enables and starts your chosen service(s).</li>
+        <li>Re-run the script, then view and confirm the log file exists.</li>
+      </ol>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Redirecting command output to the log file too</summary>
+      <div class="hint-body">
+        <p>To also capture the output of commands like <code>apt install</code> into your log file, redirect their output:</p>
+        <pre><code>apt install -y nginx &gt;&gt; "$LOGFILE" 2&gt;&amp;1</code></pre>
+        <p><code>&gt;&gt;</code> appends stdout to the log file; <code>2&gt;&amp;1</code> redirects stderr to the same place. This is optional but makes the log much more detailed for troubleshooting.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p5a">Screenshot: <code>systemctl status &lt;service&gt;</code> showing the service is active and enabled</label>
+      <input type="file" id="ss-p5a" accept="image/*" aria-describedby="ss-p5a-note">
+      <p id="ss-p5a-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p5a-img" src="" alt="systemctl status output showing service active and enabled">
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p5b">Screenshot: Log file contents from <code>cat /var/log/post-install-*.log</code></label>
+      <input type="file" id="ss-p5b" accept="image/*" aria-describedby="ss-p5b-note">
+      <p id="ss-p5b-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p5b-img" src="" alt="Log file contents with timestamps">
+    </div>
+
+    <div class="response-field">
+      <label for="p5-svc">5a. What service did you enable and start? What does your error-handling check test for? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p5-svc" rows="4" placeholder="Example: I enabled nginx. My error check tests whether apt install succeeds — if it fails, the script logs an error and exits with code 1."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p5-log">5b. Paste your <code>LOGFILE</code> variable declaration and <code>log_action()</code> function as they appear in your script. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p5-log" class="code-input" rows="9" placeholder='LOGFILE="/var/log/post-install-$(date +%Y%m%d-%H%M%S).log"&#10;&#10;log_action() {&#10;    local msg="$1"&#10;    echo "$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"') - $msg" | tee -a "$LOGFILE"&#10;}'></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 6 -->
+  <section class="content-section" id="phase6" aria-labelledby="phase6-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">6</div>
+      <div>
+        <div class="phase-title" id="phase6-h">Testing, Debugging &amp; Writing the README</div>
+        <div class="phase-subtitle">Topic 8 — Run the complete script; document it for others</div>
+      </div>
+    </div>
+
+    <p>Run your complete assembled script from start to finish and confirm every requirement is met. Then write your README — it is a required deliverable, not optional documentation.</p>
+
+    <h3>Running the Complete Script</h3>
+    <p>Run your fully assembled script with a final username:</p>
+<pre><code>sudo ./post-install.sh deployadmin</code></pre>
+
+    <p>After it finishes, verify each requirement from the terminal:</p>
+<pre><code>id deployadmin                        # user exists and is in sudo group
+dpkg -l nginx curl git ufw            # packages installed (adjust for your list)
+systemctl is-active nginx             # active
+systemctl is-enabled nginx            # enabled
+cat /var/log/post-install-*.log       # log file exists with timestamps</code></pre>
+
+    <h3>Debugging Techniques</h3>
+    <p>If something does not work as expected, use these tools:</p>
+    <ul>
+      <li><strong>Trace mode:</strong> <code>bash -x ./post-install.sh deployadmin</code> — prints each command as it executes, prefixed with <code>+</code>. This is the fastest way to find where a script diverges from what you expect.</li>
+      <li><strong>Exit on any error:</strong> Add <code>set -e</code> at the top of the script (after the shebang) to stop immediately when any command returns a non-zero exit code. Useful for finding silent failures.</li>
+      <li><strong>Check exit codes manually:</strong> Run a command, then immediately run <code>echo $?</code> — <code>0</code> means success; anything else is an error.</li>
+    </ul>
+
+    <details class="hint">
+      <summary>Hint: Testing on a clean snapshot</summary>
+      <div class="hint-body">
+        <p>If your VM hypervisor supports snapshots (VirtualBox does), taking a snapshot before your first full run lets you reset and re-test from a clean state. This simulates real-world conditions where a post-install script must be reliable on a truly fresh system, not one where you have already run half of the steps by hand.</p>
+        <p>Your user-existence check from Phase 4 is a small version of this idea — the script is safer to re-run because it checks before acting.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p6">Screenshot: Full terminal output of the completed script run, or the log file contents</label>
+      <input type="file" id="ss-p6" accept="image/*" aria-describedby="ss-p6-note">
+      <p id="ss-p6-note" class="pdf-note">Upload this screenshot now so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p6-img" src="" alt="Complete script execution output or log file">
+    </div>
+
+    <div class="response-field">
+      <label for="p6-debug">6a. Did you encounter any errors or unexpected behavior when running the complete script? How did you identify and fix them? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p6-debug" rows="5" placeholder="Describe any issues you ran into and how you resolved them. If everything worked on the first run, briefly explain why you think it worked cleanly."></textarea>
+    </div>
+
+    <h3>Writing the README</h3>
+    <p>Your README must be clear enough for someone who has never seen your script to run it successfully. It is a required deliverable. Include all of these sections:</p>
+    <ul>
+      <li><strong>What the script does</strong> — one or two sentences</li>
+      <li><strong>Prerequisites</strong> — Ubuntu Server, root/sudo access, internet connectivity</li>
+      <li><strong>How to run it</strong> — the exact command, including required arguments</li>
+      <li><strong>What it installs, creates, and configures</strong> — your packages, user, and service(s)</li>
+      <li><strong>Where to find the log file</strong> — the path pattern</li>
+      <li><strong>Known limitations or assumptions</strong> — anything someone needs to know before running it</li>
+    </ul>
+
+    <div class="response-field">
+      <label for="p6-readme">6b. Paste your completed README content here. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p6-readme" rows="18" placeholder="# post-install.sh&#10;&#10;## What it does&#10;...&#10;&#10;## Prerequisites&#10;- Ubuntu Server 24.04 LTS&#10;- Root or sudo access&#10;- Internet connectivity&#10;&#10;## How to run&#10;sudo ./post-install.sh &lt;new-username&gt;&#10;&#10;## What it installs and configures&#10;Packages: ...&#10;User: ...&#10;Services: ...&#10;&#10;## Log file&#10;/var/log/post-install-YYYYMMDD-HHMMSS.log&#10;&#10;## Known limitations&#10;..."></textarea>
+    </div>
+  </section>
+
+  <!-- SUBMISSION -->
+  <section class="content-section" id="submission" aria-labelledby="submission-h">
+    <h2 id="submission-h">Deliverables &amp; Submission</h2>
+
+    <h3>What to Submit to Canvas</h3>
+    <p>Upload all three of the following to the Mini Project 1 Canvas assignment:</p>
+    <ol>
+      <li><strong>Your script file</strong> — <code>post-install.sh</code> (or whatever you named it)</li>
+      <li><strong>Your README file</strong> — a plain text or Markdown file (e.g., <code>README.md</code> or <code>README.txt</code>)</li>
+      <li><strong>This completed activity as a PDF</strong> — use the Save as PDF button below after uploading all screenshots and filling in all response fields</li>
+    </ol>
+
+    <div class="callout callout-info">
+      <strong>Important — Screenshots in your PDF:</strong> Upload all terminal screenshots using the upload fields in each phase <em>before</em> clicking Save as PDF. Uploaded images appear inline in the printed output. Any image not uploaded before printing will not appear in the PDF.
+    </div>
+
+    <h3>Grading Checklist (60 points total)</h3>
+    <p>Use this as a self-check before submitting. Your script will be evaluated against all of the following:</p>
+
+    <table class="rubric-table" aria-label="Mini Project 1 grading requirements">
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">What the grader will look for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>At least one command-line argument</td>
+          <td>Script accepts and uses a positional parameter (e.g., <code>$1</code> for the username)</td>
+        </tr>
+        <tr>
+          <td>Package index update and upgrade</td>
+          <td><code>apt update</code> and <code>apt upgrade</code> run as part of the script</td>
+        </tr>
+        <tr>
+          <td>Install 3 or more packages</td>
+          <td>All packages install successfully on the student's VM</td>
+        </tr>
+        <tr>
+          <td>Non-root user creation with sudo access</td>
+          <td>User is created with <code>useradd</code> and added to the <code>sudo</code> group</td>
+        </tr>
+        <tr>
+          <td>Enable and start at least one service</td>
+          <td>Both <code>systemctl enable</code> and <code>systemctl start</code> are used</td>
+        </tr>
+        <tr>
+          <td>Timestamped action log</td>
+          <td>Script writes timestamped entries to a log file during execution</td>
+        </tr>
+        <tr>
+          <td>At least one function</td>
+          <td>Defined with <code>name() { ... }</code> syntax and called in the script</td>
+        </tr>
+        <tr>
+          <td>At least one array</td>
+          <td>Declared with <code>ARRAY=(...)</code> and iterated with a loop</td>
+        </tr>
+        <tr>
+          <td>At least one conditional</td>
+          <td>Uses <code>if/then/else</code> or an equivalent construct</td>
+        </tr>
+        <tr>
+          <td>Comments throughout</td>
+          <td>Key sections and non-obvious lines are explained with <code>#</code> comments</td>
+        </tr>
+        <tr>
+          <td>At least one error-handling check</td>
+          <td>A command failure produces a meaningful message rather than silent failure</td>
+        </tr>
+        <tr>
+          <td>README (required deliverable)</td>
+          <td>Explains what the script does, prerequisites, how to run it, what it configures, and where the log is</td>
+        </tr>
+        <tr>
+          <td>Screenshot or log of successful execution</td>
+          <td>Evidence the script ran successfully on the student's VM</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>Extra Credit — Advanced Shell Features (5 points):</strong> Demonstrate use of <code>select</code> menus or <code>getopts</code> argument parsing in a script. See the GNU Bash Reference Manual sections on the <code>select</code> builtin and "The Getopts Builtin," and the TLDP Advanced Bash-Scripting Guide coverage of these features. Submit a separate script with a written explanation on Canvas.
+    </div>
+
+    <div class="pdf-btn-wrap">
+      <button class="btn-pdf" type="button" onclick="savePDF()">Save as PDF</button>
+      <p class="pdf-note">Fill in all response fields and upload all screenshots before saving.</p>
+    </div>
+  </section>
+
+</div><!-- end .page-wrap -->
+
+<script>
+  // Screenshot upload previews
+  var uploads = [
+    ['ss-p2',  'ss-p2-img'],
+    ['ss-p4a', 'ss-p4a-img'],
+    ['ss-p4b', 'ss-p4b-img'],
+    ['ss-p5a', 'ss-p5a-img'],
+    ['ss-p5b', 'ss-p5b-img'],
+    ['ss-p6',  'ss-p6-img']
+  ];
+
+  uploads.forEach(function(pair) {
+    var input   = document.getElementById(pair[0]);
+    var preview = document.getElementById(pair[1]);
+    if (!input || !preview) return;
+    input.addEventListener('change', function() {
+      var file = this.files && this.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // Swap textareas for print-friendly divs before printing
+  window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('textarea').forEach(function(ta) {
+      var div = document.createElement('div');
+      div.className = 'print-response';
+      div.textContent = ta.value.trim() || '(no response entered)';
+      ta.insertAdjacentElement('afterend', div);
+      ta.style.display = 'none';
+    });
+  });
+
+  window.addEventListener('afterprint', function() {
+    document.querySelectorAll('.print-response').forEach(function(div) {
+      var ta = div.previousElementSibling;
+      if (ta && ta.tagName === 'TEXTAREA') ta.style.display = '';
+      div.remove();
+    });
+  });
+
+  function savePDF() { window.print(); }
+
+  // Active nav highlight via IntersectionObserver
+  (function() {
+    if (!window.IntersectionObserver) return;
+    var navLinks = document.querySelectorAll('.sticky-nav a');
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          navLinks.forEach(function(link) {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-15% 0px -75% 0px' });
+
+    document.querySelectorAll('.content-section[id], .page-header[id]').forEach(function(sec) {
+      observer.observe(sec);
+    });
+  }());
+
+  // Smooth scroll with sticky-nav offset
+  document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      var target = document.querySelector(this.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      var navH = document.querySelector('.sticky-nav').offsetHeight;
+      var top  = target.getBoundingClientRect().top + window.pageYOffset - navH - 8;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
