@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC 106 Week 5 Extra Credit: Password Aging with chage</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #1a1a2e;
+            background-color: #ffffff;
+        }
+
+        /* Navigation */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #1a1a2e;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 1rem;
+            align-items: center;
+        }
+
+        .top-nav a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .top-nav a:hover,
+        .top-nav a:focus {
+            background-color: #2d2d4e;
+            color: #ffffff;
+            outline: 2px solid #64b5f6;
+            outline-offset: 2px;
+        }
+
+        .nav-label {
+            color: #90caf9;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Main content */
+        .container {
+            max-width: 52rem;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Scroll offset for anchors */
+        [id] {
+            scroll-margin-top: 4rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            color: #1a1a2e;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            color: #1a1a2e;
+            margin-top: 2.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.375rem;
+            border-bottom: 2px solid #e3f2fd;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Info box */
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1e88e5;
+            padding: 1rem 1.25rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box p {
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Warning box */
+        .warning-box {
+            background-color: #fff3e0;
+            border-left: 4px solid #f57c00;
+            padding: 1rem 1.25rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .warning-box p {
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Scenario box */
+        .scenario-box {
+            background-color: #f3e5f5;
+            border-left: 4px solid #8e24aa;
+            padding: 1.25rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .scenario-box h3 {
+            margin-top: 0;
+            color: #6a1b9a;
+        }
+
+        .scenario-box p {
+            margin-bottom: 0.75rem;
+        }
+
+        .scenario-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.75rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code */
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: #f5f5f5;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #1e1e2e;
+            color: #e0e0e0;
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+            white-space: pre;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.625rem 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #e3f2fd;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        /* Accordion */
+        .accordion-item {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .accordion-button {
+            width: 100%;
+            background-color: #f8f9fa;
+            border: none;
+            padding: 0.875rem 1.25rem;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-button:hover,
+        .accordion-button:focus {
+            background-color: #e3f2fd;
+            outline: 2px solid #1e88e5;
+            outline-offset: -2px;
+        }
+
+        .accordion-button::after {
+            content: "+";
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1e88e5;
+            transition: transform 0.2s;
+        }
+
+        .accordion-button[aria-expanded="true"]::after {
+            content: "\2212";
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #eee;
+        }
+
+        .accordion-content.open {
+            display: block;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .checklist li::before {
+            content: "\2610";
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+            color: #1e88e5;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .badge-ec {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.25rem 1rem 3rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            pre {
+                font-size: 0.8rem;
+                padding: 0.75rem;
+            }
+
+            .top-nav {
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav" aria-label="Page navigation">
+    <span class="nav-label">Sections:</span>
+    <a href="#overview">Overview</a>
+    <a href="#scenario">Scenario</a>
+    <a href="#readings">Readings</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#commands">Command Reference</a>
+    <a href="#submission">Submission</a>
+</nav>
+
+<main class="container">
+
+    <h1 id="overview">Extra Credit: Password Aging with <code>chage</code> <span class="badge badge-ec">5 pts Extra Credit</span></h1>
+    <p class="subtitle">CSC 106, Week 5 | CSLO 1: Install and configure a Linux operating system</p>
+
+    <div class="info-box">
+        <p><strong>What is this?</strong> This is an optional extra credit exercise worth 5 points. It extends the Week 5 material on password security by having you configure and document password aging policies using the <code>chage</code> command on your Ubuntu Server VM.</p>
+        <p>You do not need to complete this to earn full marks for the week. It is here for students who want additional challenge and want to practice the kind of independent research that system administrators do routinely.</p>
+    </div>
+
+    <h2>What is Password Aging?</h2>
+
+    <p>Password aging is a set of policies that control how long a password can be used before it must be changed, how soon after a change the user can change it again, and when the system should warn the user that their password is about to expire.</p>
+
+    <p>On Linux, these policies are stored as numeric fields in <code>/etc/shadow</code> alongside the password hash itself. Each user account has its own set of aging values, which means you can apply different policies to different accounts.</p>
+
+    <h3>Why does this matter?</h3>
+
+    <p>In a classroom setting, password aging might seem like unnecessary overhead. On a personal VM, you probably do not care if your password is six months old. But in any organization, password policies exist for real reasons:</p>
+
+    <ul>
+        <li><strong>Limiting exposure time:</strong> If a password is compromised (through a data breach, shoulder surfing, or a sticky note on a monitor), a maximum age policy ensures the compromised password stops working after a defined period.</li>
+        <li><strong>Compliance requirements:</strong> Many security frameworks (PCI-DSS, HIPAA, SOC 2, NIST 800-53) require password rotation policies. System administrators need to know how to implement and verify these policies.</li>
+        <li><strong>Account lifecycle management:</strong> Expiration dates on accounts ensure that temporary users (contractors, interns, seasonal staff) lose access automatically without someone having to remember to disable them.</li>
+        <li><strong>Auditing and accountability:</strong> Password aging fields provide a record of when passwords were last changed, which is useful during security audits.</li>
+    </ul>
+
+    <p>The <code>chage</code> command ("change age") is the standard tool for viewing and modifying these policies on Linux. It works the same way on Ubuntu, Red Hat, CentOS, Debian, and most other distributions.</p>
+
+    <h2 id="scenario">Scenario: Northfield Community Health Clinic</h2>
+
+    <div class="scenario-box">
+        <h3>The Situation</h3>
+        <p>You are the part-time IT administrator for a small community health clinic. The clinic has 12 employees who access a shared Linux server for scheduling, patient intake forms, and internal documentation. Last month, an employee left the clinic but their account remained active for three weeks before anyone noticed. During that window, someone used the former employee's credentials to access the scheduling system remotely.</p>
+
+        <p>The clinic's compliance officer has asked you to implement the following password policies on the server:</p>
+
+        <ul>
+            <li>Passwords must be changed at least every 90 days</li>
+            <li>Users must wait at least 7 days before changing their password again (prevents cycling through passwords to get back to a favorite)</li>
+            <li>Users should receive a warning 14 days before their password expires</li>
+            <li>Accounts for temporary staff (volunteers, interns) should have a hard expiration date</li>
+            <li>If a user does not log in within 30 days after their password expires, the account should be automatically disabled</li>
+        </ul>
+
+        <p>Your job is to demonstrate that you can implement these policies on a test user account using <code>chage</code>. You will do this on your Ubuntu Server VM using a test account (not your primary admin account).</p>
+    </div>
+
+    <div class="warning-box">
+        <p><strong>Important:</strong> Do not apply restrictive password aging to your own admin account on the VM. If you lock yourself out, you will need to boot into recovery mode to fix it. Use a test user account for this exercise. If you still have the <code>testuser</code> account from the Week 5 videos or the Cisco lab, that works perfectly.</p>
+    </div>
+
+    <h2 id="readings">Required Readings</h2>
+
+    <p>Before starting the hands-on work, read the following resources. You do not need to memorize every option, but you should understand what each <code>chage</code> flag does and how the password aging fields in <code>/etc/shadow</code> relate to the command's options.</p>
+
+    <ol>
+        <li><strong>man7.org: chage(1) manpage</strong> (the authoritative reference for chage syntax and options)</li>
+        <li><strong>Ubuntu Manpage: chage(1)</strong> (Ubuntu-specific version, same content in a slightly different format)</li>
+        <li><strong>Red Hat Documentation: "Managing password expiration and aging"</strong> (a practical guide with examples; written for RHEL but the commands work identically on Ubuntu)</li>
+    </ol>
+
+    <p>These are listed by name in the Week 5 course outline. Between the three resources, you should be able to answer: what does each flag do, what do the fields in <code>/etc/shadow</code> mean, and how do you verify your changes?</p>
+
+    <h2 id="tasks">Required Tasks</h2>
+
+    <p>Complete all of the following on your Ubuntu Server VM. Document each step with screenshots and a brief explanation.</p>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task1-content" id="task1-btn">
+            Task 1: Create a test user (if needed)
+        </button>
+        <div class="accordion-content" id="task1-content" role="region" aria-labelledby="task1-btn">
+            <p>If you do not already have a test user on your VM, create one now. This is the account you will apply password aging policies to.</p>
+<pre><code>sudo useradd -m -s /bin/bash -c "Clinic Test User" clinicuser
+sudo passwd clinicuser</code></pre>
+            <p>Set a password you can remember. You will not actually need to log in as this user, but the account needs a password for the aging policies to be meaningful.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task2-content" id="task2-btn">
+            Task 2: View current aging settings
+        </button>
+        <div class="accordion-content" id="task2-content" role="region" aria-labelledby="task2-btn">
+            <p>Before making changes, check the current password aging settings for your test user.</p>
+<pre><code>sudo chage -l clinicuser</code></pre>
+            <p>You should see output similar to this:</p>
+<pre><code>Last password change                    : Apr 27, 2026
+Password expires                        : never
+Password inactive                       : never
+Account expires                         : never
+Minimum number of days between password change  : 0
+Maximum number of days between password change  : 99999
+Number of days of warning before password expires : 7</code></pre>
+            <p>The default on Ubuntu is essentially "no policy." The maximum is set to 99999 days (about 274 years), which effectively means the password never expires. Take a screenshot of this output as your "before" state.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task3-content" id="task3-btn">
+            Task 3: Set maximum password age (90 days)
+        </button>
+        <div class="accordion-content" id="task3-content" role="region" aria-labelledby="task3-btn">
+            <p>Implement the clinic's requirement that passwords expire after 90 days.</p>
+<pre><code>sudo chage -M 90 clinicuser</code></pre>
+            <p>The <code>-M</code> flag sets the maximum number of days a password remains valid. After 90 days, the user will be forced to change their password at next login.</p>
+            <p>In your write-up, explain what happens from the user's perspective when their password expires. (Hint: they are not locked out immediately. They are prompted to set a new password at their next login.)</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task4-content" id="task4-btn">
+            Task 4: Set minimum password age (7 days)
+        </button>
+        <div class="accordion-content" id="task4-content" role="region" aria-labelledby="task4-btn">
+            <p>Prevent users from immediately changing their password back to a previous one by cycling through changes.</p>
+<pre><code>sudo chage -m 7 clinicuser</code></pre>
+            <p>The <code>-m</code> (lowercase) flag sets the minimum number of days between password changes. The user cannot change their password again until 7 days have passed since the last change.</p>
+            <p>In your write-up, explain why this policy exists. What problem does it solve? (Think about what happens if a user is forced to change their password but immediately changes it back to the old one.)</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task5-content" id="task5-btn">
+            Task 5: Set warning period (14 days)
+        </button>
+        <div class="accordion-content" id="task5-content" role="region" aria-labelledby="task5-btn">
+            <p>Give users advance notice that their password is about to expire.</p>
+<pre><code>sudo chage -W 14 clinicuser</code></pre>
+            <p>The <code>-W</code> flag sets how many days before expiration the user starts seeing warning messages at login. With this setting, starting 14 days before the password expires, the user will see a message like "Warning: your password will expire in X days" each time they log in.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task6-content" id="task6-btn">
+            Task 6: Set inactive period (30 days)
+        </button>
+        <div class="accordion-content" id="task6-content" role="region" aria-labelledby="task6-btn">
+            <p>Automatically disable the account if the user does not log in within 30 days after their password expires.</p>
+<pre><code>sudo chage -I 30 clinicuser</code></pre>
+            <p>The <code>-I</code> flag sets the number of inactive days after password expiration before the account is locked. This is the clinic's safety net: if an employee leaves and their password expires, the account becomes completely unusable 30 days later without administrator intervention.</p>
+            <p>This is different from password expiration. An expired password can still be changed by the user at login. An inactive (locked) account requires an administrator to unlock it.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task7-content" id="task7-btn">
+            Task 7: Set account expiration date
+        </button>
+        <div class="accordion-content" id="task7-content" role="region" aria-labelledby="task7-btn">
+            <p>For the scenario's temporary staff requirement, set a hard expiration date on the account. Pick a date roughly 6 months from today.</p>
+<pre><code>sudo chage -E 2026-10-27 clinicuser</code></pre>
+            <p>The <code>-E</code> flag sets an absolute expiration date for the account. After this date, the account is completely disabled regardless of password status. This is ideal for contractor or intern accounts where you know the end date in advance.</p>
+            <p>Use a date format of YYYY-MM-DD. Pick a date that makes sense for your scenario (roughly 6 months out is fine).</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <button class="accordion-button" aria-expanded="false" aria-controls="task8-content" id="task8-btn">
+            Task 8: Verify all settings
+        </button>
+        <div class="accordion-content" id="task8-content" role="region" aria-labelledby="task8-btn">
+            <p>Run <code>chage -l</code> again to confirm all your changes took effect.</p>
+<pre><code>sudo chage -l clinicuser</code></pre>
+            <p>Your output should now look something like this:</p>
+<pre><code>Last password change                    : Apr 27, 2026
+Password expires                        : Jul 26, 2026
+Password inactive                       : Aug 25, 2026
+Account expires                         : Oct 27, 2026
+Minimum number of days between password change  : 7
+Maximum number of days between password change  : 90
+Number of days of warning before password expires : 14</code></pre>
+            <p>Take a screenshot of this output as your "after" state. Compare it with the "before" screenshot from Task 2.</p>
+            <p>Also examine what changed in <code>/etc/shadow</code>:</p>
+<pre><code>sudo grep "^clinicuser" /etc/shadow</code></pre>
+            <p>In your write-up, identify which fields in the shadow entry correspond to each setting you changed. The readings explain the field positions.</p>
+        </div>
+    </div>
+
+    <h2 id="commands">Command Reference</h2>
+
+    <p>This table summarizes the <code>chage</code> options used in this exercise. Refer to the manpage readings for the complete list.</p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Purpose</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>-l</code></td>
+                    <td>List current aging settings for a user</td>
+                    <td><code>chage -l username</code></td>
+                </tr>
+                <tr>
+                    <td><code>-M</code></td>
+                    <td>Set maximum days before password must be changed</td>
+                    <td><code>chage -M 90 username</code></td>
+                </tr>
+                <tr>
+                    <td><code>-m</code></td>
+                    <td>Set minimum days between password changes</td>
+                    <td><code>chage -m 7 username</code></td>
+                </tr>
+                <tr>
+                    <td><code>-W</code></td>
+                    <td>Set warning days before password expires</td>
+                    <td><code>chage -W 14 username</code></td>
+                </tr>
+                <tr>
+                    <td><code>-I</code></td>
+                    <td>Set inactive days after expiration before account locks</td>
+                    <td><code>chage -I 30 username</code></td>
+                </tr>
+                <tr>
+                    <td><code>-E</code></td>
+                    <td>Set absolute account expiration date (YYYY-MM-DD)</td>
+                    <td><code>chage -E 2026-10-27 username</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box">
+        <p><strong>A note on case sensitivity:</strong> Notice that <code>-M</code> (uppercase) and <code>-m</code> (lowercase) do completely different things. Uppercase M is maximum age; lowercase m is minimum age. This trips people up. Double-check which one you are using before pressing Enter.</p>
+    </div>
+
+    <h2 id="submission">Submission Requirements</h2>
+
+    <p>Submit a single document (PDF or Word) containing the following:</p>
+
+    <ul class="checklist">
+        <li><strong>"Before" screenshot:</strong> The output of <code>chage -l</code> on your test user before making any changes (Task 2)</li>
+        <li><strong>"After" screenshot:</strong> The output of <code>chage -l</code> on your test user after all changes are applied (Task 8)</li>
+        <li><strong>Shadow file entry:</strong> The output of <code>grep "^username" /etc/shadow</code> for your test user, with a brief annotation identifying which field corresponds to which setting</li>
+        <li><strong>Short explanation (150-250 words):</strong> In your own words, explain what password aging is, why the clinic scenario requires it, and what would happen to the <code>clinicuser</code> account over time as each policy kicks in (warning at 76 days, expiration at 90 days, inactive lockout at 120 days, account expiration at the hard date)</li>
+    </ul>
+
+    <h3>Grading</h3>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Before and after screenshots showing correct policy changes</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>Shadow file entry with correct field annotations</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>Written explanation demonstrating understanding of password aging</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td><strong>Total</strong></td>
+                    <td><strong>5</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box">
+        <p><strong>Tip:</strong> The strongest submissions connect the commands to the scenario. Do not just list what you typed. Explain why each setting matters in the context of the clinic's security requirements. For example, why is the 30-day inactive period important for the situation where an employee left and nobody noticed for three weeks?</p>
+    </div>
+
+    <h3>How this connects to the rest of the course</h3>
+
+    <p>Password aging is one piece of the user-level security puzzle you are building this week. In Week 7, you will configure SSH key authentication, which can replace password login entirely for certain accounts. In Week 8's Mini-Project 2, you will set up multiple users with appropriate access controls. Understanding password policies now gives you one more tool for making informed security decisions on your final project.</p>
+
+</main>
+
+<script>
+    // Accordion functionality
+    document.querySelectorAll('.accordion-button').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var expanded = this.getAttribute('aria-expanded') === 'true';
+            var contentId = this.getAttribute('aria-controls');
+            var content = document.getElementById(contentId);
+
+            this.setAttribute('aria-expanded', String(!expanded));
+
+            if (expanded) {
+                content.classList.remove('open');
+            } else {
+                content.classList.add('open');
+            }
+        });
+
+        button.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
