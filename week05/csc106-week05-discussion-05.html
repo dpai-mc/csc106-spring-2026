@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 5 Discussion: Security Starts with Users – CSC 106</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      background: #f5f6fa;
+      color: #1a1a2e;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .page-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .page-header {
+      background: #1b3a6b;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .page-header .course-label {
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #a8c4e8;
+      margin-bottom: 0.35rem;
+    }
+    .page-header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 0.65rem;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #2f5fa8;
+      color: #d6e8ff;
+    }
+    .badge-pts { background: #c17f00; color: #fff8e6; }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: #ffffff;
+      border: 1px solid #dde2ec;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1b3a6b;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 2px solid #e0e7f5;
+    }
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1b3a6b;
+      margin: 0.85rem 0 0.35rem;
+    }
+
+    /* ── At a Glance grid ─────────────────────────────────────── */
+    .glance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .glance-item {
+      background: #f0f4fd;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+    .glance-item .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #5a6a88;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .glance-item .value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1b3a6b;
+    }
+
+    /* ── Prompt callout ───────────────────────────────────────── */
+    .prompt-callout {
+      background: #eef4ff;
+      border-left: 5px solid #2563eb;
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      font-size: 0.97rem;
+      color: #1a1a2e;
+      margin-top: 0.25rem;
+    }
+
+    /* ── Ordered / unordered lists ────────────────────────────── */
+    .styled-list {
+      padding-left: 1.4rem;
+      margin-top: 0.4rem;
+    }
+    .styled-list li { margin-bottom: 0.35rem; }
+
+    /* ── Grading table ────────────────────────────────────────── */
+    .grading-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .grading-table th {
+      background: #1b3a6b;
+      color: #ffffff;
+      text-align: left;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .grading-table th:last-child,
+    .grading-table td:last-child { text-align: center; }
+    .grading-table tr:nth-child(even) td { background: #f5f7fd; }
+    .grading-table td {
+      padding: 0.55rem 0.85rem;
+      border-bottom: 1px solid #e0e7f5;
+      vertical-align: top;
+    }
+    .grading-table tfoot td {
+      font-weight: 700;
+      background: #e8eefa;
+      border-top: 2px solid #1b3a6b;
+    }
+
+    /* ── Accordion ────────────────────────────────────────────── */
+    .accordion { margin-top: 0.5rem; }
+    .acc-item {
+      border: 1px solid #dde2ec;
+      border-radius: 8px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+    }
+    .acc-btn {
+      width: 100%;
+      background: #f0f4fd;
+      border: none;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1b3a6b;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .acc-btn:hover { background: #dde8f8; }
+    .acc-btn:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: -3px;
+    }
+    .acc-icon {
+      font-size: 1rem;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      color: #2563eb;
+    }
+    .acc-btn[aria-expanded="true"] .acc-icon { transform: rotate(180deg); }
+    .acc-panel {
+      display: none;
+      padding: 0.85rem 1rem 1rem;
+      background: #ffffff;
+    }
+    .acc-panel.open { display: block; }
+
+    /* example post samples */
+    .sample-box {
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin: 0.6rem 0;
+      font-size: 0.89rem;
+      line-height: 1.55;
+    }
+    .sample-good {
+      background: #f0faf3;
+      border-left: 4px solid #16a34a;
+    }
+    .sample-bad {
+      background: #fff5f5;
+      border-left: 4px solid #dc2626;
+    }
+    .sample-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.35rem;
+    }
+    .label-good { color: #15803d; }
+    .label-bad  { color: #b91c1c; }
+    .annotation {
+      font-size: 0.8rem;
+      font-style: italic;
+      color: #4a5568;
+      margin-top: 0.45rem;
+    }
+
+    /* ── Word-count draft area ────────────────────────────────── */
+    .draft-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .draft-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1b3a6b;
+    }
+    #draft-textarea {
+      width: 100%;
+      min-height: 175px;
+      padding: 0.75rem;
+      border: 2px solid #c0cce8;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.93rem;
+      line-height: 1.55;
+      resize: vertical;
+      color: #1a1a2e;
+    }
+    #draft-textarea:focus {
+      outline: 3px solid #2563eb;
+      outline-offset: 0;
+      border-color: #2563eb;
+    }
+    .wc-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .wc-display {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1b3a6b;
+      min-width: 110px;
+    }
+    .wc-bar-track {
+      flex: 1;
+      min-width: 120px;
+      height: 10px;
+      background: #e0e7f5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .wc-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: #dc2626;
+      transition: width 0.2s, background 0.2s;
+    }
+    .wc-status {
+      font-size: 0.82rem;
+      font-weight: 600;
+      min-width: 130px;
+    }
+    .wc-status.below  { color: #dc2626; }
+    .wc-status.near   { color: #c17f00; }
+    .wc-status.meets  { color: #16a34a; }
+
+    .draft-note {
+      font-size: 0.8rem;
+      color: #5a6a88;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Submission reminder ──────────────────────────────────── */
+    .submission-note {
+      background: #fffbea;
+      border: 1px solid #f5d76e;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.88rem;
+      color: #7c5a00;
+      margin-top: 0.5rem;
+    }
+    .submission-note strong { color: #5c4000; }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #8895ab;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .page-header h1 { font-size: 1.25rem; }
+      .card { padding: 1rem; }
+      .grading-table th, .grading-table td { padding: 0.45rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="page-header">
+    <p class="course-label">CSC 106 · Introduction to Linux II · Week 5</p>
+    <h1>Discussion 5: "Security Starts with Users"</h1>
+    <div class="badge-row">
+      <span class="badge badge-pts">15 Points</span>
+      <span class="badge">CSLO 1</span>
+      <span class="badge">CSLO 2</span>
+      <span class="badge">RSI Discussion</span>
+    </div>
+  </header>
+
+  <!-- ── At a Glance ────────────────────────────────────────── -->
+  <section class="card" aria-labelledby="glance-heading">
+    <h2 id="glance-heading">Assignment at a Glance</h2>
+    <div class="glance-grid">
+      <div class="glance-item">
+        <div class="label">Original Post Due</div>
+        <div class="value">Thursday, 11:59 pm</div>
+      </div>
+      <div class="glance-item">
+        <div class="label">Peer Replies Due</div>
+        <div class="value">Sunday, 11:59 pm</div>
+      </div>
+      <div class="glance-item">
+        <div class="label">Minimum Post Length</div>
+        <div class="value">150 words</div>
+      </div>
+      <div class="glance-item">
+        <div class="label">Replies Required</div>
+        <div class="value">2 substantive replies</div>
+      </div>
+    </div>
+    <p style="margin-top:0.9rem; font-size:0.9rem; color:#3a4a6a;">
+      This is a <strong>Regular and Substantive Interaction (RSI)</strong> discussion. The instructor opens the discussion with a scenario on Monday and will respond to individual posts by Thursday. Come back after your initial post to reply to classmates — the peer-reply component is worth 4 of the 15 points.
+    </p>
+  </section>
+
+  <!-- ── Prompt ─────────────────────────────────────────────── -->
+  <section class="card" aria-labelledby="prompt-heading">
+    <h2 id="prompt-heading">Discussion Prompt</h2>
+    <div class="prompt-callout" role="note" aria-label="Discussion prompt">
+      On a Linux server, user account management is one of the first lines of defense. Describe at least <strong>two specific practices</strong> you would follow when setting up user accounts on a production server to keep it secure. Why do these practices matter? If you have ever accidentally locked yourself out of an account or had a permissions problem on your VM, share what happened and how you resolved it.
+    </div>
+  </section>
+
+  <!-- ── Requirements ───────────────────────────────────────── -->
+  <section class="card" aria-labelledby="req-heading">
+    <h2 id="req-heading">Requirements</h2>
+
+    <h3>Original Post</h3>
+    <ul class="styled-list">
+      <li>Post by <strong>Thursday at 11:59 pm</strong>.</li>
+      <li>Minimum <strong>150 words</strong>.</li>
+      <li>Directly address the prompt — describe at least two specific security practices with commands or configuration details where relevant.</li>
+      <li>Explain <em>why</em> each practice matters, not just what the command is.</li>
+      <li>If you experienced a lock-out, permissions error, or account problem on your VM, include that real experience — it strengthens your post.</li>
+    </ul>
+
+    <h3>Peer Replies (2 required)</h3>
+    <ul class="styled-list">
+      <li>Post both replies by <strong>Sunday at 11:59 pm</strong>.</li>
+      <li>Each reply must be <strong>substantive</strong>: add a new idea, ask a meaningful follow-up question, offer a constructive alternative, or connect their point to something you learned this week.</li>
+      <li>"Great post!" or "I agree!" alone is <strong>not</strong> a substantive reply and will not receive credit.</li>
+    </ul>
+
+    <h3>Submission</h3>
+    <ul class="styled-list">
+      <li>Submit directly in the Canvas discussion board — use the draft tool below to check your word count first.</li>
+      <li>Do not attach a separate document; post your text in the discussion thread.</li>
+    </ul>
+  </section>
+
+  <!-- ── Grading Breakdown ──────────────────────────────────── -->
+  <section class="card" aria-labelledby="grade-heading">
+    <h2 id="grade-heading">Grading Breakdown</h2>
+    <table class="grading-table">
+      <thead>
+        <tr>
+          <th scope="col">Component</th>
+          <th scope="col">Criteria</th>
+          <th scope="col" style="white-space:nowrap;">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Original Post</strong></td>
+          <td>Posted by Thursday; at least 150 words; directly addresses the prompt with specific practices, commands, or examples; demonstrates engagement with Week 5 topics.</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td><strong>Peer Replies</strong> (2 required)</td>
+          <td>Each reply is substantive — adds a new idea, asks a follow-up question, or offers a constructive alternative. 2 points per reply.</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td><strong>Quality &amp; Depth</strong></td>
+          <td>Demonstrates thoughtful reflection, accurate technical content (correct commands, file paths, concepts), and genuine engagement with peers' ideas.</td>
+          <td>3</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">Total</td>
+          <td>15</td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- ── Examples Accordion ─────────────────────────────────── -->
+  <section class="card" aria-labelledby="examples-heading">
+    <h2 id="examples-heading">What a Strong Post Looks Like</h2>
+    <p style="font-size:0.88rem; color:#4a5568; margin-bottom:0.75rem;">
+      Expand each panel below to see example posts and replies with annotations explaining what earns credit — and what does not.
+    </p>
+
+    <div class="accordion">
+
+      <!-- Good Initial Post -->
+      <div class="acc-item">
+        <button class="acc-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="panel-good-initial"
+                id="btn-good-initial">
+          <span>Strong Initial Post — Example</span>
+          <span class="acc-icon" aria-hidden="true">&#9660;</span>
+        </button>
+        <div class="acc-panel" id="panel-good-initial" role="region" aria-labelledby="btn-good-initial">
+          <div class="sample-box sample-good">
+            <div class="sample-label label-good">Example — Strong Post (~200 words)</div>
+            <p>
+              Two practices I would follow on a production server are: avoiding direct root login, and assigning users to groups with the minimum permissions they actually need.
+            </p>
+            <p style="margin-top:0.5rem;">
+              For the first practice, I would make sure <code>PermitRootLogin no</code> is set in <code>/etc/ssh/sshd_config</code> and that any administrative user is in the <code>sudo</code> group instead. The reason this matters is accountability — <code>sudo</code> logs every command with a timestamp and username in <code>/var/log/auth.log</code>. If something breaks, you can trace exactly who ran what. Logging in as root leaves no such trail.
+            </p>
+            <p style="margin-top:0.5rem;">
+              For the second practice, I would create role-specific groups — for example, a <code>webadmins</code> group that owns the Nginx document root, rather than making every admin a member of <code>sudo</code>. This applies the principle of least privilege: a developer deploying HTML files doesn't need the ability to install packages or restart services.
+            </p>
+            <p style="margin-top:0.5rem;">
+              I did lock myself out once during Week 1. I ran <code>usermod -G developers jdoe</code> without the <code>-a</code> flag, which replaced all supplementary groups and removed <code>jdoe</code> from <code>sudo</code>. I had to log in as my original admin user and re-add the group with <code>usermod -aG sudo jdoe</code>. That mistake stuck with me — I always use <code>-aG</code> now.
+            </p>
+          </div>
+          <p class="annotation">
+            <strong>Why this earns full credit:</strong> Describes two specific practices with exact commands or configuration file paths. Explains the <em>why</em> behind each practice (audit trail, least privilege). Includes a real personal experience with a specific mistake and resolution. Word count exceeds 150. Technical content is accurate.
+          </p>
+        </div>
+      </div>
+
+      <!-- Weak Initial Post 1 -->
+      <div class="acc-item">
+        <button class="acc-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="panel-bad-initial"
+                id="btn-bad-initial">
+          <span>Weak Initial Post — Example</span>
+          <span class="acc-icon" aria-hidden="true">&#9660;</span>
+        </button>
+        <div class="acc-panel" id="panel-bad-initial" role="region" aria-labelledby="btn-bad-initial">
+          <div class="sample-box sample-bad">
+            <div class="sample-label label-bad">Example — Weak Post (~60 words)</div>
+            <p>
+              I think security is really important on Linux. You should use strong passwords and not use the root account. Also make sure to give users only the permissions they need. I haven't had any problems on my VM. Security is a big topic and there is a lot to learn. Overall I think this week's material was interesting.
+            </p>
+          </div>
+          <p class="annotation">
+            <strong>Why this loses points:</strong> Under 150 words. Mentions practices only in vague, general terms — no commands, no file paths, no specifics. Does not explain <em>why</em> any practice matters. Claims no personal experience without adding anything else to compensate. The last two sentences are filler with no technical content.
+          </p>
+        </div>
+      </div>
+
+      <!-- Good Peer Reply -->
+      <div class="acc-item">
+        <button class="acc-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="panel-good-reply"
+                id="btn-good-reply">
+          <span>Strong Peer Reply — Example</span>
+          <span class="acc-icon" aria-hidden="true">&#9660;</span>
+        </button>
+        <div class="acc-panel" id="panel-good-reply" role="region" aria-labelledby="btn-good-reply">
+          <div class="sample-box sample-good">
+            <div class="sample-label label-good">Example — Strong Reply (~80 words, replying to the strong post above)</div>
+            <p>
+              Your point about <code>usermod -G</code> without <code>-a</code> is one I hadn't thought about — I've been running that command in scripts for Mini-Project 1 and never checked whether it was replacing the group list. I'm going to audit my script tonight. One thing I'd add to your practices: I also audit <code>/etc/passwd</code> for any accounts with UID 0 other than root using <code>awk -F: '($3 == 0) {print $1}' /etc/passwd</code>. Did you end up adding that kind of check to your Mini-Project 1 script?
+            </p>
+          </div>
+          <p class="annotation">
+            <strong>Why this earns full credit:</strong> Directly engages with a specific point from the original post. Adds a new technical idea (UID 0 audit command) not in the original post. Ends with a genuine follow-up question that invites further discussion. Shows the student is reading and thinking, not just responding to sound polite.
+          </p>
+        </div>
+      </div>
+
+      <!-- Weak Peer Reply -->
+      <div class="acc-item">
+        <button class="acc-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="panel-bad-reply"
+                id="btn-bad-reply">
+          <span>Weak Peer Reply — Example</span>
+          <span class="acc-icon" aria-hidden="true">&#9660;</span>
+        </button>
+        <div class="acc-panel" id="panel-bad-reply" role="region" aria-labelledby="btn-bad-reply">
+          <div class="sample-box sample-bad">
+            <div class="sample-label label-bad">Example — Weak Reply (~15 words)</div>
+            <p>
+              Great post! I totally agree with everything you said. Security is really important.
+            </p>
+          </div>
+          <p class="annotation">
+            <strong>Why this earns no credit:</strong> This is a social acknowledgment, not a substantive reply. It adds nothing — no new idea, no follow-up question, no alternative perspective, no connection to course content. The rubric requires replies that advance the conversation.
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /.accordion -->
+  </section>
+
+  <!-- ── Draft Tool ──────────────────────────────────────────── -->
+  <section class="card" aria-labelledby="draft-heading">
+    <h2 id="draft-heading">Draft Your Post Here</h2>
+    <p style="font-size:0.88rem; color:#4a5568; margin-bottom:0.75rem;">
+      Use this box to draft and check your word count before copying your post into Canvas. Text typed here is <strong>not submitted</strong> to Canvas and is not saved when you close the page.
+    </p>
+
+    <div class="draft-area">
+      <label class="draft-label" for="draft-textarea">Your draft post</label>
+      <textarea id="draft-textarea"
+                aria-describedby="wc-status-msg"
+                placeholder="Type your post here…"></textarea>
+
+      <div class="wc-row">
+        <div class="wc-display" aria-live="polite" aria-atomic="true" id="wc-count">0 words</div>
+        <div class="wc-bar-track" role="presentation">
+          <div class="wc-bar-fill" id="wc-bar" aria-hidden="true"></div>
+        </div>
+        <div class="wc-status below" id="wc-status-msg" aria-live="polite" aria-atomic="true">
+          Need 150+ words to meet minimum
+        </div>
+      </div>
+    </div>
+
+    <div class="submission-note" role="note">
+      <strong>Remember:</strong> Copy your finished post and submit it in the <strong>Canvas Discussion Board</strong> — this draft tool does not submit anything.
+    </div>
+  </section>
+
+  <footer>
+    <p>CSC 106 – Introduction to Linux II &nbsp;|&nbsp; Week 5 &nbsp;|&nbsp; Discussion 5</p>
+  </footer>
+
+</div><!-- /.page-wrapper -->
+
+<script>
+  // ── Accordion ─────────────────────────────────────────────────
+  document.querySelectorAll('.acc-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var panelId  = this.getAttribute('aria-controls');
+      var panel    = document.getElementById(panelId);
+
+      this.setAttribute('aria-expanded', String(!expanded));
+      panel.classList.toggle('open', !expanded);
+    });
+
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+      }
+    });
+  });
+
+  // ── Word counter ───────────────────────────────────────────────
+  var textarea   = document.getElementById('draft-textarea');
+  var countEl    = document.getElementById('wc-count');
+  var barEl      = document.getElementById('wc-bar');
+  var statusEl   = document.getElementById('wc-status-msg');
+  var TARGET     = 150;
+
+  function countWords(text) {
+    var trimmed = text.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+  }
+
+  function updateWordCount() {
+    var count  = countWords(textarea.value);
+    var pct    = Math.min(count / TARGET * 100, 100);
+
+    countEl.textContent = count + (count === 1 ? ' word' : ' words');
+    barEl.style.width   = pct + '%';
+
+    if (count < 100) {
+      barEl.style.background  = '#dc2626';
+      statusEl.className      = 'wc-status below';
+      statusEl.textContent    = 'Need ' + (TARGET - count) + ' more word' + (TARGET - count === 1 ? '' : 's') + ' to meet minimum';
+    } else if (count < TARGET) {
+      barEl.style.background  = '#c17f00';
+      statusEl.className      = 'wc-status near';
+      statusEl.textContent    = 'Almost there — ' + (TARGET - count) + ' more word' + (TARGET - count === 1 ? '' : 's') + ' needed';
+    } else {
+      barEl.style.background  = '#16a34a';
+      statusEl.className      = 'wc-status meets';
+      statusEl.textContent    = 'Minimum met \u2713 (' + count + ' words)';
+    }
+  }
+
+  textarea.addEventListener('input', updateWordCount);
+</script>
+</body>
+</html>

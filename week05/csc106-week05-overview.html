@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 5 Overview - Users, Groups, and System Security | CSC 106</title>
+<style>
+  :root {
+    --primary: #2d3b45;
+    --accent: #0770a3;
+    --accent-dark: #055a80;
+    --bg: #ffffff;
+    --bg-alt: #f5f7f8;
+    --border: #c7cdd1;
+    --text: #2d3b45;
+    --text-light: #556572;
+    --success: #0b874b;
+    --highlight: #e8f4f8;
+    --focus-ring: #0770a3;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+  }
+
+  /* Skip link */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0.5rem;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0 0 4px 4px;
+    z-index: 1000;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    top: 0;
+  }
+
+  /* Top nav bar */
+  .top-nav {
+    background: var(--primary);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0.5rem 0;
+  }
+  .top-nav-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    align-items: center;
+  }
+  .top-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .top-nav a:hover,
+  .top-nav a:focus {
+    background: rgba(255,255,255,0.15);
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 1.65rem;
+    margin: 1.75rem 0 0.25rem;
+    color: var(--primary);
+  }
+  .week-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin: 0 0 1.5rem;
+    font-weight: 400;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 2rem 0 0.75rem;
+    color: var(--primary);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.3rem;
+  }
+  h3 {
+    font-size: 1.05rem;
+    margin: 1.25rem 0 0.5rem;
+    color: var(--primary);
+  }
+
+  p {
+    margin: 0 0 1rem;
+  }
+
+  /* Welcome banner */
+  .welcome-banner {
+    background: var(--highlight);
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 4px 4px 0;
+    margin: 1.5rem 0;
+  }
+  .welcome-banner p {
+    margin: 0;
+  }
+
+  /* Goal list */
+  .goal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+  .goal-list li {
+    padding: 0.4rem 0 0.4rem 1.75rem;
+    position: relative;
+    margin-bottom: 0.25rem;
+  }
+  .goal-list li::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .checklist li:last-child {
+    border-bottom: none;
+  }
+  .checklist input[type="checkbox"] {
+    margin-top: 0.25rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .checklist label {
+    cursor: pointer;
+    flex: 1;
+  }
+  .checklist .item-meta {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    margin-top: 0.1rem;
+  }
+
+  /* Key concepts */
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+  @media (max-width: 560px) {
+    .concepts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .concept-card {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+  }
+  .concept-card strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--primary);
+  }
+  .concept-card span {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  /* Collapsible */
+  .collapsible-toggle {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
+  .collapsible-toggle:hover,
+  .collapsible-toggle:focus {
+    background: var(--highlight);
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+  .collapsible-toggle .arrow {
+    transition: transform 0.2s ease;
+    font-size: 0.85rem;
+  }
+  .collapsible-toggle[aria-expanded="true"] .arrow {
+    transform: rotate(90deg);
+  }
+  .collapsible-panel {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--bg);
+  }
+  .collapsible-panel[hidden] {
+    display: none;
+  }
+  .collapsible-panel ul {
+    margin: 0.25rem 0 0.5rem 1.25rem;
+    padding: 0;
+  }
+  .collapsible-panel li {
+    margin-bottom: 0.3rem;
+  }
+
+  /* CSLO tag */
+  .cslo-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+  }
+
+  /* Looking ahead */
+  .looking-ahead {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+
+  /* Footer */
+  .page-footer {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  /* Focus visible for keyboard nav */
+  *:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page navigation">
+  <div class="top-nav-inner">
+    <a href="#welcome">Welcome</a>
+    <a href="#goals">Goals</a>
+    <a href="#activities">Activities</a>
+    <a href="#concepts">Key Concepts</a>
+    <a href="#course-arc">Course Arc</a>
+    <a href="#looking-ahead">Looking Ahead</a>
+  </div>
+</nav>
+
+<main id="main-content" class="page-wrapper">
+
+  <h1>Week 5: Users, Groups, and System Security</h1>
+  <p class="week-subtitle">CSC 106 - Introduction to Linux II</p>
+
+  <!-- Welcome -->
+  <section id="welcome" aria-label="Welcome">
+    <div class="welcome-banner">
+      <p>Welcome to Week 5. You have reached the halfway point of the course, and your Linux system is in solid shape. Over the past four weeks you installed Ubuntu Server, explored the kernel and boot process, managed services with systemd, and wrote a real automation script in Mini-Project 1. That is a lot of ground covered.</p>
+    </div>
+    <p>This week the focus shifts from <em>building</em> the system to <em>managing who can use it</em>. You will dig into how Linux tracks users and groups, where authentication data is stored, how to configure sudo access, and why user management is the starting point for system security. These are not abstract topics. Mini-Project 2 in Week 8 will require you to set up multiple users with appropriate group memberships and permissions, so the work you do this week is direct preparation for the capstone.</p>
+    <p>The workload is a bit lighter than Week 4's scripting project. You have one Cisco lab, one discussion, and an optional extra credit exercise. Use the breathing room to read carefully and make sure you really understand what is happening inside <code>/etc/passwd</code> and <code>/etc/shadow</code>. That understanding pays off in every remaining week of the course.</p>
+  </section>
+
+  <!-- Learning Goals -->
+  <section id="goals" aria-label="Learning goals">
+    <h2>Learning Goals for This Week</h2>
+    <p>By the end of this week, you should be able to:</p>
+    <ul class="goal-list" role="list">
+      <li>Explain how Linux identifies and tracks users and groups using <code>/etc/passwd</code>, <code>/etc/shadow</code>, and <code>/etc/group</code>.</li>
+      <li>Create, modify, and delete user accounts and groups using command-line tools.</li>
+      <li>Configure sudo access for users and explain why root login is discouraged.</li>
+      <li>Describe how Linux password storage and aging policies work.</li>
+      <li>Articulate why user and group management is the foundation of Linux system security.</li>
+    </ul>
+    <p>This week's work maps to <strong>CSLO 1</strong>: <em>Install and configure a Linux operating system</em> and <strong>CSLO 2</strong>: <em>Configure a Linux operating system as a platform for web-based and other applications</em>.</p>
+  </section>
+
+  <!-- Activities Checklist -->
+  <section id="activities" aria-label="Required activities">
+    <h2>What You Need to Do This Week</h2>
+    <p>Use this checklist to track your progress. All items are listed by name. Find them in the Week 5 module in Canvas.</p>
+
+    <h3>Required Activities</h3>
+    <ul class="checklist" role="list">
+      <li>
+        <input type="checkbox" id="chk-reading" aria-label="Mark Linux Essentials Chapter 16 reading complete">
+        <label for="chk-reading">
+          <strong>Read: Linux Essentials Chapter 16 (Users and Groups)</strong>
+          <span class="item-meta">Full chapter read. This is your primary reading for the week. Estimated 3.5 to 4 hours.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk-vid1" aria-label="Mark first video watched">
+        <label for="chk-vid1">
+          <strong>Watch: "Users, Groups, and /etc/passwd Explained"</strong>
+          <span class="item-meta">Terminal walkthrough of user files and commands. Approx. 10-12 min.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk-vid2" aria-label="Mark second video watched">
+        <label for="chk-vid2">
+          <strong>Watch: "sudo, Security, and Why Root Login Is a Bad Idea"</strong>
+          <span class="item-meta">Explains the sudo mechanism and the principle of least privilege. Approx. 8-10 min.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk-lab" aria-label="Mark Cisco Lab complete">
+        <label for="chk-lab">
+          <strong>Complete: Linux Essentials Ch. 16 Lab</strong>
+          <span class="item-meta">Cisco lab: practice user and group management commands in the Cisco VM environment. 15 points. <span class="cslo-tag">CSLO 1</span> <span class="cslo-tag">CSLO 2</span></span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk-disc-post" aria-label="Mark discussion original post complete">
+        <label for="chk-disc-post">
+          <strong>Post: RSI Discussion 5 - "Security Starts with Users" (original post)</strong>
+          <span class="item-meta">Minimum 150 words, due by Wednesday. 15 points total for post and replies. <span class="cslo-tag">CSLO 1</span> <span class="cslo-tag">CSLO 2</span></span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk-disc-reply" aria-label="Mark discussion replies complete">
+        <label for="chk-disc-reply">
+          <strong>Reply: RSI Discussion 5 (two substantive replies)</strong>
+          <span class="item-meta">Due by Sunday. Each reply should add a new idea, ask a follow-up question, or offer a constructive alternative.</span>
+        </label>
+      </li>
+    </ul>
+
+    <h3>Extra Credit (Optional)</h3>
+    <ul class="checklist" role="list">
+      <li>
+        <input type="checkbox" id="chk-ec" aria-label="Mark extra credit complete">
+        <label for="chk-ec">
+          <strong>Password Aging with chage</strong>
+          <span class="item-meta">Set password aging policies for a test user on your VM using chage. Requires reading external manpages and documentation. 5 points. <span class="cslo-tag">CSLO 1</span></span>
+        </label>
+      </li>
+    </ul>
+    <p><strong>Week 5 required points: 30</strong> (out of 400 course total)</p>
+  </section>
+
+  <!-- Key Concepts -->
+  <section id="concepts" aria-label="Key concepts">
+    <h2>Key Concepts to Watch For</h2>
+    <p>As you work through the reading, videos, and lab this week, pay special attention to these ideas. They come up again in Weeks 6, 7, and 8.</p>
+    <div class="concepts-grid">
+      <div class="concept-card">
+        <strong>/etc/passwd and /etc/shadow</strong>
+        <span>Know what each field means. When you created users in Mini-Project 1, these files are where those accounts actually live.</span>
+      </div>
+      <div class="concept-card">
+        <strong>UIDs and GIDs</strong>
+        <span>Linux uses numeric IDs internally. Usernames are for humans. System accounts have UIDs below 1000 on Ubuntu.</span>
+      </div>
+      <div class="concept-card">
+        <strong>useradd vs. adduser</strong>
+        <span>Both create users, but they behave differently. Scripts typically use <code>useradd</code>. Interactive setup uses <code>adduser</code>.</span>
+      </div>
+      <div class="concept-card">
+        <strong>The -aG flag</strong>
+        <span>When adding a user to a supplementary group, always use <code>usermod -aG</code>. Without the <code>-a</code>, you replace all existing groups. This is a very common mistake.</span>
+      </div>
+      <div class="concept-card">
+        <strong>sudo and least privilege</strong>
+        <span>Users should have only the access they need. sudo provides temporary elevation without full root login.</span>
+      </div>
+      <div class="concept-card">
+        <strong>Password hashing</strong>
+        <span>Linux never stores plaintext passwords. The hash in <code>/etc/shadow</code> is one-way. Even root cannot read a user's password, only reset it.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Course Arc (collapsible) -->
+  <section id="course-arc" aria-label="Course arc">
+    <h2>Where This Week Fits</h2>
+    <button class="collapsible-toggle" aria-expanded="false" aria-controls="arc-panel" id="arc-toggle">
+      Course Arc: Weeks 1 through 8
+      <span class="arrow" aria-hidden="true">&#9654;</span>
+    </button>
+    <div class="collapsible-panel" id="arc-panel" role="region" aria-labelledby="arc-toggle" hidden>
+      <ul>
+        <li><strong>Week 1:</strong> Linux Installation and Package Management</li>
+        <li><strong>Week 2:</strong> Hardware, the Kernel, and the Boot Process</li>
+        <li><strong>Week 3:</strong> Startup Scripts, Runlevels, and systemd</li>
+        <li><strong>Week 4:</strong> Advanced Shell Scripting and Mini-Project 1</li>
+        <li><strong>Week 5 (this week):</strong> Users, Groups, and System Security</li>
+        <li><strong>Week 6:</strong> File Permissions, Ownership, and Networking Fundamentals</li>
+        <li><strong>Week 7:</strong> Network Configuration, Server Setup, and Security</li>
+        <li><strong>Week 8:</strong> Integration, Review, and Mini-Project 2</li>
+      </ul>
+      <p>Weeks 1 through 4 were about building and understanding your system. Weeks 5 through 7 are about managing, securing, and networking it. Week 8 brings everything together in the capstone project.</p>
+      <p>This week sits at the pivot point. You are no longer just getting the system running. You are deciding who gets to use it and what they are allowed to do. That is a fundamentally different kind of work, and it is closer to what day-to-day Linux administration actually looks like.</p>
+    </div>
+  </section>
+
+  <!-- Looking Ahead -->
+  <section id="looking-ahead" aria-label="Looking ahead">
+    <h2>Looking Ahead</h2>
+    <div class="looking-ahead">
+      <p>Next week (Week 6) adds <strong>file permissions and ownership</strong> on top of what you learn this week. Permissions in Linux are assigned to users and groups, so the concepts from this week are a prerequisite for understanding how <code>chmod</code>, <code>chown</code>, and <code>chgrp</code> work. Week 6 also introduces networking fundamentals, which begins the lead-in to Week 7's server configuration work.</p>
+      <p>If you set up a <code>developers</code> group this week (or something similar during the Cisco lab), you will see that group again in Week 6 when you create shared directories with group-based permissions. And in Mini-Project 2 (Week 8), you will need at least two non-root users in appropriate groups with sudo access and a shared directory with correct permissions. Everything you practice this week feeds directly into that capstone requirement.</p>
+      <p>Take the time to understand the "why" behind these commands, not just the "how." That understanding is what separates someone who can follow a tutorial from someone who can troubleshoot a real system.</p>
+    </div>
+  </section>
+
+  <footer class="page-footer">
+    CSC 106 - Introduction to Linux II | Week 5 Overview
+  </footer>
+
+</main>
+
+<script>
+(function() {
+  // Collapsible panel
+  var toggle = document.getElementById('arc-toggle');
+  var panel = document.getElementById('arc-panel');
+  if (toggle && panel) {
+    toggle.addEventListener('click', function() {
+      var expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+    });
+  }
+
+  // Persist checklist state in localStorage
+  var checks = document.querySelectorAll('.checklist input[type="checkbox"]');
+  var storageKey = 'csc106-wk5-overview-checks';
+
+  function loadState() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      checks.forEach(function(cb) {
+        if (saved[cb.id] === true) {
+          cb.checked = true;
+        }
+      });
+    } catch(e) { /* ignore */ }
+  }
+
+  function saveState() {
+    var state = {};
+    checks.forEach(function(cb) {
+      state[cb.id] = cb.checked;
+    });
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch(e) { /* ignore */ }
+  }
+
+  loadState();
+  checks.forEach(function(cb) {
+    cb.addEventListener('change', saveState);
+  });
+})();
+</script>
+
+</body>
+</html>
