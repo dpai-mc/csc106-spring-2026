@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Users, Groups, and /etc/passwd Explained | CSC 106 Week 5</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 3.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video + Transcript ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.commands-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.commands-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.85rem 1.25rem;
+}
+.commands-header h2 {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+}
+.commands-body {
+  padding: 1rem 1.25rem;
+}
+ol.cmd-list {
+  padding-left: 1.5rem;
+  margin: 0;
+}
+ol.cmd-list li {
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+ol.cmd-list li .cmd-desc {
+  color: #475569;
+  font-size: 0.88rem;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands Used</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 · Week 5 · Users &amp; Groups</p>
+    <h1 id="page-heading">Users, Groups, and /etc/passwd Explained</h1>
+    <p>This video opens the Linux user database files — <code>/etc/passwd</code>, <code>/etc/shadow</code>, and <code>/etc/group</code> — and walks through every field so you understand what they contain and why they exist. You'll see how to create a new user account with <code>useradd</code>, set a password with <code>passwd</code>, and verify the results in the database files. The video also demonstrates creating a group with <code>groupadd</code> and safely adding a user to it with <code>usermod -aG</code>. These fundamentals are the foundation for file permissions next week and for Mini-Project 2.</p>
+  </section>
+
+  <!-- ── Video + Transcript ── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video Walkthrough</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">Use the transcript panel to follow along or click any line to jump to that point in the video.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/kq0HDNWor7U?enablejsapi=1"
+                  title="Users, Groups, and /etc/passwd Explained — CSC 106 Week 5"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="transcript-container"
+             class="transcript-container"
+             role="region"
+             aria-label="Video transcript — click any line to seek">
+          <p style="color:#64748b;text-align:center;padding:1rem 0;">Loading transcript…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands Used ── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <div class="commands-box">
+      <div class="commands-header">
+        <h2 id="commands-heading">Commands Used in This Video</h2>
+        <p style="font-size:0.88rem;color:#475569;margin-top:0.25rem;margin-bottom:0;">Commands appear in the order they are demonstrated. Use this list to follow along or review after watching.</p>
+      </div>
+      <div class="commands-body">
+        <div class="tip-box" role="note">
+          <strong>Important:</strong> When adding a user to a group, always use <code>usermod -aG</code> (with the lowercase <code>-a</code> flag). Without <code>-a</code>, the <code>-G</code> flag <em>replaces</em> all existing supplementary groups instead of appending to them — which can accidentally remove sudo access.
+        </div>
+        <ol class="cmd-list" aria-label="Commands used in order">
+          <li>
+            <code>cat /etc/passwd</code>
+            <span class="cmd-desc">Display the full user database — one line per account, seven colon-separated fields each.</span>
+          </li>
+          <li>
+            <code>grep paid /etc/passwd</code>
+            <span class="cmd-desc">Look up a specific user entry by username.</span>
+          </li>
+          <li>
+            <code>sudo cat /etc/shadow</code>
+            <span class="cmd-desc">View the shadow password file (requires elevated privileges). Contains password hashes and aging fields.</span>
+          </li>
+          <li>
+            <code>sudo grep paid /etc/shadow</code>
+            <span class="cmd-desc">Examine your own shadow entry to see the hashed password and aging values.</span>
+          </li>
+          <li>
+            <code>whoami</code>
+            <span class="cmd-desc">Display your current username.</span>
+          </li>
+          <li>
+            <code>id</code>
+            <span class="cmd-desc">Show your UID, primary GID, and all supplementary group memberships with numeric IDs and names.</span>
+          </li>
+          <li>
+            <code>groups</code>
+            <span class="cmd-desc">List only the names of the groups you belong to.</span>
+          </li>
+          <li>
+            <code>sudo useradd -m -s /bin/bash -c "Test User" testuser</code>
+            <span class="cmd-desc">Create a new user: <code>-m</code> creates a home directory, <code>-s /bin/bash</code> sets the login shell, <code>-c</code> sets the comment/full-name field.</span>
+          </li>
+          <li>
+            <code>grep testuser /etc/passwd</code>
+            <span class="cmd-desc">Confirm the new account was written to the user database.</span>
+          </li>
+          <li>
+            <code>sudo grep testuser /etc/shadow</code>
+            <span class="cmd-desc">Check whether the account has a password set (an <code>!</code> means no usable password yet).</span>
+          </li>
+          <li>
+            <code>sudo passwd testuser</code>
+            <span class="cmd-desc">Set a password for the new user (password input is hidden — no characters appear as you type).</span>
+          </li>
+          <li>
+            <code>ls -la /home/testuser</code>
+            <span class="cmd-desc">List all files in the new user's home directory, including hidden dot files copied from <code>/etc/skel</code>.</span>
+          </li>
+          <li>
+            <code>ls /etc/skel</code>
+            <span class="cmd-desc">View the skeleton directory — whatever is here is automatically copied into every new user's home directory.</span>
+          </li>
+          <li>
+            <code>sudo groupadd developers</code>
+            <span class="cmd-desc">Create a new group named <code>developers</code>.</span>
+          </li>
+          <li>
+            <code>sudo usermod -aG developers testuser</code>
+            <span class="cmd-desc">Append testuser to the developers group without removing existing group memberships. Always use <code>-aG</code>, never just <code>-G</code>.</span>
+          </li>
+          <li>
+            <code>id testuser</code>
+            <span class="cmd-desc">Verify the updated group membership for testuser.</span>
+          </li>
+          <li>
+            <code>sudo adduser demouser</code>
+            <span class="cmd-desc">Create a user interactively — prompts for password and name. Easier for one-off use; <code>useradd</code> is preferred in scripts.</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const VIDEO_ID = 'kq0HDNWor7U';
+  let player;
+  let timeUpdater;
+  let parsedTranscript = [];
+
+  const vttContent = `WEBVTT
+
+00:00.400 --> 00:03.860
+Aloha, and welcome back to CSC 106.
+
+00:04.080 --> 00:05.500
+We're in week five,
+
+00:06.340 --> 00:10.760
+and we're shifting gears a little bit from the past four weeks.
+
+00:11.040 --> 00:14.160
+We've been building our system from the ground up,
+
+00:14.660 --> 00:18.240
+installing Ubuntu Server on our VirtualBox VM,
+
+00:18.660 --> 00:22.280
+exploring the kernel, managing services with systemd,
+
+00:23.300 --> 00:27.360
+and in your mini project, you're working on writing a full automation script.
+
+00:27.360 --> 00:31.760
+This week, we're going to focus on the people side of Linux —
+
+00:31.920 --> 00:35.140
+how does Linux know who you are?
+
+00:35.220 --> 00:37.560
+How does it keep track of your accounts?
+
+00:38.040 --> 00:42.460
+How do you create, modify, and manage those accounts from the command line?
+
+00:43.800 --> 00:53.000
+I'm covering this in a video called "Users, Groups, and /etc/passwd on Ubuntu."
+
+00:53.000 --> 00:58.460
+As an introduction for this week, here's the overview.
+
+00:59.760 --> 01:05.180
+For NetCAD: read chapters 15 and 16, and for homework, do the chapter 16 lab.
+
+01:09.560 --> 01:21.100
+After you've gone through the second video, do the discussion. There's also an extra-credit assignment, and mini project 1 is due this week.
+
+01:27.420 --> 01:42.980
+Let's get started in our Linux VM.
+
+01:44.160 --> 01:56.800
+In project 1, one of the things you used was useradd in your script to create users and put them in groups.
+
+01:56.800 --> 02:04.680
+But you might not have looked closely at exactly what that means and what it's doing — so we're going to cover that today.
+
+02:06.780 --> 02:15.800
+Understanding how Linux tracks users is the foundation for file permissions, which we'll cover next week.
+
+02:15.940 --> 02:20.420
+Also for sudo access — we'll explain what that is today.
+
+02:22.360 --> 02:27.300
+And for SSH authentication, which is how you securely log in.
+
+02:31.300 --> 02:38.700
+Also for the security model of the entire operating system.
+
+02:40.640 --> 02:45.120
+If you don't understand users and groups, permissions will probably never make sense.
+
+02:46.340 --> 02:52.100
+So let's first look at one of the most important files on the Linux system.
+
+02:52.800 --> 02:58.200
+It's /etc/passwd. At one time passwords were stored here — they are no longer.
+
+03:07.920 --> 03:13.740
+Use the cat command to print the contents of a file.
+
+03:15.040 --> 03:21.540
+The file is at /etc/passwd, and you'll see a bunch of output.
+
+03:22.840 --> 03:31.420
+Each line represents one user account. There are lots of users — a lot of them aren't real people, they're system accounts.
+
+03:36.720 --> 03:38.660
+A lot of them aren't real people — they're system accounts.
+
+03:44.900 --> 03:54.140
+System accounts like daemon, bin, tcpdump — these exist so that services have their own rights.
+
+03:57.360 --> 04:22.620
+Service accounts exist so that services have rights, and that helps determine how permissions are set.
+
+04:24.720 --> 04:28.840
+Let's first look at my own entry. I'll use the grep command.
+
+04:36.540 --> 04:37.680
+My username is paid.
+
+04:42.120 --> 04:48.180
+I'll look for it in the /etc/passwd file.
+
+04:49.740 --> 04:56.700
+Here you can see it: paid:x:1000:1000:paid:/home/paid:/bin/bash
+
+05:01.300 --> 05:07.440
+Each line has seven fields separated by colons.
+
+05:09.560 --> 05:12.760
+Field 1 is the username.
+
+05:14.280 --> 05:15.720
+My username is paid.
+
+05:19.240 --> 05:20.260
+Field 2: x.
+
+05:20.520 --> 05:31.780
+That x is where the old password hash used to be — now it's in /etc/shadow.
+
+05:33.420 --> 05:35.800
+/etc/shadow — we'll look at that next.
+
+05:43.640 --> 05:44.780
+Field 3: 1000.
+
+05:45.960 --> 05:47.360
+That's our user ID (UID).
+
+05:49.820 --> 05:56.500
+Linux assigns permissions to the user ID, not the username. Rights are assigned to UID 1000.
+
+05:57.860 --> 06:14.200
+Field 4 also says 1000 — that's your primary group ID. When you create a new user, a primary group is created with the same ID and name.
+
+06:25.760 --> 06:32.820
+You'll have a user ID and a primary group ID — typically they're the same number.
+
+06:33.980 --> 06:44.760
+Field 5 is the comment field. By default it holds the full name of the user.
+
+06:49.000 --> 06:52.980
+If I had entered "David Pie," that's what would appear here.
+
+06:55.680 --> 07:01.800
+Field 6 is the location of the home directory — where you start when you log in.
+
+07:02.980 --> 07:14.160
+Field 7 — /bin/bash — is the login shell. System accounts often use /bin/false or /usr/sbin/nologin.
+
+07:14.380 --> 07:23.460
+You don't have to use bash, but it's the most common default. System accounts use shells like /bin/false.
+
+07:23.460 --> 07:26.940
+Some entries show /bin/false or /usr/sbin/nologin.
+
+07:36.880 --> 07:39.540
+I'll explain what nologin means in a moment.
+
+07:40.980 --> 07:50.200
+Both /bin/false and /usr/sbin/nologin prevent interactive login — so no one can log in as those service accounts.
+
+07:50.640 --> 07:54.720
+There's no interactive login for those system users because they are services — it's a security measure.
+
+08:04.180 --> 08:07.860
+Let me look at a specific system account as an example.
+
+08:27.360 --> 08:38.400
+Let's use the "backup" system account — a default system user that is created automatically.
+
+08:38.400 --> 09:01.440
+backup:x:34:34: — user ID 34, group ID 34. Any user ID below 1000 is typically a service or system account.
+
+09:07.860 --> 09:20.520
+IDs of 1000 or higher are regular (human) users. IDs below 1000 are system or service accounts.
+
+09:20.760 --> 09:29.400
+The backup account's home is /var/backups and it uses /usr/sbin/nologin — so nobody can log in as backup interactively.
+
+09:47.580 --> 09:50.340
+That's /etc/passwd. Now let's look at /etc/shadow.
+
+09:50.760 --> 10:00.560
+If I try "cat /etc/shadow" it says permission denied — I need higher privileges.
+
+10:00.560 --> 10:06.220
+To read it I use sudo. The command is: sudo cat /etc/shadow.
+
+10:06.220 --> 10:18.640
+It will ask for my password. Nothing will appear on screen as I type — Linux doesn't show characters or asterisks.
+
+10:18.640 --> 10:36.740
+This is intentional security: asterisks would reveal password length to someone looking over your shoulder. Linux shows nothing.
+
+10:36.740 --> 10:48.620
+So the command is: sudo cat /etc/shadow
+
+10:48.640 --> 11:04.100
+After using sudo once, you won't need to re-enter your password for the default timeout period (typically 15 minutes).
+
+11:04.100 --> 11:16.360
+That timeout temporarily elevates your privileges — you don't have to re-authenticate for every sudo command within that window.
+
+11:18.640 --> 11:34.520
+Now let's look at my specific entry: sudo grep paid /etc/shadow
+
+11:35.180 --> 11:46.140
+Whenever I use shadow, I always need sudo — otherwise I can't access it.
+
+11:51.200 --> 11:59.580
+Here's my entry. The second field is the hashed password.
+
+11:59.580 --> 12:14.260
+You'll see $6$ — that means the SHA-512 hashing algorithm was used.
+
+12:14.260 --> 12:26.080
+After $6$ comes the salt — a random string mixed into the hash to make it unique.
+
+12:26.080 --> 12:45.940
+Two users with the same password will get different hash values because they have different salts. The salt is between the second and third dollar signs.
+
+12:46.000 --> 12:55.120
+The rest — the big long string — is the actual hash value of your password.
+
+12:55.120 --> 13:15.880
+Hashes are one-way: even if someone gets the hash, there's no way to reverse it to find your password.
+
+13:15.880 --> 13:27.100
+When you log in, the system hashes what you typed with your stored salt using SHA-512, then compares it to the stored hash.
+
+13:27.100 --> 13:46.860
+If they match, you're validated and logged in. If they don't match, it says bad password or username.
+
+13:54.960 --> 14:07.740
+After the hash there are password aging fields.
+
+14:07.740 --> 14:25.120
+These include minimum days between password changes, maximum days before a password must be changed, a warning period, and others.
+
+14:25.120 --> 14:44.920
+Your extra credit assignment uses the "chage" command to change those values.
+
+14:57.440 --> 15:03.340
+There is a root entry in the shadow file too.
+
+15:03.340 --> 15:22.740
+Even though we don't log in as root — we use sudo — root exists. If you were logged in as root, you'd never need to enter credentials because you're the super admin.
+
+15:22.740 --> 15:30.060
+Root's password field shows an asterisk, meaning no usable password — Ubuntu disables root login by default.
+
+15:30.060 --> 15:43.320
+You can't match an asterisk to any hash value, so root login via password is effectively disabled.
+
+15:43.320 --> 16:04.940
+Every SHA-512 hash is the same length — 512 bits — encoded as a long base64-like string.
+
+16:05.520 --> 16:24.540
+Each user can have different password aging values. The differences in those fields reflect different policies per account.
+
+16:35.520 --> 16:42.060
+That covers the two key files for user information. Now let's look at how to see your own info without digging through those files.
+
+16:42.060 --> 16:56.280
+There are a couple of commands for that. First: "clear" to clear the screen.
+
+16:56.280 --> 17:01.840
+Then: whoami — all one word — it will tell you your username.
+
+17:05.520 --> 17:14.600
+And: id — it gives you your user ID, primary group ID, and all your supplementary groups.
+
+17:14.600 --> 17:20.020
+For example: uid=1000(paid) gid=1000(paid) groups=1000,4(adm),24(cdrom),27(sudo)...
+
+17:20.020 --> 17:40.520
+Being in group 27 (sudo) means you can use sudo. The id command lists all groups with both their numeric ID and name.
+
+17:43.200 --> 17:52.800
+If you remember last week when I created a shared folder, I had to add myself to the VirtualBox shared folder group. That's what supplementary groups are for.
+
+17:52.800 --> 18:03.660
+If you just want to see group names without IDs, use the "groups" command. It lists only the names, not the numbers.
+
+18:21.780 --> 18:35.300
+To add a user there are two commands: useradd or adduser. We typically use useradd.
+
+18:43.080 --> 18:45.540
+useradd is better for scripting.
+
+18:45.540 --> 18:51.760
+If you need to add many users in a script, use useradd — it's non-interactive.
+
+18:51.760 --> 18:56.120
+adduser is easier for a single interactive user setup — it asks questions.
+
+18:56.120 --> 19:07.400
+adduser prompts: ask a question, type an answer, ask another question — but that interactive style doesn't work in scripts.
+
+19:09.820 --> 19:18.080
+We'll typically use useradd, especially in any kind of script or automated workflow.
+
+19:26.080 --> 19:27.320
+Let's add a test user called testuser.
+
+19:27.320 --> 19:37.920
+The command starts with: sudo useradd
+
+19:37.920 --> 19:47.340
+Add the -m flag: create a home directory. Without it, the user won't get a home directory.
+
+19:47.340 --> 19:58.740
+Without a home directory the user will be in limbo — more like a system account than a real person.
+
+19:58.740 --> 20:10.860
+Add -s /bin/bash to set the login shell to bash.
+
+20:10.860 --> 20:21.140
+Add -c for comment — the full name field. I'll put "Test User".
+
+20:22.020 --> 20:43.720
+And the last part is the actual username: testuser. Hit enter.
+
+20:43.720 --> 20:54.880
+Now let's verify it worked: grep testuser /etc/passwd
+
+21:07.780 --> 21:08.600
+There it is.
+
+21:08.600 --> 21:19.460
+testuser:x:1001:1001:Test User:/home/testuser:/bin/bash
+
+21:19.540 --> 21:24.880
+User ID 1001, group ID 1001, full name "Test User".
+
+21:25.920 --> 21:33.480
+Home directory /home/testuser, login shell /bin/bash.
+
+21:36.640 --> 21:44.280
+The next user I create will be 1002. UIDs just keep incrementing — they never go back to fill a gap.
+
+21:47.880 --> 22:06.380
+Even though I just added testuser, I'm not logged in as them. I can run: id testuser — and it will show their info.
+
+22:17.880 --> 22:24.780
+testuser cannot use sudo because they're not in the sudo group.
+
+22:29.060 --> 22:34.660
+And I can't directly add them yet because they don't have a password.
+
+22:34.660 --> 22:47.740
+Let's grep for testuser in /etc/shadow: sudo grep testuser /etc/shadow
+
+22:47.740 --> 22:53.340
+See the exclamation point? That means the account has no usable password.
+
+22:53.340 --> 23:07.260
+Without a password you can't log in as testuser, and you can't add them to the sudo group yet.
+
+23:07.260 --> 23:14.320
+So I need to first set a password: sudo passwd testuser
+
+23:14.320 --> 23:25.600
+I'm entering a password for testuser — same command name as the file, but this is the command.
+
+23:25.600 --> 23:33.800
+Type the new password, retype it. If they don't match, it will tell you.
+
+23:34.700 --> 23:37.940
+Don't type it for yourself — specify testuser so you change their password, not yours.
+
+23:55.280 --> 24:03.080
+Now let's check: sudo grep testuser /etc/shadow
+
+24:06.460 --> 24:07.920
+Now there's a hash there.
+
+24:07.920 --> 24:24.520
+It shows $y$ — a different hashing algorithm — followed by the salt and the hash value.
+
+24:26.240 --> 24:33.480
+Now let's look at what's in testuser's home directory: sudo ls -la /home/testuser
+
+24:35.360 --> 24:38.960
+ls with -l (long format) and -a (show all, including hidden files).
+
+24:47.080 --> 24:52.080
+sudo ls -la /home/testuser
+
+24:55.360 --> 25:01.860
+Here are all the files. You can see dot files — those are hidden configuration files.
+
+25:01.860 --> 25:09.020
+The dot files are the setup files for testuser, like .bashrc, .profile, and .bash_logout.
+
+25:09.240 --> 25:15.820
+They have a dot prefix because without -a in ls, they don't show up — they're hidden files.
+
+25:15.820 --> 25:27.360
+If I just run: sudo ls /home/testuser — it appears empty because everything starts with a dot.
+
+25:27.360 --> 25:44.840
+Every file there starts with a dot, making them hidden. Use ls -la to see them all.
+
+25:44.840 --> 26:07.740
+There's a directory called /etc/skel — "skel" for skeleton — which holds the default files for new users.
+
+26:07.740 --> 26:11.840
+Skeleton contains default configuration files.
+
+26:11.840 --> 26:22.480
+Every time you create a new user and say create a home directory, whatever is in /etc/skel gets copied in.
+
+26:22.480 --> 26:29.480
+Compare the files: .bash_logout, .bashrc, .profile — they match what's in skel.
+
+26:29.480 --> 26:37.580
+It just copies them all from skel into the new user's home directory.
+
+26:37.580 --> 26:56.800
+If you want to add other files — like a readme, a security notice, or an environment file — add them to /etc/skel and every future user will automatically get them.
+
+26:56.800 --> 27:11.560
+So that covers creating a user with useradd. Now let's talk about groups.
+
+27:11.560 --> 27:31.680
+Groups let us put users together so we can give the whole group permissions — instead of managing permissions for every individual person.
+
+27:31.680 --> 27:35.520
+We don't have to manage permissions at the individual level.
+
+27:36.380 --> 27:54.580
+We create logical groups based on shared access needs. Put users in the group, then give the group permissions.
+
+27:54.580 --> 28:17.840
+So we're going to create a group called developers.
+
+28:17.840 --> 28:25.840
+To create a group: sudo groupadd developers
+
+29:11.560 --> 29:20.900
+After the last colon in /etc/group it lists all the members of the group.
+
+29:20.900 --> 29:34.920
+To add testuser to the developers group: sudo usermod to modify a user...
+
+29:34.920 --> 29:58.660
+sudo usermod -aG developers testuser. The lowercase -a means append, the uppercase -G means supplementary groups.
+
+29:58.660 --> 30:04.860
+We're appending testuser to the developers group.
+
+30:04.920 --> 30:20.060
+If we now look at the developers line in /etc/group, testuser is listed there.
+
+30:20.060 --> 30:34.680
+The -aG: capital G means supplementary groups, lowercase a means append — not replace.
+
+30:34.920 --> 30:48.300
+Let's look at testuser now: id testuser
+
+30:48.300 --> 31:03.420
+They're still in group 1001 as primary, but now also in group 1002 (developers). So they're in both groups.
+
+31:34.920 --> 31:48.720
+Next week we'll use group membership to create a shared directory where everyone in the developers group can read and write, but other users cannot.
+
+31:48.720 --> 32:15.560
+That's how you do file-level security. You can also do the same for services: give a group the right to run a program, and if you're not in that group, you can't run it.
+
+32:22.320 --> 32:34.580
+Now let's see how adduser works differently. I'll add a demo user using adduser.
+
+32:34.880 --> 32:40.340
+sudo adduser demouser
+
+32:40.340 --> 33:02.840
+adduser says: selecting UID, adding new group demouser (1003), creating home directory, copying files from /etc/skel — and then it asks for a password interactively.
+
+33:06.400 --> 33:19.280
+Enter a new password... it prompts for full name, room number, and other fields.
+
+33:30.060 --> 33:39.420
+Just hit Enter to leave optional fields blank. It then confirms adding demouser to supplemental group "users".
+
+33:39.420 --> 33:54.100
+adduser did all that automatically — where useradd required explicit flags, adduser handles it interactively.
+
+33:54.100 --> 34:06.160
+If you use useradd you must use the flags; adduser asks you the questions.
+
+34:27.180 --> 34:31.400
+Let's check demouser: id demouser
+
+34:31.540 --> 34:40.320
+demouser has UID 1003, GID 1003 — they're in group "demouser" and "users".
+
+34:42.860 --> 34:53.380
+So we've covered user and group management foundations.
+
+34:53.380 --> 35:02.960
+You know where user data lives: /etc/passwd, /etc/shadow, /etc/group.
+
+35:03.540 --> 35:11.100
+How to create users, how to create groups, and how to manage group membership safely using usermod -aG.
+
+35:13.140 --> 35:17.000
+In the next video for this week I'll talk about sudo,
+
+35:17.920 --> 35:19.860
+why root login is discouraged,
+
+35:20.860 --> 35:23.300
+and how all of this connects in the bigger picture.
+
+35:23.380 --> 35:29.680
+That second video also sets up our RSI Discussion for this week — so watch it before you post.
+
+35:30.000 --> 35:36.520
+For now, make sure you've read chapters 15 and 16.
+
+35:36.580 --> 35:43.700
+And when you do the chapter 16 lab, you're practicing these same commands.
+
+35:43.780 --> 35:48.660
+Now that you have a better understanding of what's beneath those commands,
+
+35:48.940 --> 35:56.360
+hopefully it'll make those exercises more meaningful. See you in the next video. Thanks!`;
+
+  function timeToSeconds(timeStr) {
+    if (!timeStr) return 0;
+    const parts = timeStr.trim().split(':');
+    if (parts.length === 2) {
+      return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    } else if (parts.length === 3) {
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+    }
+    return 0;
+  }
+
+  function parseVtt(vttText) {
+    const blocks = vttText.trim().split(/\n\n+/);
+    const parsed = [];
+    blocks.forEach(block => {
+      if (block.startsWith('WEBVTT') || block.trim() === '') return;
+      const lines = block.trim().split('\n');
+      const timeLine = lines.find(l => l.includes('-->'));
+      if (!timeLine) return;
+      const [startStr, endStr] = timeLine.split(' --> ');
+      const textLines = lines.slice(lines.indexOf(timeLine) + 1);
+      const text = textLines.join(' ').trim();
+      if (!text) return;
+      parsed.push({ start: timeToSeconds(startStr), end: timeToSeconds(endStr), text });
+    });
+    return parsed;
+  }
+
+  function populateTranscript() {
+    const container = document.getElementById('transcript-container');
+    container.innerHTML = '';
+    parsedTranscript.forEach(cue => {
+      const el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', cue.text);
+      const seek = () => {
+        if (player && player.seekTo) {
+          player.seekTo(cue.start, true);
+          player.playVideo();
+        }
+      };
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    const currentTime = player.getCurrentTime();
+    const lines = document.querySelectorAll('#transcript-container .transcript-line');
+    lines.forEach(line => {
+      const start = parseFloat(line.dataset.start);
+      const end = parseFloat(line.dataset.end);
+      if (currentTime >= start && currentTime < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          const prev = document.querySelector('#transcript-container .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncTranscriptHeight() {
+    const mq = window.matchMedia('(min-width: 860px)');
+    const vc = document.getElementById('vc-1');
+    const tc = document.getElementById('transcript-container');
+    if (!vc || !tc) return;
+    if (mq.matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('yt-1', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onPlayerStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    parsedTranscript = parseVtt(vttContent);
+    populateTranscript();
+    setTimeout(syncTranscriptHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncTranscriptHeight, 250);
+  });
+</script>
+</body>
+</html>

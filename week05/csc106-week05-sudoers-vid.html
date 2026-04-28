@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sudo, Security, and Why Not Root | CSC 106 Week 5</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 3.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video + Transcript ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.commands-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.commands-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.85rem 1.25rem;
+}
+.commands-header h2 {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+}
+.commands-body {
+  padding: 1rem 1.25rem;
+}
+ol.cmd-list {
+  padding-left: 1.5rem;
+  margin: 0;
+}
+ol.cmd-list li {
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+ol.cmd-list li .cmd-desc {
+  color: #475569;
+  font-size: 0.88rem;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.tip-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+.tip-box strong { color: #92400e; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands Used</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 · Week 5 · sudo &amp; Security</p>
+    <h1 id="page-heading">sudo, Security, and Why Not Root</h1>
+    <p>This video explains the <code>sudo</code> mechanism — how it temporarily elevates your privileges for a single command and why that is safer than logging in as root. Three core reasons are covered: <strong>accountability</strong> (sudo logs exactly who ran what), <strong>damage limitation</strong> (a typo as a regular user is far less catastrophic), and the <strong>principle of least privilege</strong> (users and services should only have the access they actually need). The video also demonstrates adding a user to the <code>sudo</code> group, safely editing <code>/etc/sudoers</code> with <code>visudo</code>, and running quick audit commands to find accounts with empty passwords or unexpected root-level access.</p>
+  </section>
+
+  <!-- ── Video + Transcript ── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video Walkthrough</h2>
+    <p style="font-size:0.93rem;margin-bottom:0.75rem;">Use the transcript panel to follow along or click any line to jump to that point in the video. This video also prepares you for RSI Discussion 5 — watch it before you write your post.</p>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/xo1wbWNoe_o?enablejsapi=1"
+                  title="sudo, Security, and Why Root Login Is Discouraged — CSC 106 Week 5"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="transcript-container"
+             class="transcript-container"
+             role="region"
+             aria-label="Video transcript — click any line to seek">
+          <p style="color:#64748b;text-align:center;padding:1rem 0;">Loading transcript…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands Used ── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <div class="commands-box">
+      <div class="commands-header">
+        <h2 id="commands-heading">Commands Used in This Video</h2>
+        <p style="font-size:0.88rem;color:#475569;margin-top:0.25rem;margin-bottom:0;">Commands appear in the order they are demonstrated. Use this list to follow along or review after watching.</p>
+      </div>
+      <div class="commands-body">
+        <div class="tip-box" role="note">
+          <strong>Never edit /etc/sudoers directly</strong> with a text editor like nano or vim. Always use <code>sudo visudo</code> — it validates the file's syntax before saving and prevents you from locking yourself out of sudo access.
+        </div>
+        <ol class="cmd-list" aria-label="Commands used in order">
+          <li>
+            <code>whoami</code>
+            <span class="cmd-desc">Display your current username. Compare the output with and without sudo to see the difference.</span>
+          </li>
+          <li>
+            <code>sudo whoami</code>
+            <span class="cmd-desc">Returns "root" — demonstrates that sudo temporarily makes you root for that one command.</span>
+          </li>
+          <li>
+            <code>id testuser</code>
+            <span class="cmd-desc">Check a user's current UID, GID, and group memberships before making changes.</span>
+          </li>
+          <li>
+            <code>sudo usermod -aG sudo testuser</code>
+            <span class="cmd-desc">Add testuser to the sudo group. The <code>-aG</code> appends the group without removing existing group memberships. The user must log out and back in for the change to take effect.</span>
+          </li>
+          <li>
+            <code>id testuser</code>
+            <span class="cmd-desc">Re-run after the usermod to verify that group 27 (sudo) now appears in the output.</span>
+          </li>
+          <li>
+            <code>sudo cat /etc/sudoers</code>
+            <span class="cmd-desc">View the sudoers configuration file. This file controls who can use sudo and what commands they are permitted to run.</span>
+          </li>
+          <li>
+            <code>sudo grep %sudo /etc/sudoers</code>
+            <span class="cmd-desc">Find the line granting the sudo group full access. The <code>%</code> prefix means "group." The <code>ALL=(ALL:ALL) ALL</code> rule means members can run any command as any user on any host.</span>
+          </li>
+          <li>
+            <code>sudo visudo</code>
+            <span class="cmd-desc">The safe way to edit <code>/etc/sudoers</code>. Opens in the default editor (nano) and validates syntax before saving. Use Ctrl+X to exit without making changes.</span>
+          </li>
+          <li>
+            <code>sudo cat /var/log/auth.log | grep sudo | tail -5</code>
+            <span class="cmd-desc">View the last 5 sudo audit log entries — demonstrates accountability. Each entry records which user ran a sudo command and when.</span>
+          </li>
+          <li>
+            <code>sudo awk -F: '($2 == "") {print $1}' /etc/shadow</code>
+            <span class="cmd-desc">Security audit: find accounts with empty (blank) passwords. Any output means a user can log in without a password — investigate immediately.</span>
+          </li>
+          <li>
+            <code>sudo awk -F: '($3 == 0) {print $1}' /etc/passwd</code>
+            <span class="cmd-desc">Security audit: find accounts with UID 0 (root-level access). Only "root" should appear. Any other account listed here is a serious security concern.</span>
+          </li>
+          <li>
+            <code>lastlog</code>
+            <span class="cmd-desc">Show the last login time for every account on the system. Accounts that have never logged in may be unused — unused accounts increase your attack surface and should be removed.</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const VIDEO_ID = 'xo1wbWNoe_o';
+  let player;
+  let timeUpdater;
+  let parsedTranscript = [];
+
+  const vttContent = `WEBVTT
+
+00:00.000 --> 00:12.440
+Aloha! This is our second video for week five. We're going to talk about something you've been doing since week one without necessarily thinking too hard about it — and that's using sudo.
+
+00:12.440 --> 00:33.960
+Every time you run something like sudo apt update or sudo systemctl status ssh, what's happening is you're temporarily elevating your privileges just to run that one command.
+
+00:33.960 --> 00:47.900
+If that service isn't installed it can't give you a status. But without sudo in front of certain commands, you'll get a permission denied error.
+
+00:47.900 --> 01:03.200
+So I'm a normal user unless I use the word sudo — and then I'm a root user for that command.
+
+01:07.200 --> 01:20.040
+Obviously this is something I've dealt with in Windows too. A lot of times people want to just log in as the super user or root user with full admin privileges so they never have to worry about it.
+
+02:02.460 --> 02:13.920
+It's kind of the core part of our discussion this week. Understanding why we don't use root and always use sudo will help you with the RSI Discussion: "Security Starts with Users."
+
+02:13.920 --> 02:27.540
+There are three reasons why we don't use root and always use sudo: accountability, damage limitation, and the principle of least privilege.
+
+02:36.860 --> 02:45.600
+When we look at sudo — if I run whoami, it says I'm "paid."
+
+02:45.600 --> 02:52.420
+But if I run sudo whoami, it's going to say I'm "root."
+
+02:52.420 --> 02:56.420
+Whenever I use the word sudo, I'm root.
+
+02:56.420 --> 03:10.140
+I'm not who I normally am — I'm somebody else for that one command.
+
+03:10.140 --> 03:18.280
+If you're in the sudo group, you can use sudo. If you're not in that group, you have to be added first.
+
+03:18.280 --> 03:31.680
+Other distributions of Linux like CentOS or Fedora don't use the sudo group — they use "wheel" or something similar, but the concept is the same.
+
+03:31.680 --> 03:43.920
+Remember our testuser? They were not in the sudo group.
+
+03:43.920 --> 04:00.720
+Run id testuser — they're in the testuser group and developers group, but not sudo. So testuser cannot run anything with sudo.
+
+04:00.720 --> 04:10.820
+They'd get a permission denied error, like I showed earlier when I tried apt update without sudo in front.
+
+04:10.820 --> 04:18.360
+So let's add testuser to the sudo group.
+
+04:18.360 --> 04:33.000
+Clear the screen and start: sudo usermod — then the flags.
+
+04:33.000 --> 04:45.320
+Let me first verify: id testuser — they're in groups 1001 and 1002.
+
+04:45.320 --> 04:58.000
+Now: sudo usermod -aG — lowercase -a means append, uppercase -G means supplementary groups.
+
+04:58.000 --> 05:13.680
+The -a is critical. If you use just -G without -a, whatever group you add would replace all existing groups.
+
+05:13.680 --> 05:28.240
+So if I typed usermod -G sudo testuser without the -a, testuser would lose groups 1001 and 1002 — only sudo would remain.
+
+05:28.240 --> 05:37.680
+With -aG, we append sudo to the existing list without removing anything.
+
+05:37.680 --> 05:56.840
+The full command: sudo usermod -aG sudo testuser
+
+05:56.840 --> 06:12.700
+Now run id testuser — they're in groups 1001, 1002, and now 27 (sudo). testuser can now use sudo.
+
+06:12.700 --> 06:32.140
+Important: if testuser was already logged in somewhere when we made this change, they can't use sudo yet. They have to log out and back in.
+
+06:32.140 --> 06:52.180
+Every login starts a new shell and the shell reads the group files. It doesn't update in real time — you have to restart the user session to get the new profile.
+
+07:01.940 --> 07:13.740
+Sudo users are controlled by a file called sudoers.
+
+07:18.360 --> 07:32.500
+Let's look at it: sudo cat /etc/sudoers. Without sudo, you'd get permission denied.
+
+07:33.720 --> 07:40.860
+Here's the sudoers file. It has information about what sudo users are allowed to do.
+
+07:51.820 --> 08:01.620
+Let's look specifically at the sudo group entry: sudo grep %sudo /etc/sudoers
+
+08:01.620 --> 08:08.740
+The percent sign before sudo means "the group named sudo" — not a user named sudo.
+
+08:14.180 --> 08:27.120
+The key line says ALL=(ALL:ALL) ALL — meaning anyone in the group can run any command as any user on any host.
+
+08:27.120 --> 08:41.740
+That's the default, and we're not going to change it. We can create really bad situations if we change it incorrectly.
+
+08:41.740 --> 08:58.960
+You never modify the sudoers file directly with nano or any regular editor — like nano /etc/sudoers. Never do it that way.
+
+08:58.960 --> 09:20.460
+There's a specific command for editing sudoers safely: sudo visudo. It opens the file in your default editor (nano for us).
+
+09:20.460 --> 09:40.380
+visudo checks your syntax before saving. If you make a typo or an error, it will warn you and ask if you really want to save it. A regular editor won't do that check.
+
+09:40.380 --> 09:51.140
+I don't want to change anything, so I'll use Ctrl+X to exit.
+
+10:03.440 --> 10:10.440
+Mostly in this class we'll just add users to the sudo group — that's what most people do in practice.
+
+10:14.620 --> 10:30.460
+In the real workplace you might encounter situations where you want to give specific admin privileges to specific commands, and even allow running them without a password. That's more advanced than we'll cover here, but it is possible.
+
+10:41.720 --> 10:53.060
+Reason number one for using sudo instead of root: Accountability.
+
+10:53.060 --> 11:06.020
+The system logs exactly who ran what commands and when.
+
+11:06.020 --> 11:20.900
+Let's look at that log: sudo cat /var/log/auth.log
+
+11:20.900 --> 11:37.580
+I'll pipe that to grep to filter for sudo entries, then pipe to tail to see just the last five lines: sudo cat /var/log/auth.log | grep sudo | tail -5
+
+11:37.580 --> 12:01.920
+Look at the last entry — it says "sudo paid" — so even though I used sudo, it records the actual user who ran the command.
+
+12:01.920 --> 12:13.820
+It tells you the exact user. Even when using sudo, the log records who actually ran the command.
+
+12:13.820 --> 12:29.480
+This is really important. If something happens — a bad login, a suspicious command — you can see exactly who did it.
+
+12:29.480 --> 12:54.120
+If everyone logged in as root, you'd never know who did what. "Root did it" — but who is root? You'd have fifty people with root access and no way to distinguish them.
+
+12:54.120 --> 13:15.120
+With sudo, the log says: this specific user (paid, who's in the sudo group) ran this command. You can trace any action back to a real person.
+
+13:15.120 --> 13:31.740
+Reason number two: Damage limitation.
+
+13:31.740 --> 13:43.440
+Think about what a typo can do.
+
+13:43.680 --> 14:00.900
+For instance, look at the difference between: rm -rf old_files/ and rm -rf / (with a space after the slash).
+
+14:00.900 --> 14:25.980
+rm stands for remove. -r means recursive — go through every file and folder below this point. -f means force — don't ask, just do it.
+
+14:25.980 --> 14:37.440
+So rm -rf old_files/ removes everything inside old_files/ and any subdirectories.
+
+14:37.440 --> 14:51.960
+But rm -rf / (with the space) reads the slash as the root directory — the root of your entire filesystem — and deletes everything on your computer.
+
+14:51.960 --> 15:07.860
+One accidental space. Starts at the root filesystem and deletes everything — /etc, /home, /usr — all of it. Not a good idea.
+
+15:07.860 --> 15:20.520
+If you're logged in as root, that command runs immediately with no prompt. As a regular user using sudo, you're more intentional — you have to explicitly elevate for each command. That extra step helps you catch mistakes before they run.
+
+15:20.520 --> 15:38.040
+Sudo doesn't make you immune to that mistake, but because you're more deliberate about your sudo commands, you're less likely to run destructive commands carelessly.
+
+15:38.040 --> 15:45.140
+I'm backing out of that command — I don't want to wipe out anything.
+
+15:45.140 --> 16:00.440
+Reason number three: The principle of least privilege.
+
+16:00.440 --> 16:07.360
+This isn't specific to Linux — it applies in Windows, Mac, and everywhere else.
+
+16:07.360 --> 16:15.040
+The idea is simple: every user, every process, every service should only have the minimum access it needs to do its job — and nothing more.
+
+16:15.040 --> 16:23.040
+If you're reading log files, you don't need root access. You can read log files just fine as yourself.
+
+16:23.040 --> 16:29.740
+If you're editing your own personal scripts, you don't need root access either.
+
+16:29.740 --> 16:48.020
+You need root when you're doing something that specifically requires it — like installing packages, managing users, or modifying system configurations.
+
+16:48.020 --> 17:01.560
+sudo is a way to enforce this naturally: you're a regular user by default and you can escalate only when you actually need it. That's basically why we use sudo and not root.
+
+17:08.180 --> 17:28.360
+There are a couple of audit commands that are useful for checking user-level security on a system. These will be helpful for Mini-Project 2.
+
+17:28.360 --> 17:34.520
+First: check for accounts with empty passwords.
+
+17:34.520 --> 17:53.680
+An empty password means anyone can log in as that user without authentication. We check this using the awk command.
+
+17:53.680 --> 18:08.140
+awk is a powerful tool for processing tabular data. "AWK" stands for the last names of the three people who created it — Aho, Weinberger, and Kernighan.
+
+18:08.140 --> 18:31.160
+We'll use awk with colon as the field separator (-F:) to examine /etc/shadow, which is colon-delimited just like /etc/passwd.
+
+18:31.160 --> 18:47.020
+The command: sudo awk -F: '($2 == "") {print $1}' /etc/shadow
+
+18:47.020 --> 19:04.620
+This checks field 2 (the password hash). If it equals nothing (empty string), it prints field 1 (the username). An empty field 2 means no password is set.
+
+19:04.620 --> 19:24.040
+If nothing comes back, that's good — no accounts have empty passwords. If you do get output, investigate those accounts immediately.
+
+19:24.040 --> 19:34.120
+You want no output from this command. Any username printed here is a security problem.
+
+19:38.040 --> 20:30.160
+Let me correct a typo in the command — the quoting has to be exact.
+
+20:30.160 --> 21:29.540
+Here's the corrected command: sudo awk -F: '($2 == "") {print $1}' /etc/shadow — it returned nothing, which means no accounts have empty passwords. Good.
+
+21:29.540 --> 21:36.960
+No output is the correct result.
+
+21:36.960 --> 21:51.000
+The second audit check: look for accounts with UID 0.
+
+21:51.000 --> 21:58.840
+UID 0 means root-level access. There should be only one account with UID 0 — and that's root.
+
+21:58.840 --> 22:07.800
+If you find any other account with UID 0, that means someone created a user with root access — that's a serious security issue.
+
+22:07.800 --> 22:29.280
+The command: sudo awk -F: '($3 == 0) {print $1}' /etc/passwd
+
+22:29.280 --> 22:40.840
+This checks field 3 (the UID) in /etc/passwd. If it equals zero, it prints the username.
+
+22:45.640 --> 23:04.840
+The result is only "root" — which is correct. If anything other than root appears, investigate and resolve it immediately.
+
+23:04.840 --> 23:15.620
+Only root should have UID 0. Anything else means someone gave another account root-level access.
+
+23:18.200 --> 23:25.080
+We can also check when accounts last logged in using: lastlog
+
+23:25.080 --> 23:41.240
+lastlog shows every account on the system and when it last logged in. Most system accounts will show "Never logged in."
+
+23:41.240 --> 24:01.320
+If a user account shows "Never logged in," that might be fine for a new account — but older accounts that have never been used are a concern. You can also grep lastlog for a specific user.
+
+24:01.320 --> 24:17.640
+Generally, you don't want unused accounts on your system. They increase your attack surface — every unused account is another potential entry point for an attacker.
+
+24:17.640 --> 24:36.360
+If you don't need an account, get rid of it. Don't leave it sitting around.
+
+24:36.360 --> 24:48.520
+The last part today is about this week's RSI Discussion, which asks you to reflect on why user and group management is the foundation of Linux security.
+
+24:48.520 --> 25:08.120
+Here's how to think about it: security works in layers. The bottom layer is users and groups — this controls who exists on the system and what their identity is.
+
+25:08.120 --> 25:19.080
+The layer above that — which we'll cover next week — is file permissions. File permissions control what each user and group can access.
+
+25:19.080 --> 25:27.720
+On top of that is network security: firewalls and service access — that's Week 7.
+
+25:27.720 --> 26:04.580
+All of those layers build on each other. It all starts with user accounts. If user accounts are poorly managed — if people have more access than they need, if old accounts are left active, if passwords are weak or missing — no amount of firewall configuration will save you.
+
+26:04.580 --> 26:10.400
+The principles of least privilege, the sudo model, password policies, and group-based access control are the foundation everything else rests on.
+
+26:10.400 --> 26:33.120
+For your discussion post, try to use specific examples and real commands and files from these videos and your chapter 15 and 16 reading. The strongest posts connect concepts with concrete practice.
+
+26:33.120 --> 26:59.840
+To summarize what we covered in both videos: where user data lives (/etc/passwd, /etc/shadow, /etc/group), how to create users and groups, how to manage membership safely using -aG, how sudo works, why we don't log in as root, and how to run basic security audits.
+
+26:59.840 --> 27:25.060
+As a reminder for this week: read Linux Essentials chapters 15 and 16, complete the chapter 16 lab, post your discussion by Thursday, and reply to classmates by Sunday. For extra credit, do the chage password aging exercise.
+
+27:25.060 --> 27:55.500
+The extra credit assignment has some supplemental reading — manpages and Red Hat documentation — and the lab itself includes the commands you need. It's a great way to learn a transferable sysadmin skill.
+
+27:55.500 --> 28:40.180
+Good luck this week. Next week we'll cover file permissions and how that works in Linux. Thanks!`;
+
+  function timeToSeconds(timeStr) {
+    if (!timeStr) return 0;
+    const parts = timeStr.trim().split(':');
+    if (parts.length === 2) {
+      return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    } else if (parts.length === 3) {
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+    }
+    return 0;
+  }
+
+  function parseVtt(vttText) {
+    const blocks = vttText.trim().split(/\n\n+/);
+    const parsed = [];
+    blocks.forEach(block => {
+      if (block.startsWith('WEBVTT') || block.trim() === '') return;
+      const lines = block.trim().split('\n');
+      const timeLine = lines.find(l => l.includes('-->'));
+      if (!timeLine) return;
+      const [startStr, endStr] = timeLine.split(' --> ');
+      const textLines = lines.slice(lines.indexOf(timeLine) + 1);
+      const text = textLines.join(' ').trim();
+      if (!text) return;
+      parsed.push({ start: timeToSeconds(startStr), end: timeToSeconds(endStr), text });
+    });
+    return parsed;
+  }
+
+  function populateTranscript() {
+    const container = document.getElementById('transcript-container');
+    container.innerHTML = '';
+    parsedTranscript.forEach(cue => {
+      const el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', cue.text);
+      const seek = () => {
+        if (player && player.seekTo) {
+          player.seekTo(cue.start, true);
+          player.playVideo();
+        }
+      };
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    const currentTime = player.getCurrentTime();
+    const lines = document.querySelectorAll('#transcript-container .transcript-line');
+    lines.forEach(line => {
+      const start = parseFloat(line.dataset.start);
+      const end = parseFloat(line.dataset.end);
+      if (currentTime >= start && currentTime < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          const prev = document.querySelector('#transcript-container .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncTranscriptHeight() {
+    const mq = window.matchMedia('(min-width: 860px)');
+    const vc = document.getElementById('vc-1');
+    const tc = document.getElementById('transcript-container');
+    if (!vc || !tc) return;
+    if (mq.matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('yt-1', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onPlayerStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    parsedTranscript = parseVtt(vttContent);
+    populateTranscript();
+    setTimeout(syncTranscriptHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncTranscriptHeight, 250);
+  });
+</script>
+</body>
+</html>
