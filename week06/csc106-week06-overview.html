@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC 106 - Week 6 Overview</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #1a1a2e;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #1a1a2e;
+            color: #ffffff;
+            padding: 8px 16px;
+            z-index: 1000;
+            transition: top 0.2s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: #1a1a2e;
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        nav ul li a {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        nav ul li a:hover,
+        nav ul li a:focus {
+            background-color: #2d2d5e;
+            color: #ffffff;
+            outline: 2px solid #6c8cff;
+            outline-offset: 2px;
+        }
+
+        /* Main content */
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+            border-bottom: 3px solid #6c8cff;
+            padding-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: #1a1a2e;
+            margin-top: 40px;
+            margin-bottom: 12px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #2d2d5e;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            margin-bottom: 16px;
+        }
+
+        .week-subtitle {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 24px;
+        }
+
+        /* Welcome section */
+        .welcome-box {
+            background-color: #f0f4ff;
+            border-left: 4px solid #6c8cff;
+            padding: 20px 24px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+        }
+
+        .welcome-box p {
+            margin-bottom: 8px;
+        }
+
+        .welcome-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Goals list */
+        .goals-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .goals-list li {
+            padding: 10px 12px 10px 36px;
+            position: relative;
+            margin-bottom: 8px;
+            background-color: #fafbff;
+            border-radius: 4px;
+        }
+
+        .goals-list li::before {
+            content: "\2713";
+            position: absolute;
+            left: 12px;
+            color: #4a7c4a;
+            font-weight: bold;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .checklist li input[type="checkbox"] {
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .checklist-label {
+            flex: 1;
+        }
+
+        .checklist-type {
+            font-size: 0.8rem;
+            color: #666;
+            background-color: #e8e8e8;
+            padding: 2px 8px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .checklist-type.extra {
+            background-color: #fff3e0;
+            color: #8b5e00;
+        }
+
+        /* Key concepts */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .concepts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .concept-card {
+            background-color: #f7f9fc;
+            border: 1px solid #dde3ed;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .concept-card h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #1a1a2e;
+        }
+
+        .concept-card p {
+            font-size: 0.92rem;
+            margin-bottom: 0;
+            color: #444;
+        }
+
+        /* Collapsible / accordion */
+        .collapsible-header {
+            background-color: #f0f0f0;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            padding: 14px 18px;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .collapsible-header:hover,
+        .collapsible-header:focus {
+            background-color: #e4e4e4;
+            outline: 2px solid #6c8cff;
+            outline-offset: 2px;
+        }
+
+        .collapsible-header .arrow {
+            transition: transform 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .collapsible-header[aria-expanded="true"] .arrow {
+            transform: rotate(90deg);
+        }
+
+        .collapsible-content {
+            border: 1px solid #d0d0d0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            padding: 16px 18px;
+            display: none;
+            background-color: #fafafa;
+        }
+
+        .collapsible-content.open {
+            display: block;
+        }
+
+        .collapsible-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .collapsible-content li {
+            margin-bottom: 6px;
+        }
+
+        /* Looking ahead */
+        .looking-ahead {
+            background-color: #f5f0ff;
+            border-left: 4px solid #8b6ccf;
+            padding: 20px 24px;
+            border-radius: 4px;
+            margin-top: 32px;
+        }
+
+        .looking-ahead p {
+            margin-bottom: 8px;
+        }
+
+        .looking-ahead p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* CSLO tags */
+        .cslo-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            background-color: #e3ecff;
+            color: #2d2d5e;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        /* Responsive nav */
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            nav ul li a {
+                display: block;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <nav aria-label="Page navigation">
+        <ul>
+            <li><a href="#welcome">Welcome</a></li>
+            <li><a href="#goals">Goals</a></li>
+            <li><a href="#activities">Activities</a></li>
+            <li><a href="#concepts">Key Concepts</a></li>
+            <li><a href="#course-arc">Course Arc</a></li>
+            <li><a href="#looking-ahead">Looking Ahead</a></li>
+        </ul>
+    </nav>
+
+    <main id="main-content">
+        <h1 id="welcome">Week 6: File Permissions, Ownership, and Networking Fundamentals</h1>
+        <p class="week-subtitle">CSC 106 - Introduction to Linux II</p>
+
+        <div class="welcome-box">
+            <p>Welcome to Week 6. This week brings together two topics that are essential for anyone managing a Linux system: controlling who can access files and understanding how your server communicates on a network.</p>
+            <p>You have spent the past several weeks building your VM, exploring the kernel, managing services, writing scripts, and setting up users and groups. Now you will see how file permissions tie directly into the user and group structure you worked with last week, and you will take your first real look at your server's network configuration. Both of these skills feed directly into Week 7, where you will configure a static IP, set up a web server, and lock things down with a firewall.</p>
+            <p>This is a lighter week in terms of point value (30 required points), which gives you some breathing room between Mini-Project 1 and the heavier server work coming next week. Use that space to really understand permissions and networking fundamentals. They come up constantly in real-world Linux administration.</p>
+        </div>
+
+        <h2 id="goals">Learning Goals</h2>
+        <p>By the end of this week, you should be able to:</p>
+        <ul class="goals-list">
+            <li>Change file and directory ownership using <code>chown</code> and <code>chgrp</code></li>
+            <li>Set and interpret file permissions using both symbolic and numeric (octal) notation with <code>chmod</code></li>
+            <li>Explain how Linux permission bits (read, write, execute) apply differently to files and directories</li>
+            <li>Use networking commands (<code>ip addr</code>, <code>ip route</code>, <code>ping</code>, <code>dig</code>, <code>ss</code>) to inspect your server's network state</li>
+            <li>Describe what each networking command reveals about your system's connectivity and services</li>
+            <li>Connect file ownership and permissions to the user/group concepts from Week 5</li>
+        </ul>
+
+        <h2 id="activities">Required Activities</h2>
+        <p>Use this checklist to track your progress. All items are listed by name as they appear in the course modules.</p>
+
+        <ul class="checklist" aria-label="Week 6 activity checklist">
+            <li>
+                <input type="checkbox" id="act1" aria-label="Linux Essentials Chapter 17 Lab">
+                <span class="checklist-label">
+                    <strong>Linux Essentials Ch. 17 Lab</strong><br>
+                    <span style="font-size: 0.9rem; color: #444;">Cisco lab: change ownership and permissions on files and directories in the Cisco VM.</span>
+                </span>
+                <span class="checklist-type">Cisco Lab (15 pts)</span>
+            </li>
+            <li>
+                <input type="checkbox" id="act2" aria-label="Network Basics Check assignment">
+                <span class="checklist-label">
+                    <strong>Network Basics Check</strong><br>
+                    <span style="font-size: 0.9rem; color: #444;">Run networking commands on your Ubuntu Server VM, paste output, and write a short paragraph explaining what each command showed you.</span>
+                </span>
+                <span class="checklist-type">Hands-on (15 pts)</span>
+            </li>
+            <li>
+                <input type="checkbox" id="act3" aria-label="Network Troubleshooting Walkthrough extra credit">
+                <span class="checklist-label">
+                    <strong>Network Troubleshooting Walkthrough (Extra Credit)</strong><br>
+                    <span style="font-size: 0.9rem; color: #444;">Document a structured troubleshooting process for a "server cannot reach the internet" scenario using the DigitalOcean tutorial and Ubuntu Server Guide.</span>
+                </span>
+                <span class="checklist-type extra">Extra Credit (5 pts)</span>
+            </li>
+        </ul>
+
+        <p style="margin-top: 16px; font-size: 0.9rem; color: #555;"><strong>Week 6 Required Points:</strong> 30 &nbsp;|&nbsp; <strong>Extra Credit Available:</strong> 5</p>
+
+        <h2 id="concepts">Key Concepts and Themes</h2>
+        <p>Pay attention to these ideas as you work through this week's materials:</p>
+
+        <div class="concepts-grid">
+            <div class="concept-card">
+                <h3>Permissions and Ownership</h3>
+                <p>Every file and directory on a Linux system has an owner, a group, and a set of permission bits. Understanding <code>chmod</code>, <code>chown</code>, and <code>chgrp</code> is not optional for system administration. You will use these constantly.</p>
+            </div>
+            <div class="concept-card">
+                <h3>Octal vs. Symbolic Notation</h3>
+                <p>You can express permissions as <code>rwxr-xr--</code> or as <code>754</code>. Both say the same thing. Get comfortable reading and writing both forms, because you will encounter each in documentation and scripts.</p>
+            </div>
+            <div class="concept-card">
+                <h3>Network State Inspection</h3>
+                <p>Commands like <code>ip addr</code>, <code>ip route</code>, <code>ping</code>, <code>dig</code>, and <code>ss</code> let you answer basic questions: What IP does my server have? Can it reach the internet? What services are listening? These are your first diagnostic tools.</p>
+            </div>
+            <div class="concept-card">
+                <h3>Connecting Users to Files</h3>
+                <p>Last week you created users and groups. This week you see why that matters: permissions are enforced based on who owns a file and what group it belongs to. The two topics are deeply linked.</p>
+            </div>
+        </div>
+
+        <h2 id="course-arc">Where This Week Fits</h2>
+
+        <button class="collapsible-header" aria-expanded="false" aria-controls="arc-content" id="arc-toggle">
+            <span>Course Arc: Weeks 1 through 8</span>
+            <span class="arrow" aria-hidden="true">&#9654;</span>
+        </button>
+        <div class="collapsible-content" id="arc-content" role="region" aria-labelledby="arc-toggle">
+            <ul>
+                <li><strong>Week 1:</strong> Linux Installation and Package Management</li>
+                <li><strong>Week 2:</strong> Hardware, the Kernel, and the Boot Process</li>
+                <li><strong>Week 3:</strong> Startup Scripts, Runlevels, and systemd</li>
+                <li><strong>Week 4:</strong> Advanced Shell Scripting and Mini-Project 1</li>
+                <li><strong>Week 5:</strong> Users, Groups, and System Security</li>
+                <li><strong>Week 6 (this week):</strong> File Permissions, Ownership, and Networking Fundamentals</li>
+                <li><strong>Week 7:</strong> Network Configuration, Server Setup, and Security</li>
+                <li><strong>Week 8:</strong> Integration, Review, and Mini-Project 2</li>
+            </ul>
+            <p style="margin-top: 12px;">Weeks 1 through 3 built the system. Week 4 automated it with scripting. Weeks 5 and 6 secure and inspect it. Weeks 7 and 8 turn it into a working, documented server.</p>
+        </div>
+
+        <h2 id="looking-ahead">Looking Ahead</h2>
+        <div class="looking-ahead">
+            <p><strong>Next week (Week 7)</strong> is the most hands-on server configuration week of the course. You will assign a static IP address using Netplan, install and configure Nginx as a web server, set up a firewall with <code>ufw</code>, configure SSH key authentication, and create a cron job. It is the largest single hands-on assignment in the course (45 points), and it pulls together nearly everything you have learned.</p>
+            <p>The permissions knowledge from this week matters immediately: web server files need correct ownership and permissions to be served. The networking fundamentals you practice this week (checking your IP, verifying connectivity, seeing what ports are open) become your troubleshooting toolkit when configuring services next week.</p>
+            <p>If you invest time this week in really understanding how <code>ip addr</code> and <code>ss</code> work, you will save yourself debugging time in Week 7. That is a good trade.</p>
+        </div>
+
+    </main>
+
+    <script>
+        // Collapsible section toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggle = document.getElementById('arc-toggle');
+            var content = document.getElementById('arc-content');
+
+            toggle.addEventListener('click', function() {
+                var expanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', String(!expanded));
+                if (expanded) {
+                    content.classList.remove('open');
+                } else {
+                    content.classList.add('open');
+                }
+            });
+
+            toggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle.click();
+                }
+            });
+
+            // Smooth scroll for nav links with offset for sticky nav
+            var navLinks = document.querySelectorAll('nav a[href^="#"]');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var targetId = this.getAttribute('href').substring(1);
+                    var target = document.getElementById(targetId);
+                    if (target) {
+                        var navHeight = document.querySelector('nav').offsetHeight;
+                        var targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight - 16;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                        target.focus({ preventScroll: true });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
