@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 6 Lab – Network Basics Check | CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #1a3a5c;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    :focus-visible {
+      outline: 3px solid #f6ad55;
+      outline-offset: 2px;
+    }
+
+    /* Sticky nav */
+    .lab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1a3a5c;
+      padding: 0 1rem;
+    }
+    .lab-nav-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.45rem 0;
+    }
+    .nav-label {
+      color: #bee3f8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.3rem;
+      flex-shrink: 0;
+    }
+    .lab-nav a {
+      color: #bee3f8;
+      text-decoration: none;
+      font-size: 0.83rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .lab-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lab-nav a:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Layout */
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Activity header card */
+    .activity-header {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #2b6cb0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .activity-header h1 {
+      font-size: 1.45rem;
+      color: #1a3a5c;
+      margin-bottom: 0.2rem;
+    }
+    .activity-meta {
+      font-size: 0.85rem;
+      color: #4a5568;
+      margin-bottom: 1.1rem;
+    }
+
+    .scenario-box {
+      background: #ebf8ff;
+      border: 1px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .box-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2b6cb0;
+      margin-bottom: 0.4rem;
+    }
+    .scenario-box p + p { margin-top: 0.5rem; }
+
+    .objectives-box { margin-top: 1rem; }
+    .objectives-box > strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #1a3a5c;
+      margin-bottom: 0.45rem;
+    }
+    .objectives-box ul { padding-left: 1.3rem; }
+    .objectives-box li { margin-bottom: 0.3rem; font-size: 0.93rem; }
+
+    /* Phase cards */
+    .phase-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #ebf4ff;
+    }
+    .phase-badge {
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .phase-card h2 {
+      font-size: 1.15rem;
+      color: #1a3a5c;
+    }
+
+    .phase-description {
+      font-size: 0.94rem;
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    /* Sub-labels */
+    .sub-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Code / command blocks */
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    .sample-pre {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    .ann { color: #f6ad55; font-style: italic; }
+
+    .cmd-block { margin-bottom: 1rem; }
+    .cmd-block p { font-size: 0.85rem; color: #4a5568; margin-top: 0.4rem; }
+    .sample-block { margin-bottom: 1rem; }
+
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .ic {
+      background: #edf2f7;
+      color: #2b6cb0;
+      padding: 0.08em 0.38em;
+      border-radius: 3px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.87em;
+    }
+
+    .install-note {
+      font-size: 0.85rem;
+      color: #1a202c;
+      margin-top: 0.45rem;
+      padding: 0.5rem 0.8rem;
+      background: #fffbeb;
+      border-left: 3px solid #d69e2e;
+      border-radius: 0 4px 4px 0;
+      line-height: 1.55;
+    }
+
+    /* Hint (collapsible) */
+    details.hint {
+      margin-bottom: 1.1rem;
+      border: 1px solid #d69e2e;
+      border-radius: 6px;
+      background: #fffbeb;
+    }
+    details.hint summary {
+      cursor: pointer;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #744210;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    details.hint summary::-webkit-details-marker { display: none; }
+    details.hint summary::before {
+      content: "▶";
+      font-size: 0.65rem;
+      transition: transform 0.18s;
+      color: #c07d10;
+      flex-shrink: 0;
+    }
+    details.hint[open] summary::before { transform: rotate(90deg); }
+    details.hint summary:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+    .hint-body {
+      padding: 0 0.9rem 0.75rem;
+      font-size: 0.88rem;
+      color: #744210;
+    }
+    .hint-body ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .hint-body li { margin-bottom: 0.3rem; }
+
+    /* Response fields */
+    .response-group { margin-top: 1.2rem; }
+    .response-field { margin-bottom: 1rem; }
+    .response-field label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.35rem;
+    }
+    .field-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 1.35em;
+      height: 1.35em;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #1a202c;
+      background: #fff;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: 3px solid #4299e1;
+      outline-offset: 1px;
+      border-color: #4299e1;
+    }
+    textarea.out { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.83rem; background: #f7fafc; min-height: 120px; }
+    textarea.exp { min-height: 90px; }
+
+    /* Submission section */
+    .submission-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #38a169;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .submission-section h2 {
+      font-size: 1.15rem;
+      color: #1a6644;
+      margin-bottom: 0.8rem;
+    }
+    .submission-section h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 1rem 0 0.4rem;
+    }
+    .submission-section h3:first-of-type { margin-top: 0; }
+    .submission-section p, .submission-section li { font-size: 0.92rem; }
+    .submission-section ol, .submission-section ul { padding-left: 1.3rem; }
+    .submission-section li { margin-bottom: 0.3rem; }
+
+    .pdf-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #38a169;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.3rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      text-decoration: none;
+    }
+    .pdf-btn:hover { background: #2f855a; }
+    .pdf-btn:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Print styles */
+    @media print {
+      .skip-link, .lab-nav, .pdf-btn, details.hint { display: none !important; }
+
+      body { background: #fff; font-size: 10.5pt; color: #000; }
+      main { max-width: 100%; padding: 0; }
+
+      .activity-header, .phase-card, .submission-section {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 1rem 0.5rem;
+        margin-bottom: 0.75rem;
+        page-break-inside: avoid;
+      }
+
+      textarea { display: none !important; }
+
+      .print-response {
+        border: 1px solid #aaa;
+        border-radius: 3px;
+        padding: 0.4rem 0.5rem;
+        min-height: 2.5rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "Courier New", monospace;
+        font-size: 8.5pt;
+        background: #fafafa;
+        color: #000;
+        margin-top: 0.3rem;
+      }
+      .print-response.exp-print {
+        font-family: inherit;
+        font-size: 9.5pt;
+      }
+      pre, .sample-pre { font-size: 7.5pt; white-space: pre-wrap; }
+      .phase-card h2 { font-size: 11pt; }
+      .activity-header h1 { font-size: 14pt; }
+    }
+
+    @media (max-width: 600px) {
+      .activity-header, .phase-card, .submission-section { padding: 1.1rem 1rem; }
+      .activity-header h1 { font-size: 1.2rem; }
+      .phase-card h2 { font-size: 1rem; }
+      .lab-nav a { font-size: 0.78rem; padding: 0.25rem 0.42rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="lab-nav" aria-label="Lab section navigation">
+  <div class="lab-nav-inner">
+    <span class="nav-label" aria-hidden="true">Jump to:</span>
+    <a href="#phase1">Phase 1 — ip addr</a>
+    <a href="#phase2">Phase 2 — ip route</a>
+    <a href="#phase3">Phase 3 — ping</a>
+    <a href="#phase4">Phase 4 — dig</a>
+    <a href="#phase5">Phase 5 — ss</a>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Activity Header ── -->
+  <header class="activity-header">
+    <h1>Network Basics Check</h1>
+    <p class="activity-meta">CSC 106 – Introduction to Linux II &nbsp;·&nbsp; Week 6 Lab &nbsp;·&nbsp; 15 points &nbsp;·&nbsp; CSLO 2</p>
+
+    <div class="scenario-box" role="note">
+      <span class="box-label">Scenario</span>
+      <p>You are a junior systems administrator at a small tech company. Before handing a server off to the network team, your lead asks you to perform a quick network audit: confirm the machine has a valid IP address, can reach the internet, resolves DNS correctly, and is only exposing the services it should be. This kind of pre-deployment check is routine any time a server is freshly installed or reconfigured.</p>
+      <p>In this activity you will run five standard diagnostic commands on your Ubuntu Server VM, record the actual output, and explain in plain language what each result reveals about your system's network configuration.</p>
+    </div>
+
+    <div class="objectives-box">
+      <strong>By completing this activity you will demonstrate that you can:</strong>
+      <ul>
+        <li>Use <code class="ic">ip addr</code> to identify your VM's network interfaces and assigned IP address.</li>
+        <li>Use <code class="ic">ip route</code> to locate the default gateway.</li>
+        <li>Use <code class="ic">ping</code> to verify basic internet connectivity.</li>
+        <li>Use <code class="ic">dig</code> to confirm that DNS name resolution is working.</li>
+        <li>Use <code class="ic">ss -tlnp</code> to identify which network services are listening for connections.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ── Phase 1: ip addr ── -->
+  <section class="phase-card" id="phase1" aria-labelledby="h-phase1">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Phase 1 of 5</span>
+      <h2 id="h-phase1">Inspect Network Interfaces</h2>
+    </div>
+
+    <p class="phase-description">Every networked device has at least one <strong>network interface</strong> — a logical connection between the OS and a physical or virtual network adapter. The <code class="ic">ip addr</code> command lists all interfaces and the IP address assigned to each. Your VM should have at least two: the <strong>loopback</strong> interface (<code class="ic">lo</code>), used only for internal OS communication, and a <strong>primary</strong> interface (often named <code class="ic">enp0s3</code>, <code class="ic">ens3</code>, or similar) that connects to your host machine's network via VirtualBox or UTM.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Run this command</span>
+      <pre><code>ip addr</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo         <span class="ann">&#8592; loopback, always 127.0.0.1</span>
+    inet6 ::1/128 scope host
+
+2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 state UP
+    link/ether 08:00:27:4a:b1:c3 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3  <span class="ann">&#8592; your VM's IPv4 address</span>
+    inet6 fe80::a00:27ff:fe4a:b1c3/64 scope link</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What to look for</summary>
+      <div class="hint-body">
+        <ul>
+          <li>Find the interface that is <strong>not</strong> <code>lo</code> — that is your primary network interface.</li>
+          <li>On that interface, look for a line starting with <code>inet</code> (not <code>inet6</code>). The address shown (e.g., <code>10.0.2.15</code>) is your VM's IPv4 address.</li>
+          <li>The <code>/24</code> after the address is the subnet prefix length — it corresponds to a 255.255.255.0 subnet mask.</li>
+          <li>VirtualBox NAT mode typically assigns addresses in the <code>10.0.2.x</code> range. UTM may use <code>192.168.x.x</code>.</li>
+          <li>If you see no <code>inet</code> line on your primary interface, your VM may not have received a DHCP address. Check that the network adapter is enabled in VirtualBox / UTM settings.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Phase 1 responses">
+      <div class="response-field">
+        <label for="p1-out">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your terminal output here
+        </label>
+        <textarea id="p1-out" class="out" rows="9" placeholder="Paste the full output of  ip addr  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="p1-exp">
+          <span class="field-num" aria-hidden="true">2</span>
+          Explain what this output tells you about your VM's network configuration. What is the IP address? What interface is it on? What do the other lines mean?
+        </label>
+        <textarea id="p1-exp" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 2: ip route ── -->
+  <section class="phase-card" id="phase2" aria-labelledby="h-phase2">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Phase 2 of 5</span>
+      <h2 id="h-phase2">View the Default Route</h2>
+    </div>
+
+    <p class="phase-description">An IP address tells your VM who it is on the network, but not how to send traffic to machines outside its own subnet. For that it needs a <strong>default gateway</strong> — a router that forwards packets toward the internet. The <code class="ic">ip route</code> command displays the routing table: the set of rules that determine where packets go based on their destination address. The most important entry is the <em>default route</em> (<code class="ic">default via …</code>), which handles any destination that does not match a more specific rule.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Run this command</span>
+      <pre><code>ip route</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100  <span class="ann">&#8592; default gateway</span>
+10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15  <span class="ann">&#8592; local subnet (reached directly)</span></code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What to look for</summary>
+      <div class="hint-body">
+        <ul>
+          <li>The line starting with <code>default via</code> is the key entry. The IP address right after <code>via</code> is your default gateway.</li>
+          <li>In VirtualBox NAT mode the gateway is usually <code>10.0.2.2</code> — a virtual router VirtualBox creates automatically for your VM.</li>
+          <li>The second line describes your local subnet. Your VM can reach any address in the <code>10.0.2.0/24</code> range directly, without going through the gateway.</li>
+          <li>If there is no <code>default via</code> line, your VM has no route to the internet. That means <code>ping 8.8.8.8</code> in Phase 3 will fail — a useful diagnostic distinction.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Phase 2 responses">
+      <div class="response-field">
+        <label for="p2-out">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your terminal output here
+        </label>
+        <textarea id="p2-out" class="out" rows="6" placeholder="Paste the full output of  ip route  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="p2-exp">
+          <span class="field-num" aria-hidden="true">2</span>
+          Explain what the routing table tells you. What is your default gateway? What is the difference between the two lines in the output?
+        </label>
+        <textarea id="p2-exp" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 3: ping ── -->
+  <section class="phase-card" id="phase3" aria-labelledby="h-phase3">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Phase 3 of 5</span>
+      <h2 id="h-phase3">Test Internet Connectivity</h2>
+    </div>
+
+    <p class="phase-description">Having an IP address and a default gateway does not guarantee your VM can actually reach the internet — a misconfigured adapter, a blocked ICMP rule, or a NAT problem could still prevent communication. The <code class="ic">ping</code> command sends small test packets to a remote host and reports whether they come back. Pinging <code class="ic">8.8.8.8</code> — Google's public DNS server — tests the full path from your VM through the gateway and out to the internet. By using a raw IP address rather than a hostname, you isolate connectivity from DNS: if this ping fails, the network itself is the problem, not name resolution.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Run this command</span>
+      <pre><code>ping -c 4 8.8.8.8</code></pre>
+      <p>The <code class="ic">-c 4</code> flag sends exactly 4 packets and then stops automatically. Without it, <code class="ic">ping</code> runs until you press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=12.4 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=11.9 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=118 time=12.1 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=118 time=12.0 ms
+
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms  <span class="ann">&#8592; 0% loss means connected</span>
+rtt min/avg/max/mdev = 11.9/12.1/12.4/0.2 ms</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What to look for</summary>
+      <div class="hint-body">
+        <ul>
+          <li><strong>0% packet loss</strong> in the statistics line means your VM can reach the internet. 100% loss means it cannot.</li>
+          <li>The <code>time=</code> value is the round-trip latency in milliseconds. Under ~100 ms is normal for a home or campus network.</li>
+          <li>If you see <em>Network is unreachable</em>: check that your VM's network adapter is set to NAT or Bridged in VirtualBox / UTM, and that the host machine itself has internet access.</li>
+          <li>Some campus or corporate networks block ICMP (the protocol ping uses). If ping fails but you believe you have connectivity, try <code>curl -I https://example.com</code> as an alternative test and note what you see.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Phase 3 responses">
+      <div class="response-field">
+        <label for="p3-out">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your terminal output here
+        </label>
+        <textarea id="p3-out" class="out" rows="9" placeholder="Paste the full output of  ping -c 4 8.8.8.8  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="p3-exp">
+          <span class="field-num" aria-hidden="true">2</span>
+          Explain what the ping results tell you. Was your VM able to reach the internet? What do the packet loss percentage and round-trip times indicate?
+        </label>
+        <textarea id="p3-exp" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 4: dig ── -->
+  <section class="phase-card" id="phase4" aria-labelledby="h-phase4">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Phase 4 of 5</span>
+      <h2 id="h-phase4">Query DNS</h2>
+    </div>
+
+    <p class="phase-description">Pinging an IP address verifies raw connectivity, but nearly all real-world network traffic uses hostnames like <em>example.com</em> rather than IP addresses. Before the OS can connect to a hostname, it must translate the name to an IP address using the <strong>Domain Name System (DNS)</strong>. The <code class="ic">dig</code> command lets you query a DNS server directly and inspect the full response. If Phase 3 succeeded but this phase fails, you know your network path is fine and the DNS configuration is specifically the problem — a useful distinction that guides your troubleshooting.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Run this command</span>
+      <pre><code>dig example.com</code></pre>
+      <p class="install-note"><strong>Note:</strong> <code class="ic">dig</code> is part of the <code class="ic">dnsutils</code> package and may not be installed by default. If the command is not found, install it first:<br><br>
+        <code class="ic">sudo apt install dnsutils</code>
+      </p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>; &lt;&lt;&gt;&gt; DiG 9.18.x &lt;&lt;&gt;&gt; example.com
+;; QUESTION SECTION:
+;example.com.                   IN      A
+
+;; ANSWER SECTION:
+example.com.     86400    IN    A    93.184.216.34  <span class="ann">&#8592; resolved IP address</span>
+
+;; Query time: 28 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53)  <span class="ann">&#8592; DNS server used (systemd-resolved)</span>
+;; WHEN: Sat May 03 10:15:00 UTC 2026
+;; MSG SIZE  rcvd: 56</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What to look for</summary>
+      <div class="hint-body">
+        <ul>
+          <li>The <strong>ANSWER SECTION</strong> is the key part. It shows the hostname and the IP address it resolved to (<code>93.184.216.34</code> for example.com — a domain maintained by IANA for documentation purposes).</li>
+          <li>The number before <code>IN A</code> (e.g., <code>86400</code>) is the TTL (time to live) in seconds — how long this answer may be cached. 86400 = 24 hours.</li>
+          <li>The <code>SERVER</code> line tells you which DNS server handled the query. On Ubuntu Server this is typically <code>127.0.0.53</code>, the local stub resolver managed by <code>systemd-resolved</code>. It forwards queries to an upstream server configured by DHCP.</li>
+          <li>If there is no <strong>ANSWER SECTION</strong> or you see a <code>SERVFAIL</code> status, DNS is not working. Check <code>systemctl status systemd-resolved</code> or examine <code>/etc/resolv.conf</code>.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Phase 4 responses">
+      <div class="response-field">
+        <label for="p4-out">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your terminal output here
+        </label>
+        <textarea id="p4-out" class="out" rows="11" placeholder="Paste the full output of  dig example.com  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="p4-exp">
+          <span class="field-num" aria-hidden="true">2</span>
+          Explain what the dig output shows. What IP address did example.com resolve to? Which DNS server handled the query, and where does it live on your system?
+        </label>
+        <textarea id="p4-exp" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Phase 5: ss -tlnp ── -->
+  <section class="phase-card" id="phase5" aria-labelledby="h-phase5">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Phase 5 of 5</span>
+      <h2 id="h-phase5">Inspect Listening Services</h2>
+    </div>
+
+    <p class="phase-description">Your VM is not just a client making outbound requests — it is also a server that other machines may connect <em>to</em>. Network services advertise their availability by <strong>listening</strong> on a numbered port. SSH, for example, listens on port 22 so remote administrators can log in. The <code class="ic">ss</code> command (socket statistics) shows you which TCP services are currently listening for incoming connections. Before any server is exposed to a network, a sysadmin should know exactly what is listening and which process owns each socket. This is your first look at that picture. The <code class="ic">ss</code> command replaces the older <code class="ic">netstat</code> and is available by default on Ubuntu Server.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Run this command</span>
+      <pre><code>ss -tlnp</code></pre>
+      <p>Flags: <code class="ic">-t</code> TCP only &nbsp;|&nbsp; <code class="ic">-l</code> listening sockets only &nbsp;|&nbsp; <code class="ic">-n</code> numeric ports (no service-name lookup) &nbsp;|&nbsp; <code class="ic">-p</code> show the owning process.</p>
+      <p style="margin-top:0.3rem;">Tip: if the Process column appears empty, run <code class="ic">sudo ss -tlnp</code> — showing all process names requires elevated privileges.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>State   Recv-Q  Send-Q  Local Address:Port  Peer Address:Port  Process
+LISTEN  0       128     0.0.0.0:22          0.0.0.0:*          users:(("sshd",pid=823,fd=3))  <span class="ann">&#8592; SSH on all IPv4 addresses, port 22</span>
+LISTEN  0       128     [::]:22             [::]:*             users:(("sshd",pid=823,fd=4))  <span class="ann">&#8592; SSH on all IPv6 addresses, port 22</span></code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What to look for</summary>
+      <div class="hint-body">
+        <ul>
+          <li>Each row is one listening socket. The <strong>Local Address:Port</strong> column shows the port number after the colon.</li>
+          <li>You should see <strong>port 22</strong> — that is SSH, which you enabled during the Ubuntu Server installation in Week 1.</li>
+          <li><code>0.0.0.0:22</code> means the service accepts connections on all IPv4 addresses. <code>[::]:22</code> is the same for IPv6.</li>
+          <li>The <strong>Process</strong> column names the program that owns the socket (e.g., <code>sshd</code>). Run with <code>sudo</code> if it shows nothing.</li>
+          <li>If you installed additional services in earlier weeks, they may appear here too. Note any port numbers you do not recognize — researching them is exactly what a real audit would involve.</li>
+          <li>Common ports to recognize: 22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS). In Week 7 you will install Nginx, and port 80 will appear in this list.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Phase 5 responses">
+      <div class="response-field">
+        <label for="p5-out">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your terminal output here
+        </label>
+        <textarea id="p5-out" class="out" rows="8" placeholder="Paste the full output of  ss -tlnp  (or  sudo ss -tlnp) here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="p5-exp">
+          <span class="field-num" aria-hidden="true">2</span>
+          Explain what the output shows. Which services are listening, on which ports? Is there anything you did not expect to see?
+        </label>
+        <textarea id="p5-exp" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="submission-section" id="submission" aria-labelledby="h-submission">
+    <h2 id="h-submission">Deliverables and Submission</h2>
+
+    <h3>What to submit</h3>
+    <p>Submit a <strong>single PDF</strong> to the <strong>Network Basics Check</strong> assignment in Canvas. Your PDF must include, for each of the five commands:</p>
+    <ol>
+      <li>The full terminal output pasted into the output field.</li>
+      <li>Your written explanation of what that output means.</li>
+    </ol>
+
+    <h3>How to create your PDF</h3>
+    <p>Fill in all five phases above, then click the button below. It will open your browser's print dialog with all of your responses included. Select <strong>Save as PDF</strong> (Chrome / Edge) or <strong>PDF → Save as PDF</strong> (Firefox / Safari) as the destination, save the file, and upload it to Canvas.</p>
+
+    <button class="pdf-btn" onclick="saveAsPDF()" type="button" aria-label="Save all phase responses as PDF for submission">
+      &#128438;&nbsp; Save as PDF
+    </button>
+
+    <h3>Grading</h3>
+    <p>This assignment is worth <strong>15 points</strong> and assesses <strong>CSLO 2</strong> (Configure a Linux operating system as a platform for web-based and other applications). Your submission will be evaluated on whether you ran all five commands on your Ubuntu Server VM, included the actual terminal output, and wrote explanations that show you understand what each command revealed about your system's network configuration.</p>
+
+    <h3>Extra credit (optional, 5 points)</h3>
+    <p>A <strong>Network Troubleshooting Walkthrough</strong> is available for 5 points of extra credit. See the Week 6 module in Canvas for details. It asks you to document a structured step-by-step process for diagnosing a "server cannot reach the internet" scenario using the same commands you practiced here.</p>
+  </section>
+
+</main>
+
+<script>
+  function saveAsPDF() {
+    var textareas = document.querySelectorAll('textarea');
+    var swapped = [];
+
+    textareas.forEach(function(ta) {
+      var div = document.createElement('div');
+      div.className = ta.classList.contains('exp') ? 'print-response exp-print' : 'print-response';
+      div.textContent = ta.value.trim() !== '' ? ta.value : '(no response entered)';
+      ta.parentNode.insertBefore(div, ta.nextSibling);
+      swapped.push({ ta: ta, div: div });
+    });
+
+    function restore() {
+      swapped.forEach(function(item) {
+        item.ta.style.display = '';
+        item.div.remove();
+      });
+      window.removeEventListener('afterprint', restore);
+    }
+
+    window.addEventListener('afterprint', restore);
+
+    swapped.forEach(function(item) { item.ta.style.display = 'none'; });
+    window.print();
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 6 Extra Credit - Network Troubleshooting Walkthrough</title>
+<style>
+:root {
+--primary: #2c3e50;
+--accent: #2980b9;
+--bg: #ffffff;
+--text: #333333;
+--light-bg: #f4f7f9;
+--border: #dce1e6;
+--success: #27ae60;
+--caution: #e67e22;
+--nav-bg: #1a252f;
+--nav-text: #ecf0f1;
+--focus-outline: #2980b9;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+font-size: 1rem;
+line-height: 1.6;
+color: var(--text);
+background-color: var(--bg);
+}
+
+a:focus, button:focus, input:focus {
+outline: 3px solid var(--focus-outline);
+outline-offset: 2px;
+}
+
+nav {
+background-color: var(--nav-bg);
+padding: 0.75rem 1.5rem;
+position: sticky;
+top: 0;
+z-index: 100;
+}
+
+nav ul {
+list-style: none;
+display: flex;
+flex-wrap: wrap;
+gap: 1rem;
+}
+
+nav ul li a {
+color: var(--nav-text);
+text-decoration: none;
+font-size: 0.9rem;
+padding: 0.25rem 0.5rem;
+border-radius: 3px;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+background-color: var(--accent);
+color: #fff;
+}
+
+main {
+max-width: 52rem;
+margin: 0 auto;
+padding: 2rem 1.5rem;
+}
+
+h1 {
+font-size: 1.75rem;
+color: var(--primary);
+margin-bottom: 0.5rem;
+}
+
+h2 {
+font-size: 1.35rem;
+color: var(--primary);
+margin-top: 2rem;
+margin-bottom: 0.75rem;
+border-bottom: 2px solid var(--accent);
+padding-bottom: 0.3rem;
+}
+
+h3 {
+font-size: 1.1rem;
+color: var(--primary);
+margin-top: 1.25rem;
+margin-bottom: 0.5rem;
+}
+
+p {
+margin-bottom: 1rem;
+}
+
+ul, ol {
+margin-bottom: 1rem;
+padding-left: 1.5rem;
+}
+
+li {
+margin-bottom: 0.4rem;
+}
+
+.meta-box {
+background-color: var(--light-bg);
+border-left: 4px solid var(--accent);
+padding: 1rem 1.25rem;
+margin-bottom: 1.5rem;
+border-radius: 4px;
+}
+
+.meta-box p {
+margin-bottom: 0.4rem;
+}
+
+.scenario-box {
+background-color: #fef9e7;
+border: 1px solid #f9e79f;
+border-left: 4px solid var(--caution);
+padding: 1.25rem;
+margin-bottom: 1.5rem;
+border-radius: 4px;
+}
+
+.scenario-box h3 {
+margin-top: 0;
+color: var(--caution);
+}
+
+.step-box {
+background-color: var(--light-bg);
+border: 1px solid var(--border);
+padding: 1.25rem;
+margin-bottom: 1rem;
+border-radius: 4px;
+}
+
+.step-box h3 {
+margin-top: 0;
+}
+
+code {
+font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+background-color: #eef2f5;
+padding: 0.15rem 0.4rem;
+border-radius: 3px;
+font-size: 0.9em;
+}
+
+pre {
+background-color: #1a252f;
+color: #ecf0f1;
+padding: 1rem 1.25rem;
+border-radius: 4px;
+overflow-x: auto;
+margin-bottom: 1rem;
+font-size: 0.88rem;
+line-height: 1.5;
+}
+
+pre code {
+background-color: transparent;
+padding: 0;
+color: inherit;
+}
+
+.tip {
+background-color: #eafaf1;
+border-left: 4px solid var(--success);
+padding: 0.75rem 1rem;
+margin-bottom: 1rem;
+border-radius: 4px;
+}
+
+.tip strong {
+color: var(--success);
+}
+
+.submission-box {
+background-color: var(--light-bg);
+border: 2px solid var(--accent);
+padding: 1.25rem;
+border-radius: 4px;
+margin-bottom: 1.5rem;
+}
+
+.points-badge {
+display: inline-block;
+background-color: var(--accent);
+color: #fff;
+font-weight: bold;
+padding: 0.2rem 0.6rem;
+border-radius: 3px;
+font-size: 0.85rem;
+margin-left: 0.5rem;
+}
+
+.cslo-tag {
+display: inline-block;
+background-color: #d5e8d4;
+color: #2d6a2d;
+font-size: 0.8rem;
+font-weight: bold;
+padding: 0.15rem 0.5rem;
+border-radius: 3px;
+margin-left: 0.4rem;
+}
+</style>
+</head>
+<body>
+
+<nav aria-label="Page navigation">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#scenario">Scenario</a></li>
+<li><a href="#activities">Required Activities</a></li>
+<li><a href="#resources">Resources</a></li>
+<li><a href="#submission">Submission</a></li>
+</ul>
+</nav>
+
+<main>
+<h1>Week 6 Extra Credit: Network Troubleshooting Walkthrough <span class="points-badge">5 pts</span> <span class="cslo-tag">CSLO 2</span></h1>
+
+<div class="meta-box">
+<p><strong>Type:</strong> Extra Credit (optional)</p>
+<p><strong>Points:</strong> 5 (added on top of your base grade)</p>
+<p><strong>CSLO assessed:</strong> CSLO 2 — Configure a Linux operating system as a platform for web-based and other applications.</p>
+</div>
+
+<section id="overview">
+<h2>Why Network Troubleshooting Matters</h2>
+
+<p>A Linux server that cannot reach the network is, for most purposes, useless. It cannot serve web pages, receive SSH connections, download updates, or resolve domain names. Network connectivity is the lifeline that connects your carefully configured system to the rest of the world.</p>
+
+<p>The tricky part is that network problems can look identical on the surface ("it's not working") while having very different root causes underneath. A missing default route, a misconfigured DNS server, a firewall rule blocking traffic, a downed interface: all of these produce the same symptom from a user's perspective. The difference between spending five minutes fixing the problem and spending two hours guessing is having a structured troubleshooting process.</p>
+
+<p>This exercise asks you to build that process. You will work through a realistic scenario, document the diagnostic commands you would run at each step, and explain what you expect to see (or not see) at each stage. Think of it as writing a runbook: a document you could hand to someone else so they could diagnose the same problem methodically.</p>
+</section>
+
+<section id="scenario">
+<h2>The Scenario</h2>
+
+<div class="scenario-box">
+<h3>Situation: "Server Cannot Reach the Internet"</h3>
+
+<p>You are responsible for an Ubuntu Server VM that was working fine yesterday. This morning, you tried to run <code>sudo apt update</code> and it failed with connection timeout errors. You tried to open an SSH session from your host machine and that still works (you can log in), but from inside the server, nothing that requires internet access is functioning.</p>
+
+<p>Here is what you know so far:</p>
+<ul>
+<li>The VM is running and you can log in via the hypervisor console or SSH from the host.</li>
+<li><code>apt update</code> hangs and eventually times out.</li>
+<li>A colleague on the same network says their machines can reach the internet just fine.</li>
+<li>No one has made intentional configuration changes to this server recently.</li>
+</ul>
+
+<p>Your job: systematically determine where the problem is and document every step of your diagnostic process.</p>
+</div>
+
+<p>This scenario is common in real system administration. Something that worked yesterday stops working today, and you need to isolate the cause without randomly changing settings and hoping for the best. A structured, layer-by-layer approach saves time and prevents you from accidentally making things worse.</p>
+</section>
+
+<section id="activities">
+<h2>Required Activities</h2>
+
+<p>To complete this extra credit, you need to do two things: read the reference materials listed below, then produce a written troubleshooting walkthrough document. Your document should address each diagnostic step described here.</p>
+
+<h3>Your Troubleshooting Walkthrough Must Include:</h3>
+
+<p>Work through the scenario above using a structured, bottom-up approach. For each step, document:</p>
+
+<ul>
+<li>The command you would run</li>
+<li>What you expect to see if things are working correctly</li>
+<li>What you expect to see if this is where the problem is</li>
+<li>What your next action would be based on the result</li>
+</ul>
+
+<p>Here are the diagnostic steps your walkthrough should cover (in order):</p>
+
+<div class="step-box">
+<h3>Step 1: Check the Network Interface</h3>
+<p>Is the interface up? Does it have an IP address assigned? Use <code>ip addr</code> (or <code>ip a</code>) to inspect this.</p>
+<p>Document what a healthy output looks like versus what you would see if the interface is down or has no address.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 2: Check the Default Route</h3>
+<p>Even if the interface has an IP, the system needs to know where to send traffic destined for the internet. Use <code>ip route</code> to check.</p>
+<p>Document what the "default via" line should look like, and what it means if that line is missing.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 3: Test Basic Connectivity (Ping the Gateway)</h3>
+<p>Can you reach the gateway/router? Use <code>ping</code> with the gateway IP from Step 2.</p>
+<p>Document what success looks like and what "Destination Host Unreachable" or 100% packet loss tells you.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 4: Test Internet Connectivity (Ping an External IP)</h3>
+<p>Can you reach something beyond your local network? Use <code>ping 8.8.8.8</code> (Google's public DNS server).</p>
+<p>Document what it means if the gateway ping works but this one does not.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 5: Test DNS Resolution</h3>
+<p>Can the system translate hostnames to IP addresses? Use <code>dig example.com</code> or <code>nslookup example.com</code>.</p>
+<p>Document what a successful DNS response looks like, and what it means if <code>ping 8.8.8.8</code> works but <code>ping example.com</code> does not.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 6: Check for Firewall Rules Blocking Outbound Traffic</h3>
+<p>Could local firewall rules be preventing outbound connections? Use <code>sudo ufw status</code> or <code>sudo iptables -L -n</code> to inspect.</p>
+<p>Document what you would look for in the output and how a misconfigured rule could cause this problem.</p>
+</div>
+
+<div class="step-box">
+<h3>Step 7: Check Listening Services (Optional but Useful Context)</h3>
+<p>Use <code>ss -tlnp</code> to verify what services are running. This helps confirm the system is otherwise healthy and narrows the problem to the network layer.</p>
+</div>
+
+<div class="tip">
+<p><strong>Tip:</strong> The key insight in network troubleshooting is working from the bottom up. Start with the physical/link layer (is the interface up?), move to the network layer (do I have an IP and a route?), then the transport layer (can packets get out and come back?), and finally the application layer (does DNS work? can I reach specific services?). If you skip layers, you might waste time investigating DNS when the real problem is a missing route.</p>
+</div>
+
+<p>You do not need to actually break your VM's network to complete this assignment. You are documenting the process you <em>would</em> follow, including the commands and their expected output at each stage. That said, if you want to experiment (for example, temporarily removing your default route with <code>sudo ip route del default</code> to see what happens), that is a great way to learn. Just make sure you know how to restore your configuration afterward.</p>
+
+<div class="tip">
+<p><strong>Tip:</strong> If you do experiment on your VM, take a snapshot first (VirtualBox makes this easy). That way you can always roll back if something goes sideways.</p>
+</div>
+</section>
+
+<section id="resources">
+<h2>Resources to Read</h2>
+
+<p>Before writing your walkthrough, read both of these free resources. They will give you the technical details and command examples you need.</p>
+
+<ul>
+<li><strong>DigitalOcean: "How To Troubleshoot Common Networking Issues on Linux"</strong> — A structured tutorial that walks through diagnosing network problems with command-line tools. This is your primary reference for the troubleshooting methodology.</li>
+<li><strong>Ubuntu Server Guide: Networking</strong> — Official Ubuntu documentation covering network configuration, interfaces, and diagnostics. Read the sections related to troubleshooting and network inspection.</li>
+</ul>
+
+<p>Both resources are free and do not require an account to access. You will find specific command examples, sample output, and explanations of common failure modes in these guides.</p>
+
+<p>You may also find it helpful to revisit the commands from the Week 6 Network Basics Check assignment (<code>ip addr</code>, <code>ip route</code>, <code>ping</code>, <code>dig</code>, <code>ss -tlnp</code>). Your troubleshooting walkthrough builds on those same commands but adds a diagnostic reasoning layer on top.</p>
+</section>
+
+<section id="submission">
+<h2>Submission Requirements</h2>
+
+<div class="submission-box">
+<h3>What to Submit</h3>
+
+<p>Submit a single document (PDF, DOCX, or plain text) containing your structured troubleshooting walkthrough. Your document should include:</p>
+
+<ol>
+<li><strong>A brief introduction</strong> (2-3 sentences) stating the problem scenario in your own words.</li>
+<li><strong>A step-by-step diagnostic process</strong> covering at minimum Steps 1 through 6 above. For each step, include:
+<ul>
+<li>The exact command you would run</li>
+<li>Example output showing what "healthy" looks like</li>
+<li>Example output (or a description) showing what a failure looks like at that step</li>
+<li>A sentence or two explaining what you would conclude and what you would do next</li>
+</ul>
+</li>
+<li><strong>A short conclusion</strong> (3-5 sentences) summarizing how this bottom-up approach helps isolate network problems efficiently.</li>
+</ol>
+
+<h3>Formatting Expectations</h3>
+<ul>
+<li>Use clear headings or numbered steps so the document is easy to follow.</li>
+<li>Include actual command syntax (formatted as code or in a monospace font).</li>
+<li>Expected output can be paraphrased or shown as sample terminal output. You do not need to run every command live, but your examples should be realistic and accurate.</li>
+<li>Aim for roughly 400-700 words total (not counting command output). Quality and clarity matter more than length.</li>
+</ul>
+
+<h3>Grading</h3>
+<p>This assignment is worth 5 extra credit points. You will earn full credit if your walkthrough:</p>
+<ul>
+<li>Covers all six diagnostic steps with appropriate commands</li>
+<li>Shows understanding of what each command reveals and why the order matters</li>
+<li>Includes realistic expected output (healthy and failure cases)</li>
+<li>Demonstrates clear reasoning about how to isolate the root cause</li>
+</ul>
+
+<p>Partial credit is possible if some steps are incomplete or if the reasoning is unclear.</p>
+</div>
+
+<div class="tip">
+<p><strong>A note on this exercise:</strong> Network troubleshooting is one of those skills that feels abstract until you actually need it. Then it becomes the most practical thing you know. Even if you do not attempt this extra credit, the mental model of "start at the bottom layer and work up" is worth internalizing. You will use it in Week 7, in Mini-Project 2, and in any future role that involves managing Linux systems.</p>
+</div>
+</section>
+</main>
+
+</body>
+</html>
