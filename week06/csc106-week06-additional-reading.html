@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 6 Additional Reading – Networking Fundamentals | CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #1a3a5c;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    :focus-visible {
+      outline: 3px solid #f6ad55;
+      outline-offset: 2px;
+    }
+
+    /* Sticky nav */
+    .lab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1a3a5c;
+      padding: 0 1rem;
+    }
+    .lab-nav-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.45rem 0;
+    }
+    .nav-label {
+      color: #bee3f8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.3rem;
+      flex-shrink: 0;
+    }
+    .lab-nav a {
+      color: #bee3f8;
+      text-decoration: none;
+      font-size: 0.83rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .lab-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lab-nav a:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Layout */
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Activity header card */
+    .activity-header {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #2b6cb0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .activity-header h1 {
+      font-size: 1.45rem;
+      color: #1a3a5c;
+      margin-bottom: 0.2rem;
+    }
+    .activity-meta {
+      font-size: 0.85rem;
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+    .activity-header p {
+      font-size: 0.94rem;
+      color: #2d3748;
+      margin-bottom: 0.6rem;
+    }
+    .activity-header p:last-child { margin-bottom: 0; }
+
+    .how-to-use {
+      background: #ebf8ff;
+      border: 1px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      color: #2d3748;
+    }
+    .box-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2b6cb0;
+      margin-bottom: 0.4rem;
+    }
+    .how-to-use ul { padding-left: 1.25rem; margin-top: 0.35rem; }
+    .how-to-use li { margin-bottom: 0.3rem; }
+
+    /* Resource cards */
+    .resource-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #2b6cb0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .resource-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #ebf4ff;
+    }
+    .res-badge {
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+    .resource-card h2 {
+      font-size: 1.1rem;
+      color: #1a3a5c;
+      line-height: 1.35;
+    }
+
+    .resource-url {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #2b6cb0;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.83rem;
+      font-weight: 600;
+      padding: 0.38rem 0.8rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      word-break: break-all;
+    }
+    .resource-url:hover { background: #2c5282; }
+    .resource-url:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+    .resource-url svg { flex-shrink: 0; }
+
+    .resource-body p {
+      font-size: 0.93rem;
+      color: #2d3748;
+      margin-bottom: 0.7rem;
+    }
+    .resource-body p:last-child { margin-bottom: 0; }
+
+    .topics-list {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+    }
+    .topics-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+    .topics-list ul {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .topics-list li {
+      font-size: 0.88rem;
+      color: #2d3748;
+      margin-bottom: 0.25rem;
+    }
+    .topics-list li:last-child { margin-bottom: 0; }
+
+    .connects-to {
+      margin-top: 0.85rem;
+      padding: 0.6rem 0.9rem;
+      background: #ebf8ff;
+      border-left: 3px solid #4299e1;
+      border-radius: 0 5px 5px 0;
+      font-size: 0.87rem;
+      color: #2c5282;
+    }
+    .connects-to strong { color: #1a3a5c; }
+
+    /* Note card — amber/warning style */
+    .note-card {
+      background: #fffbeb;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #d69e2e;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .note-card .note-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #feebc8;
+    }
+    .note-badge {
+      background: #d69e2e;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .note-card h2 {
+      font-size: 1.1rem;
+      color: #744210;
+    }
+    .note-card p {
+      font-size: 0.93rem;
+      color: #744210;
+      margin-bottom: 0.7rem;
+    }
+    .note-card p:last-child { margin-bottom: 0; }
+
+    .downdetector-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #c07d10;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.83rem;
+      font-weight: 600;
+      padding: 0.38rem 0.8rem;
+      border-radius: 5px;
+      margin: 0.5rem 0 0.75rem;
+      word-break: break-all;
+    }
+    .downdetector-link:hover { background: #975e0b; }
+    .downdetector-link:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    .ic {
+      background: #edf2f7;
+      color: #2b6cb0;
+      padding: 0.08em 0.38em;
+      border-radius: 3px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.87em;
+    }
+
+    @media (max-width: 600px) {
+      .activity-header, .resource-card, .note-card { padding: 1.1rem 1rem; }
+      .activity-header h1 { font-size: 1.2rem; }
+      .resource-card h2, .note-card h2 { font-size: 1rem; }
+      .lab-nav a { font-size: 0.78rem; padding: 0.25rem 0.42rem; }
+    }
+
+    @media print {
+      .skip-link, .lab-nav { display: none !important; }
+      body { background: #fff; font-size: 10.5pt; }
+      main { max-width: 100%; padding: 0; }
+      .activity-header, .resource-card, .note-card {
+        box-shadow: none; border-radius: 0;
+        padding: 0.75rem 0.5rem; margin-bottom: 0.75rem;
+        page-break-inside: avoid;
+      }
+      .resource-url, .downdetector-link { background: none; color: #00c; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="lab-nav" aria-label="Page section navigation">
+  <div class="lab-nav-inner">
+    <span class="nav-label" aria-hidden="true">Jump to:</span>
+    <a href="#res1">DigitalOcean</a>
+    <a href="#res2">DNSStuff</a>
+    <a href="#res3">GeeksForGeeks</a>
+    <a href="#res4">Cloudflare</a>
+    <a href="#note">Site Availability Note</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Page Header ── -->
+  <header class="activity-header">
+    <h1>Week 6 Additional Reading</h1>
+    <p class="activity-meta">CSC 106 – Introduction to Linux II &nbsp;·&nbsp; Week 6 &nbsp;·&nbsp; Networking Fundamentals</p>
+
+    <p>The Week 6 module introduces networking concepts and hands-on diagnostic commands. These curated resources provide background reading and reference material to support that work. They are not required reading for every student — use them based on what you find most useful.</p>
+
+    <p>The <strong>Linux Essentials Chapter 14</strong> reading and the <strong>Network Basics Check lab</strong> are your primary sources for this week. Think of the resources below as the reference shelf you reach for when you want a clearer explanation of a term, a different angle on a concept, or a framework for troubleshooting.</p>
+
+    <div class="how-to-use" role="note">
+      <span class="box-label">How to use these resources</span>
+      <ul>
+        <li><strong>Before the lab:</strong> The DigitalOcean terminology article is the best starting point if networking vocabulary feels unfamiliar. Read it before running the lab commands.</li>
+        <li><strong>During the lab:</strong> Keep the GeeksForGeeks and Cloudflare pages open as references when you encounter terms or concepts you want to look up.</li>
+        <li><strong>For extra credit:</strong> The DNSStuff troubleshooting article provides a structured framework that maps directly to the Network Troubleshooting Walkthrough extra credit assignment.</li>
+        <li><strong>If a site is unreachable:</strong> See the Site Availability Note at the bottom of this page.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ── Resource 1: DigitalOcean ── -->
+  <section class="resource-card" id="res1" aria-labelledby="h-res1">
+    <div class="resource-header">
+      <span class="res-badge" aria-hidden="true">Resource 1</span>
+      <h2 id="h-res1">An Introduction to Networking Terminology, Interfaces, and Protocols</h2>
+    </div>
+
+    <a class="resource-url"
+       href="https://www.digitalocean.com/community/tutorials/an-introduction-to-networking-terminology-interfaces-and-protocols"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open DigitalOcean networking terminology article in a new tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      digitalocean.com — Networking Terminology, Interfaces, and Protocols
+    </a>
+
+    <div class="resource-body">
+      <p>This DigitalOcean tutorial is the recommended starting point for students who are new to networking or whose networking vocabulary is shaky. It explains the concepts behind the commands you are running this week in plain, beginner-friendly language with practical examples.</p>
+      <p>If you have ever looked at <code class="ic">ip addr</code> output and been unsure what the numbers mean, or wondered why there are both IPv4 and IPv6 addresses, this article will fill in those gaps. It covers the vocabulary you need to understand what the Week 6 lab commands are actually showing you.</p>
+
+      <div class="topics-list">
+        <span class="topics-label">Topics covered</span>
+        <ul>
+          <li>Network interfaces and how they are named on Linux</li>
+          <li>IP addresses, subnet masks, and CIDR notation</li>
+          <li>Routing and default gateways</li>
+          <li>DNS — how hostnames get translated to IP addresses</li>
+          <li>TCP and UDP ports and why services use numbered ports</li>
+          <li>Network protocols and the layered model</li>
+        </ul>
+      </div>
+
+      <div class="connects-to">
+        <strong>Connects to the lab:</strong> Phases 1–4 of the Network Basics Check (<code class="ic">ip addr</code>, <code class="ic">ip route</code>, <code class="ic">ping</code>, <code class="ic">dig</code>) map directly to the concepts explained here. Reading this article before completing the lab will make the output of those commands significantly easier to interpret.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Resource 2: DNSStuff ── -->
+  <section class="resource-card" id="res2" aria-labelledby="h-res2">
+    <div class="resource-header">
+      <span class="res-badge" aria-hidden="true">Resource 2</span>
+      <h2 id="h-res2">Network Troubleshooting Steps</h2>
+    </div>
+
+    <a class="resource-url"
+       href="https://www.dnsstuff.com/network-troubleshooting-steps"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open DNSStuff network troubleshooting steps article in a new tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      dnsstuff.com — Network Troubleshooting Steps
+    </a>
+
+    <div class="resource-body">
+      <p>This article presents a structured, step-by-step methodology for diagnosing common network connectivity problems. Rather than guessing at solutions, experienced administrators follow a logical sequence: start at the lowest layer, confirm what is working, and progressively narrow down where the problem is. This article teaches that mindset.</p>
+      <p>The troubleshooting steps it describes map closely to the commands you used in the Network Basics Check lab — checking interface configuration, verifying routing, testing connectivity with ping, and confirming DNS resolution. If you are attempting the extra credit Network Troubleshooting Walkthrough, this article provides an excellent framework for structuring your response.</p>
+
+      <div class="topics-list">
+        <span class="topics-label">Topics covered</span>
+        <ul>
+          <li>Systematic approach to network diagnostics (work layer by layer)</li>
+          <li>Checking physical and logical interface status</li>
+          <li>Verifying IP address and default gateway configuration</li>
+          <li>Using ping and traceroute to isolate the failing segment</li>
+          <li>Diagnosing DNS failures separately from connectivity failures</li>
+          <li>Common causes of "no internet" on a Linux server</li>
+        </ul>
+      </div>
+
+      <div class="connects-to">
+        <strong>Connects to the lab:</strong> The five commands in the Network Basics Check follow the same logical order as the troubleshooting steps described here — interface → route → connectivity → DNS → services. If any of your lab commands failed, this article will help you understand where in that chain the problem is and what to check next.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Resource 3: GeeksForGeeks ── -->
+  <section class="resource-card" id="res3" aria-labelledby="h-res3">
+    <div class="resource-header">
+      <span class="res-badge" aria-hidden="true">Resource 3</span>
+      <h2 id="h-res3">Basics of Computer Networking</h2>
+    </div>
+
+    <a class="resource-url"
+       href="https://www.geeksforgeeks.org/computer-networks/basics-computer-networking/"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open GeeksForGeeks basics of computer networking article in a new tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      geeksforgeeks.org — Basics of Computer Networking
+    </a>
+
+    <div class="resource-body">
+      <p>GeeksForGeeks is a widely used technical reference site. This article gives a broad overview of computer networking fundamentals — how devices communicate, what role IP addresses play, how data travels from one machine to another, and how the layers of the networking model work together.</p>
+      <p>Use this as a reference when you encounter a networking concept or term you want to look up quickly. The site also has individual articles on specific topics (DNS, TCP, routing, ports) that you can navigate to from search or from links within the article.</p>
+
+      <div class="topics-list">
+        <span class="topics-label">Topics covered</span>
+        <ul>
+          <li>What a computer network is and why it matters</li>
+          <li>Network types (LAN, WAN) and basic topologies</li>
+          <li>IP addressing and subnets</li>
+          <li>How packets travel from source to destination</li>
+          <li>The role of routers and switches</li>
+          <li>Introduction to protocols (TCP, UDP, IP, DNS, HTTP)</li>
+        </ul>
+      </div>
+
+      <div class="connects-to">
+        <strong>Connects to the lab:</strong> This article provides the conceptual foundation that explains <em>why</em> your VM needs an IP address, a default gateway, and working DNS — not just how to check them. It is also good background reading for Week 7, when you will configure a static IP, install a web server, and open firewall ports.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Resource 4: Cloudflare Learning ── -->
+  <section class="resource-card" id="res4" aria-labelledby="h-res4">
+    <div class="resource-header">
+      <span class="res-badge" aria-hidden="true">Resource 4</span>
+      <h2 id="h-res4">Cloudflare Learning Center</h2>
+    </div>
+
+    <a class="resource-url"
+       href="https://www.cloudflare.com/learning/"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open Cloudflare Learning Center in a new tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      cloudflare.com/learning
+    </a>
+
+    <div class="resource-body">
+      <p>The Cloudflare Learning Center is a large collection of short, clearly-written articles on networking, DNS, web security, and internet infrastructure. Cloudflare is one of the world's largest network providers, and their learning content is known for being technically accurate while remaining accessible to beginners.</p>
+      <p>There is no single assigned article here — instead, use this site as a reference when you want a plain-language explanation of a concept you encountered in the readings or the lab. The DNS and networking sections are the most directly relevant to Week 6. The security section will be useful again in Week 7 when you configure a firewall and harden SSH access.</p>
+
+      <div class="topics-list">
+        <span class="topics-label">Suggested starting points for Week 6</span>
+        <ul>
+          <li><strong>What is DNS?</strong> — Explains how name resolution works end to end; directly relevant to Phase 4 (<code class="ic">dig</code>)</li>
+          <li><strong>What is an IP address?</strong> — Covers IPv4, IPv6, public vs. private addresses, and CIDR notation</li>
+          <li><strong>What is a network port?</strong> — Explains why services use numbered ports; directly relevant to Phase 5 (<code class="ic">ss -tlnp</code>)</li>
+          <li><strong>What is TCP/IP?</strong> — Overview of the protocol stack your Linux system uses for all network communication</li>
+        </ul>
+      </div>
+
+      <div class="connects-to">
+        <strong>Connects to the course:</strong> Cloudflare Learning is a resource you will continue to find useful beyond Week 6. Topics like firewalls, TLS/HTTPS, SSH, and DDoS protection are covered here and become relevant in Weeks 7 and 8.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Site Availability Note ── -->
+  <section class="note-card" id="note" aria-labelledby="h-note">
+    <div class="note-header">
+      <span class="note-badge" aria-hidden="true">Note</span>
+      <h2 id="h-note">What to Do If a Site Is Unreachable</h2>
+    </div>
+
+    <p>External websites occasionally go down or become temporarily unreachable — even major ones. For example, while assembling this resource list, <strong>ubuntu.com</strong> was unreachable due to what appeared to be an ongoing DNS attack on their servers. This is a real-world networking event, not an error on your end, and it is a good reminder that DNS problems affect everyone — even the people who write the documentation about DNS.</p>
+
+    <p>Before assuming a site is permanently gone or that you copied the URL incorrectly, use an online availability checker to see whether the problem is on your end or theirs. <strong>DownDetector</strong> is a widely used tool for this purpose. It shows real-time outage reports from users around the world for hundreds of services and websites.</p>
+
+    <a class="downdetector-link"
+       href="https://downdetector.com/"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open DownDetector website status checker in a new tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      downdetector.com — Website and Service Status Checker
+    </a>
+
+    <p>To check a specific site, go to DownDetector and search for the service name. For Ubuntu specifically, the direct status page is <a href="https://downdetector.com/status/ubuntu/" target="_blank" rel="noopener noreferrer" style="color:#744210;font-weight:600;">downdetector.com/status/ubuntu/</a>.</p>
+
+    <p>If a resource listed on this page is temporarily unavailable, try again later or search for the article title directly — many popular technical articles are mirrored, cached, or have been discussed on other platforms. If you believe a link on this page is permanently broken, let your instructor know through Canvas.</p>
+  </section>
+
+</main>
+
+</body>
+</html>
