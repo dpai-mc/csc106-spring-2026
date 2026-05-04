@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux File Permissions and Ownership | CSC 106 · Week 6</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 3.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: #334155;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#overview {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.intro-note {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+}
+
+/* ── Video + Transcript ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+}
+.cmd-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  counter-reset: cmd-counter;
+}
+.cmd-list li {
+  counter-increment: cmd-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.93rem;
+}
+.cmd-list li:first-child { border-top: 1px solid #e2e8f0; }
+.cmd-list li::before {
+  content: counter(cmd-counter);
+  min-width: 1.5rem;
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+.cmd-list code {
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cmd-desc {
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#overview">Overview</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands</a>
+</nav>
+
+<main class="container" id="main-content">
+
+  <!-- ── Overview ─────────────────────────────────────────────────────── -->
+  <section id="overview" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 · Week 6</p>
+    <h1 id="page-heading">Linux File Permissions and Ownership</h1>
+    <p>This video introduces Linux file permissions and ownership — the system that controls what each user can read, write, or execute on files and directories. The instructor demonstrates how to read <code>ls -l</code> permission strings, then uses <code>chmod</code> in both symbolic and numeric modes to change permissions. Ownership changes with <code>chown</code> are shown, including how to assign a group as co-owner of a shared project directory. The video closes with a practical shared-directory walkthrough using a <code>devteam</code> group with users <code>alice</code> and <code>bob</code>.</p>
+    <div class="intro-note" role="note">
+      <strong>Tip:</strong> Use the transcript panel to jump to any topic in the video. Click any line to seek directly to that point.
+    </div>
+  </section>
+
+  <!-- ── Video ─────────────────────────────────────────────────────────── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video: Linux File Permissions and Ownership</h2>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/IN1GpIzxqEQ?enablejsapi=1"
+                  title="Linux File Permissions and Ownership — CSC 106 Week 6"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for Linux File Permissions and Ownership video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands ──────────────────────────────────────────────────────── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <h2 id="commands-heading">Commands Used in This Video</h2>
+    <p style="font-size:0.92rem;color:#475569;">Commands appear in the order they are demonstrated in the video.</p>
+    <ol class="cmd-list" aria-label="Commands demonstrated in the video">
+      <li><code>ls -l</code> <span class="cmd-desc">Long listing — shows permissions, owner, group, size, and date for each file</span></li>
+      <li><code>ls -la</code> <span class="cmd-desc">Long listing including hidden files (names starting with a dot)</span></li>
+      <li><code>ls -la /tmp</code> <span class="cmd-desc">Long listing of the /tmp directory to see directory permission strings</span></li>
+      <li><code>touch testfile.txt</code> <span class="cmd-desc">Create an empty test file to practice permissions on</span></li>
+      <li><code>ls -l testfile.txt</code> <span class="cmd-desc">View the permissions of a single file</span></li>
+      <li><code>chmod u+x testfile.txt</code> <span class="cmd-desc">Add execute permission for the owner (symbolic mode)</span></li>
+      <li><code>chmod g-w testfile.txt</code> <span class="cmd-desc">Remove write permission from the group (symbolic mode)</span></li>
+      <li><code>chmod o-r testfile.txt</code> <span class="cmd-desc">Remove read permission from other (everyone else)</span></li>
+      <li><code>chmod ug=rw,o=r testfile.txt</code> <span class="cmd-desc">Set exact permissions for multiple groups at once using = (symbolic mode)</span></li>
+      <li><code>chmod 755 testfile.txt</code> <span class="cmd-desc">Set permissions numerically: rwxr-xr-x (owner full, group/other read+execute)</span></li>
+      <li><code>sudo groupadd devteam</code> <span class="cmd-desc">Create a new group named devteam</span></li>
+      <li><code>sudo useradd -m -s /bin/bash alice</code> <span class="cmd-desc">Create user alice with a home directory and bash shell</span></li>
+      <li><code>sudo useradd -m -s /bin/bash bob</code> <span class="cmd-desc">Create user bob with a home directory and bash shell</span></li>
+      <li><code>sudo usermod -aG devteam alice</code> <span class="cmd-desc">Add alice to the devteam group (append, keeping existing groups)</span></li>
+      <li><code>sudo usermod -aG devteam bob</code> <span class="cmd-desc">Add bob to the devteam group</span></li>
+      <li><code>sudo mkdir /opt/project</code> <span class="cmd-desc">Create a shared project directory</span></li>
+      <li><code>sudo chown root:devteam /opt/project</code> <span class="cmd-desc">Set root as owner and devteam as group owner of the directory</span></li>
+      <li><code>sudo chmod 775 /opt/project</code> <span class="cmd-desc">Give owner and group full access; others read+execute only</span></li>
+      <li><code>sudo -u alice touch /opt/project/alice-file.txt</code> <span class="cmd-desc">Run a command as alice — creates a file in the shared directory</span></li>
+      <li><code>ls -l /opt/project</code> <span class="cmd-desc">Verify ownership and permissions of files in the shared directory</span></li>
+      <li><code>sudo chown alice:devteam /opt/project/alice-file.txt</code> <span class="cmd-desc">Change the file's group ownership to devteam so all group members can access it</span></li>
+      <li><code>sudo userdel -r alice</code> <span class="cmd-desc">Delete user alice and remove her home directory (-r is recursive)</span></li>
+      <li><code>sudo userdel -r bob</code> <span class="cmd-desc">Delete user bob and remove his home directory</span></li>
+      <li><code>sudo groupdel devteam</code> <span class="cmd-desc">Delete the devteam group</span></li>
+      <li><code>sudo rm -rf /opt/project</code> <span class="cmd-desc">Remove the shared directory and all its contents</span></li>
+    </ol>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.800 --> 00:07.780
+Aloha and welcome. This is week six and this video is really about Linux file permissions
+
+00:07.780 --> 00:13.400
+and ownership, but first I just wanted to go over the layout for this week really quickly.
+
+00:14.220 --> 00:20.840
+Okay, so first obviously we have the overview, you know, just what's going on this week.
+
+00:21.220 --> 00:25.620
+It's all about file permission, ownership, and networking fundamentals.
+
+00:25.620 --> 00:32.900
+All right, and then there's two things you have to do this week. One is the Linux chapter 17 out
+
+00:32.900 --> 00:39.080
+of Linux Essentials, the lab for that, and then there is a network basics check because we're
+
+00:39.080 --> 00:45.760
+doing kind of two things. All right, so Linux Essentials is ownership and permissions on files
+
+00:45.760 --> 00:51.900
+and directories, which this video is about, and then network basics check is chapter 14 actually
+
+00:51.900 --> 00:55.280
+from Linux Essentials, and I'll go over that in the second video.
+
+00:55.620 --> 01:02.580
+Okay, so then the other things that I have posted just so you have them
+
+01:02.580 --> 01:12.340
+is so we have our NetACAD required activities, which is to read chapter 17 and chapter 14
+
+01:12.340 --> 01:14.820
+and then do the chapter 17 lab.
+
+01:17.440 --> 01:23.920
+Okay, and then we'll have this network video, which goes along with
+
+01:23.920 --> 01:24.840
+chapter 14.
+
+01:25.620 --> 01:34.360
+14 and then some additional resources and readings for networking basics if you're struggling with
+
+01:34.360 --> 01:42.820
+it at all okay and there's some really good um resources here um in terms of like slant
+
+01:42.820 --> 01:53.320
+tutorials definitions and talking about networking and networking steps if you will
+
+01:53.320 --> 01:58.800
+all right so that's pretty much the basics for this week there is an extra credit lab
+
+01:58.800 --> 02:08.360
+if you wish to do it as well and so that one's on troubleshooting and rather than actually doing
+
+02:08.360 --> 02:14.160
+troubleshooting you will be basically talking about it so there's the linux essentials lab
+
+02:14.160 --> 02:20.080
+that you do in linux essentials then there's this lab 4 on network basics and then there's
+
+02:20.080 --> 02:23.300
+the extra credit lab if you want to do it that's kind of the layout for this week
+
+02:23.300 --> 02:27.920
+and so let's first let's start talking about file permissions and ownership
+
+02:27.920 --> 02:35.760
+it sounds simple on the surface but there is a lot of depth to it and there's a lot of
+
+02:35.760 --> 02:43.340
+understanding of concepts okay so last week we talked about or you learned about how linux
+
+02:43.340 --> 02:48.940
+tracked users in groups you created accounts you created groups you put people into groups you
+
+02:48.940 --> 02:52.660
+understood what the etc password file
+
+02:53.300 --> 03:01.760
+was etc group file the etc shadow file all those kind of files so what we're going to talk about
+
+03:01.760 --> 03:09.440
+this week is now that you know how the systems knows who you are we're going to try to figure
+
+03:09.440 --> 03:15.320
+out how it decides what you're allowed to do okay that's what this is about how do you decide what
+
+03:15.320 --> 03:21.200
+you're allowed to do so that's permission control and so every file every directory has some
+
+03:21.200 --> 03:23.280
+permissions attached to it and those permissions are going to be in the directory and those
+
+03:23.300 --> 03:28.980
+determines what you can do whether you can read it write it or execute it so those are the three
+
+03:30.180 --> 03:38.980
+levels of permissions you can have read write and execute right so let me let's write that down so
+
+03:38.980 --> 03:51.060
+we have read write and execute okay and so they are r
+
+03:53.300 --> 04:00.660
+the nomenclature is r for read w for ride and x for execute okay so those are the three rwx
+
+04:00.660 --> 04:10.740
+that you'll see and those are the three permission levels so there's now there's three permission
+
+04:10.740 --> 04:17.780
+levels so let's uh look up here this is permission levels
+
+04:19.780 --> 04:22.500
+and then you can apply those permission levels
+
+04:23.300 --> 04:38.340
+okay two three groups if you will or three sets of users okay we have you
+
+04:38.340 --> 04:51.460
+user user owner okay then we have group and then we have everyone else or other
+
+04:51.460 --> 05:01.580
+so there's other okay and so user owner is you group is G and everyone else is O
+
+05:01.580 --> 05:07.700
+okay so here's something that always people always get mixed up on and that
+
+05:07.700 --> 05:15.140
+is they use O for owner O is other it's a little confusing but U is the user
+
+05:15.140 --> 05:21.460
+owner all right so U for owner G for group and
+
+05:21.460 --> 05:29.200
+O for other and everyone else okay so we have three permission levels and three
+
+05:29.200 --> 05:34.660
+groups okay in each group you can have read write or execute read write or
+
+05:34.660 --> 05:42.560
+execute read write or execute so if you look at that I have three groups three
+
+05:42.560 --> 05:50.120
+levels okay and the levels are different and so we apply them one at a time so we
+
+05:50.120 --> 05:51.020
+end up with a
+
+05:51.460 --> 06:07.440
+permissions of U U U G G G O O O okay where those are the same positions as
+
+06:07.440 --> 06:20.960
+R W X R W X R W X okay so we have
+
+06:20.960 --> 06:21.440
+basically not
+
+06:21.440 --> 06:29.620
+you know rwx rwx rwx the first three rwx is for the user owner do they have read
+
+06:29.620 --> 06:36.280
+permissions do they have write permissions do they have execute permissions okay so that's
+
+06:36.280 --> 06:47.720
+the first three okay the second three is for the group okay the group that owns this file or the
+
+06:47.720 --> 06:55.580
+group that has permissions on this file you know the primary group and they are also can the group
+
+06:55.580 --> 07:02.960
+read can the group write can the group execute and the other is the third set and that is can
+
+07:02.960 --> 07:11.460
+they read can they write connection right so that's basically the permissions so let's go
+
+07:11.460 --> 07:15.380
+to our boot to server
+
+07:17.720 --> 07:34.260
+and we'll open up a terminal emulator okay and so if you do an ls dash l ls for listing dash l for
+
+07:34.260 --> 07:47.580
+long meaning it will put all these i don't like this one um see rwx r space x r space x
+
+07:47.720 --> 07:57.220
+okay so it puts all that information if i just do an ls it won't do that okay let's see
+
+07:57.860 --> 08:11.920
+let's do it al for all oh there we go now we have a whole bunch of stuff okay
+
+08:11.920 --> 08:15.980
+all right so um
+
+08:24.720 --> 08:28.900
+right means all the dash l means long
+
+08:28.900 --> 08:31.800
+so just to show you what that would look like without the
+
+08:31.800 --> 08:32.560
+a or l
+
+08:32.560 --> 08:46.760
+too big but if i just did an ls it just what stuff is there ls dash a gives me everything that's in
+
+08:46.760 --> 08:47.440
+there okay
+
+08:47.600 --> 08:50.980
+everything that starts with a dot is a hidden file.
+
+08:52.380 --> 08:55.440
+Look, I have a whole bunch of VBox client hidden files,
+
+08:56.440 --> 08:58.980
+you know, .bash hidden files.
+
+09:00.340 --> 09:03.100
+Okay, typically they're setup files like the .pro file,
+
+09:03.760 --> 09:06.600
+but they show us something different, okay?
+
+09:06.600 --> 09:11.260
+So ls base dash al will be everything with the long listing,
+
+09:11.420 --> 09:15.940
+which includes all these things in front.
+
+09:15.940 --> 09:20.660
+All right, so if we were to look at, say,
+
+09:21.540 --> 09:26.520
+the bash rc file, .bash rc file here, okay,
+
+09:27.000 --> 09:31.640
+what we'll see is you'll see here there's a something
+
+09:31.640 --> 09:34.980
+in front of the first r, okay?
+
+09:35.040 --> 09:35.880
+So let's read this.
+
+09:35.940 --> 09:36.640
+It's dash.
+
+09:38.440 --> 09:41.000
+Let's pull up my cheat sheet here.
+
+09:43.440 --> 09:45.200
+Okay, so the bash rc.
+
+09:45.940 --> 09:55.260
+.bash is dash rw dash r dash dash r dash dash.
+
+09:55.500 --> 09:56.760
+There it says one.
+
+10:08.420 --> 10:10.960
+Let's see if I can, I don't know if,
+
+10:11.020 --> 10:15.600
+I don't think I can copy it out to my side of my thing.
+
+10:15.940 --> 10:16.560
+But we'll try.
+
+10:18.000 --> 10:19.140
+Yeah, I can't copy it.
+
+10:19.440 --> 10:19.960
+All right.
+
+10:20.740 --> 10:22.600
+Let me shrink this down just a little bit
+
+10:22.600 --> 10:25.440
+so I can see the bash rc one.
+
+10:36.240 --> 10:45.660
+Okay, and then it says paid, paid, you know, 3771, March 31.
+
+10:45.940 --> 10:51.700
+All right, so we're going to decode this.
+
+10:53.380 --> 10:57.840
+This first element here, this dash means it's a file, okay?
+
+10:57.900 --> 11:00.980
+There's three things it could be, okay?
+
+11:00.980 --> 11:09.980
+So the first could be dash for file, d for directory,
+
+11:10.960 --> 11:13.680
+and l for symbolic link.
+
+11:15.940 --> 11:17.900
+We're not going to talk about links,
+
+11:18.080 --> 11:21.020
+but we're just talking about dashes for files and ds for directory.
+
+11:21.420 --> 11:22.740
+You see a lot of ds.
+
+11:23.360 --> 11:23.940
+Those are directory.
+
+11:24.100 --> 11:24.900
+You see a lot of dashes.
+
+11:25.000 --> 11:25.600
+Those are files.
+
+11:27.160 --> 11:30.360
+All right, and then, so then we have, for bash rc,
+
+11:30.480 --> 11:40.920
+we have for user, user rights are rw dash, okay?
+
+11:40.920 --> 11:45.920
+Which means read and write permissions.
+
+11:46.040 --> 11:49.220
+But no execute, okay?
+
+11:50.180 --> 11:55.940
+Group is r dash dash, which means the group can read it,
+
+11:56.080 --> 11:57.140
+and that's all they can do.
+
+11:57.260 --> 12:00.220
+They can't write to it or execute it, okay?
+
+12:01.040 --> 12:06.260
+Other, everyone else has read dash dash, which is read only, okay?
+
+12:06.420 --> 12:07.480
+Just like the group.
+
+12:07.480 --> 12:15.920
+Okay, then there's a one, which says basically how many links there are to it.
+
+12:16.140 --> 12:17.540
+Which is one.
+
+12:18.900 --> 12:23.300
+And then we see paid paid, okay?
+
+12:23.480 --> 12:31.760
+So paid, the first paid is the who owns this file, okay?
+
+12:31.840 --> 12:32.760
+So that's the user.
+
+12:34.420 --> 12:42.880
+And then the second paid is what group owns this file, right?
+
+12:45.180 --> 12:45.920
+That's the group.
+
+12:46.140 --> 12:51.420
+Then the next is size, and then there's date, and then it's the file name.
+
+12:52.560 --> 13:04.420
+So this is how we decode this beginning, the long listing in ls, okay?
+
+13:16.820 --> 13:18.540
+Let's try to look at a different one.
+
+13:19.320 --> 13:22.400
+Maybe it's more interesting for the directory.
+
+13:23.420 --> 13:31.340
+So let's do an ls dash dash la slash tmp.
+
+13:39.680 --> 13:40.540
+What do we want to look at here?
+
+13:44.860 --> 13:59.440
+any of these if we look at like this dot font unix you see it says directory read write execute
+
+13:59.440 --> 14:06.160
+read write execute read write t all right we haven't talked about t it's in chapter 17 but
+
+14:06.160 --> 14:13.100
+that when you get to 17 that's the sticky bit all right but basically it says the owner is root
+
+14:13.100 --> 14:17.900
+and the group is root which means really means that nobody owns it
+
+14:17.900 --> 14:31.080
+okay and a directory read means you can read it or open it or list the contents of it
+
+14:31.080 --> 14:39.040
+like do a cat of the file write means you can create or delete files inside that directory
+
+14:39.040 --> 14:42.620
+and execute means you can actually
+
+14:43.080 --> 14:53.240
+like cd into the directory right it's kind of weird so read is you can list the contents of
+
+14:53.240 --> 14:59.800
+the directory so you can do an ls of that directory write means you can create or delete
+
+14:59.800 --> 15:07.480
+files inside that directory and execute means you can cd or change directly into that directory
+
+15:07.480 --> 15:12.600
+as a user okay so that's what those mean and so if you look at these it basically
+
+15:12.600 --> 15:14.920
+gives everybody the rights to
+
+15:17.560 --> 15:22.120
+read lists a directory create files modify files in that directory
+
+15:22.680 --> 15:29.240
+and also delete them as well as to cd into that that fox dash unix directory
+
+15:31.320 --> 15:33.960
+all right so um just a little bit about that
+
+15:42.600 --> 15:44.600
+um
+
+15:48.920 --> 15:57.000
+you'll want to change the uh permissions of a file okay so let's create a file
+
+15:58.280 --> 16:00.360
+so i'm going to use touch and what touch does
+
+16:04.120 --> 16:11.960
+just creates a file test file dot text txt do an ls see i have a tux file dot txt here
+
+16:12.600 --> 16:21.540
+I'll do an ls dash l, oops, dash l of testfile.txt only.
+
+16:22.400 --> 16:23.240
+Okay, here we go.
+
+16:24.300 --> 16:29.020
+So it says, paid, paid, I'm the user, owner, and my group owns it.
+
+16:29.300 --> 16:39.960
+It's size zero, but it has rw dash rw dash r dash dash, meaning the owner, me, I can read and write it, do it.
+
+16:40.020 --> 16:40.980
+I can't execute it.
+
+16:42.600 --> 16:46.020
+So the group can read and write, and others can only read.
+
+16:49.960 --> 16:59.600
+And the default comes in your UMASC, which is also in Chapter 17, which is kind of how default, when you create a file, what the default permissions are, how you do those.
+
+17:01.660 --> 17:10.940
+Okay, so if I want to give myself execute permissions, okay, there's two ways.
+
+17:11.080 --> 17:12.600
+There's symbolic, using symbolic.
+
+17:12.800 --> 17:16.500
+Using the rwx, okay?
+
+17:17.260 --> 17:23.320
+So using the ugo for who I want to give it to, and rwx for the rights I want to give them.
+
+17:25.540 --> 17:27.860
+And so the command is chmod.
+
+17:28.960 --> 17:31.020
+So I can go chmod.
+
+17:31.020 --> 17:41.800
+And if I want to give myself execute permissions, I can go plus, I mean, user, me, the user, owner, plus x.
+
+17:42.600 --> 18:05.180
+And I want to apply that to testfile.txt, and now if I do an ls dash l, oops, let's not do that, let's do an ls dash l of textfile.txt, you'll see that the user owner has rwx, okay?
+
+18:05.180 --> 18:12.220
+And everything, nothing else changes, okay?
+
+18:12.600 --> 18:25.000
+Now, if I wanted to say, let me clear this, and make this cleaner.
+
+18:26.840 --> 18:32.040
+Now, let's say I wanted to remove the right from the group, so the group can only read.
+
+18:32.120 --> 18:35.480
+So I want the group to be just like other, okay?
+
+18:35.480 --> 18:39.960
+So I can do chmod, okay?
+
+18:40.160 --> 18:42.280
+G, group minus w.
+
+18:42.460 --> 18:43.100
+I want to take it away.
+
+18:43.420 --> 18:45.180
+So if I minus the w, it goes away.
+
+18:45.240 --> 18:47.220
+If I plus the w, it will add it.
+
+18:49.240 --> 18:57.340
+So group, take right away to this testfile.txt, apply that to testfile.txt.
+
+19:01.840 --> 19:09.340
+And you can see now it's changed, so now the group can only read it.
+
+19:09.420 --> 19:11.020
+They can't write or execute it.
+
+19:12.820 --> 19:15.100
+You only need execute if it's a script file.
+
+19:15.900 --> 19:20.380
+Actually, you only need to execute the script files that you want to run, okay?
+
+19:20.820 --> 19:26.860
+You don't need it on a text file that you want to edit, because that's read and write.
+
+19:27.720 --> 19:31.560
+Create it, open it, read it, edit it, save it.
+
+19:31.760 --> 19:32.240
+It's read, write.
+
+19:33.420 --> 19:37.820
+Execute is strictly for executable files that can do stuff.
+
+19:44.180 --> 19:52.220
+And let's see, you know, I could remove the read from the other group,
+
+19:52.360 --> 19:55.720
+because I want other to not be able to even see my files.
+
+19:56.600 --> 20:06.980
+So I could chmod o-r to test, oops, o-r to testfile.txt.
+
+20:10.020 --> 20:12.440
+And then I can look at the ls-l, the variable.
+
+20:12.460 --> 20:17.700
+If I no longer read the other group, cannot read, write, or execute it,
+
+20:17.800 --> 20:19.180
+so they'll never see it.
+
+20:21.180 --> 20:25.880
+So only the, in this case, only the owner, originator owner,
+
+20:27.900 --> 20:28.940
+can read, write, or execute.
+
+20:29.520 --> 20:33.400
+And the group, anybody in that group, the paid group,
+
+20:33.860 --> 20:35.900
+can read, write, execute, and read.
+
+20:36.180 --> 20:36.900
+It can only read.
+
+20:43.680 --> 20:49.500
+If I wanted to change it back, I could, I don't have to use plus.
+
+20:50.300 --> 20:56.560
+If I want, let's say I want the answer to be rwx, rw-r.
+
+20:58.800 --> 21:04.380
+So I do a chmod, or maybe I want to do rw for,
+
+21:04.380 --> 21:07.380
+I want rw-rw-r.
+
+21:08.080 --> 21:11.920
+So I want to change it back to what it was originally here before we started.
+
+21:12.940 --> 21:16.020
+And so what I can do, I can chain things together.
+
+21:16.180 --> 21:20.500
+So I can say make user and group, and I can say equals,
+
+21:20.720 --> 21:25.040
+and now I need to give it every write, rwx, rw-r, whatever I want.
+
+21:25.560 --> 21:31.480
+So I want rw, comma, right?
+
+21:31.660 --> 21:33.060
+Other equal read.
+
+21:34.540 --> 21:36.820
+Apply that to testfile.txt.
+
+21:38.900 --> 21:41.820
+And now if I do an ls-l on testfile.txt,
+
+21:42.460 --> 21:48.900
+both the user and group have rw-, because I only gave them rw.
+
+21:49.560 --> 21:53.340
+When you use plus and minus, it adds or subtracts from what's already there.
+
+21:53.340 --> 22:01.400
+When you use equals, it sets the entire three different permissions,
+
+22:01.640 --> 22:02.400
+read, write, and execute.
+
+22:02.720 --> 22:05.220
+It sets the entire permissions to whatever you say.
+
+22:06.740 --> 22:08.760
+So basically it wipes it out and gives it whatever you say.
+
+22:12.460 --> 22:18.300
+All right, now there's another way to change mod,
+
+22:18.360 --> 22:22.960
+and this is the way most advanced admins do it, and that's with numbers.
+
+22:24.320 --> 22:30.560
+So let's go back and look at our, we have read, write, execute.
+
+22:31.120 --> 22:37.360
+So if rwx, okay, so if I look at these as bits, okay,
+
+22:37.360 --> 22:40.980
+1, 1, 1, okay?
+
+22:41.640 --> 22:42.360
+So if rwx,
+
+22:42.460 --> 22:44.240
+that's the same as 1, 1, 1.
+
+22:44.840 --> 22:48.440
+And if I look at that in binary, 1, 1, 1 in binary equals 7.
+
+22:50.540 --> 22:55.160
+If I want read, write, okay?
+
+22:55.820 --> 23:00.000
+In binary, that's 1, 1, 0, because no x, right?
+
+23:00.780 --> 23:02.640
+And in binary, that equals 6.
+
+23:05.640 --> 23:12.420
+If I want read-execute, that's 1, 0, oops, 1, 0, 1.
+
+23:12.460 --> 23:15.960
+And that equals 5 in binary, right?
+
+23:16.180 --> 23:20.940
+Because if you look at these, for this one on the right,
+
+23:21.020 --> 23:23.760
+it's worth 1 times 2 to the 0, or 1.
+
+23:24.380 --> 23:26.080
+The next one is 2 times that, or 2.
+
+23:26.220 --> 23:27.580
+The next one, 2 times that is 4.
+
+23:28.380 --> 23:33.080
+So execute is 1, write is 2, read is 4.
+
+23:34.920 --> 23:39.840
+If I want write only, if I want write, oops, r dash dash,
+
+23:39.840 --> 23:42.400
+well, that's 1.
+
+23:42.460 --> 23:44.900
+1, 0, 0, that's 4.
+
+23:46.440 --> 23:47.380
+So you can do these things.
+
+23:47.460 --> 23:48.940
+You can mix and match them however you want.
+
+23:50.040 --> 23:52.320
+Typically, these are numbers we use 7, 6, 5, or 4.
+
+23:55.060 --> 23:57.560
+And so you'll use three numbers.
+
+24:03.620 --> 24:05.280
+So now I'll use three numbers, right?
+
+24:05.920 --> 24:08.040
+So if I use, say, 7, 7, 7,
+
+24:09.180 --> 24:11.520
+so if I gave writes of 7, 7, 7,
+
+24:11.520 --> 24:15.420
+that's read, write, execute for the first 7,
+
+24:16.000 --> 24:17.760
+read, write, execute for the second 7,
+
+24:18.020 --> 24:20.280
+and read, write, execute for the third 7.
+
+24:21.680 --> 24:22.700
+So that's how you work.
+
+24:22.800 --> 24:23.740
+So you give it three numbers,
+
+24:24.140 --> 24:29.040
+and each number is equivalent to something for RWX.
+
+24:29.700 --> 24:32.140
+The first number is for the user,
+
+24:32.940 --> 24:34.040
+the second number is a group,
+
+24:34.200 --> 24:35.380
+and the third number is for other.
+
+24:37.260 --> 24:39.980
+So if I want to, say, give,
+
+24:40.180 --> 24:41.260
+um,
+
+24:41.520 --> 24:42.760
+read, write, execute,
+
+24:43.760 --> 24:45.440
+so to give something,
+
+24:45.560 --> 24:46.760
+read, write, execute,
+
+24:47.520 --> 24:49.040
+read, dash, execute,
+
+24:49.180 --> 24:50.300
+read, dash, execute.
+
+24:52.360 --> 24:53.940
+If I want those permissions,
+
+24:55.460 --> 24:56.220
+I'll break it down.
+
+24:57.620 --> 24:58.720
+RWX is 7.
+
+25:00.120 --> 25:02.500
+R-X is 5.
+
+25:03.360 --> 25:05.360
+R-X is 5.
+
+25:06.620 --> 25:10.940
+So what I need to do is set my permissions to be 7, 5, 5.
+
+25:12.180 --> 25:13.020
+7, 5, 5.
+
+25:14.780 --> 25:19.840
+So what I do now is,
+
+25:20.240 --> 25:23.720
+so I just go to chmod 7, 5, 5.
+
+25:23.840 --> 25:27.840
+That's what I want the permissions to be on testfile.txt.
+
+25:29.060 --> 25:32.400
+And I can do an ls-l on testfile.txt,
+
+25:32.740 --> 25:34.880
+and I'll have RWX.
+
+25:35.880 --> 25:36.820
+That's the 7.
+
+25:36.960 --> 25:38.200
+R-X is 5.
+
+25:38.280 --> 25:39.180
+R-X is 5.
+
+25:41.180 --> 25:43.300
+So this is the way most people do it.
+
+25:43.520 --> 25:44.720
+I mean, advanced people do it.
+
+25:45.080 --> 25:46.040
+They just set the permissions.
+
+25:46.200 --> 25:46.900
+They know what they want.
+
+25:47.340 --> 25:49.460
+There are certain permissions you use all the time.
+
+25:50.300 --> 25:52.680
+7, 5, 5 is one that you use a lot,
+
+25:53.760 --> 25:58.160
+especially for scripts and executable things.
+
+26:00.240 --> 26:02.940
+For basic files like text files,
+
+26:03.560 --> 26:04.820
+you use 6, 4, 4.
+
+26:06.860 --> 26:09.000
+So typically for text files,
+
+26:09.400 --> 26:10.860
+you're going to use 6, 4, 4.
+
+26:11.180 --> 26:14.180
+You know, documents that you don't execute.
+
+26:20.880 --> 26:23.720
+6, 4, 4 is read, write, read, read.
+
+26:26.260 --> 26:27.100
+That's typical.
+
+26:27.860 --> 26:28.780
+Not always.
+
+26:28.920 --> 26:30.220
+Maybe you want read, write, read, write.
+
+26:30.920 --> 26:31.940
+6, 6, 4.
+
+26:32.660 --> 26:33.100
+Something like that.
+
+26:37.220 --> 26:40.120
+So a few patterns that we use a lot.
+
+26:41.180 --> 26:47.180
+So 7, 5, 5, 6, 4, 4.
+
+26:52.760 --> 26:57.180
+So we use 7, 5, 5 for...
+
+26:59.180 --> 27:03.560
+This is really scripts, executables,
+
+27:11.180 --> 27:14.680
+directories.
+
+27:19.860 --> 27:23.460
+Because 5 for a directory, read, execute, read means
+
+27:23.460 --> 27:25.320
+you can list the contents,
+
+27:25.580 --> 27:28.680
+and 5 means you can cd into the directory
+
+27:28.680 --> 27:30.700
+to list the contents if you want.
+
+27:31.480 --> 27:37.440
+But you cannot modify or create new stuff in the directory,
+
+27:37.440 --> 27:38.460
+which is the right.
+
+27:39.520 --> 27:40.700
+So you can't change anything,
+
+27:40.700 --> 27:42.080
+but you can read it and list it.
+
+27:46.080 --> 27:47.000
+6, 4, 4.
+
+27:47.940 --> 27:49.200
+This is regular files.
+
+27:53.500 --> 27:54.500
+700.
+
+27:54.700 --> 28:01.640
+Okay, 700 is for owner access, owner access only.
+
+28:04.640 --> 28:08.400
+That's supposed to be like private directories,
+
+28:09.080 --> 28:10.480
+things like that, that you don't want anybody else to see.
+
+28:10.680 --> 28:14.260
+And then...
+
+28:14.260 --> 28:19.460
+600, because 7 typically we only use with directories and scripts.
+
+28:21.120 --> 28:24.560
+600 would be for your sensitive files.
+
+28:26.240 --> 28:30.540
+But you only want you to be able to read them,
+
+28:30.680 --> 28:31.860
+edit them, modify them.
+
+28:40.680 --> 28:47.180
+all right so something like your SSH keys gonna be 600 because you don't want
+
+28:47.180 --> 28:55.040
+anybody else to know what your SSH keys are right so those are kind of four that
+
+28:55.040 --> 29:04.240
+you should know if you were an admin you would know them very well you would
+
+29:04.240 --> 29:10.180
+learn them very well so those are the kind of the four primary ones all right
+
+29:10.180 --> 29:15.940
+now you can change the owner of course you always want to change be able to
+
+29:15.940 --> 29:27.980
+change the owner right so right now we have our test file that text file right
+
+29:27.980 --> 29:34.000
+and when we do a LS dash L on text
+
+29:34.240 --> 29:39.880
+test file dot txt we have the owner as paid okay so what we want to do is
+
+29:39.880 --> 29:46.480
+change the owner and let's change the owner to root because why not okay so
+
+29:46.480 --> 29:54.360
+change owner is CH own okay and I want to change the owner to root on test file
+
+29:54.360 --> 30:03.340
+dot txt now it's gonna tell you this should fail because it's not permitted
+
+30:03.340 --> 30:04.040
+because
+
+30:04.240 --> 30:12.940
+only the you know the one with root permissions can change it to root or
+
+30:12.940 --> 30:27.880
+loan change ownership so you have to do sudo okay or sudo tone and then put in
+
+30:27.880 --> 30:34.140
+your password and it will change the ownership
+
+30:34.240 --> 30:45.820
+okay look it says root but they didn't change the group it's only root can
+
+30:45.820 --> 30:55.240
+change ownership I change it to right now if I want to change both to be root
+
+30:55.240 --> 31:01.260
+root instead of root paid because I want to change the group as well as the owner
+
+31:01.260 --> 31:04.100
+you would do sudo
+
+31:04.240 --> 31:13.200
+so root colon root and you don't have to use root you can use any user in any
+
+31:13.200 --> 31:17.540
+group but and you put a colon in between them to say the first one is the user
+
+31:17.540 --> 31:26.920
+the second one is the group okay so that changes them both
+
+31:34.240 --> 31:40.380
+right now if I really want to be able to do stuff without using sudo and all that
+
+31:40.380 --> 31:50.720
+kind of stuff all the time I need to give it back to myself just to make it
+
+31:50.720 --> 31:56.180
+easier to work with I'm gonna change it back to myself and I'll verify that I'm
+
+31:56.180 --> 32:01.920
+now the owner and my group is the owner like the group owner
+
+32:04.240 --> 32:12.680
+okay typically you're gonna use both there is a change group command that you
+
+32:12.680 --> 32:17.560
+can just change the group if you want but typically most times you'll use CH
+
+32:17.560 --> 32:28.900
+own and you'll do user colon group all right now thinking about this one of the
+
+32:28.900 --> 32:34.120
+things that we're gonna want to have is to have multiple users share directory so
+
+32:34.120 --> 32:39.460
+they both can create and edit files in that directory because that just makes
+
+32:39.460 --> 32:45.640
+sense right in a network world multiple people have a file share you know what
+
+32:45.640 --> 32:56.740
+multiple people in there to do stuff so to do that let me create a new group so
+
+32:56.740 --> 33:04.080
+I'm gonna create a new group let's call it dev team
+
+33:04.120 --> 33:17.940
+and then let's add with you know their own directories and everything and this
+
+33:17.940 --> 33:24.540
+is you know home ashy em dash s slash bin slash bash and then username Alice
+
+33:24.540 --> 33:31.780
+right where that from last week hopefully the second fun Bob we go Bob
+
+33:31.780 --> 33:33.960
+and Alice
+
+33:34.120 --> 33:47.020
+right and now what we need to do is we need to add them both to the dev team
+
+33:47.020 --> 34:10.780
+group remember the dash a Alice Bob in let's see if we did that right Alice is
+
+34:10.780 --> 34:14.460
+in her own group and dev team
+
+34:17.020 --> 34:21.740
+Bob is in his own a dev team so we're good there right we have two users
+
+34:21.740 --> 34:29.400
+they're both in dev team okay so now what we're gonna do is create a new
+
+34:29.400 --> 34:37.780
+project folder okay so let's create a new project folder folder mkdir make
+
+34:37.780 --> 34:46.780
+directory slash opti slash opt projects project okay so we made that
+
+34:46.780 --> 34:54.260
+directory and we're going to create a new directory and let's change it to root colon dev team as the group
+
+34:54.260 --> 35:12.880
+owner for that new directory so we now have it and then let's give the group
+
+35:12.880 --> 35:23.940
+a name okay so I'm giving the group seven meaning read write execute to the
+
+35:23.940 --> 35:29.180
+directory so they can get in the directory they can read it they can
+
+35:29.180 --> 35:33.200
+write it and execute it meaning read means they can list the content right
+
+35:33.200 --> 35:42.540
+means they can create and edit files and five means that they can CD into that
+
+35:42.540 --> 35:50.040
+directory all right so dev team now is the group owner so every person or every
+
+35:50.040 --> 35:57.720
+user in dev team has the rights of seven for that directory
+
+35:57.720 --> 36:19.740
+all right so let's pretend we're Alice okay we're gonna print or Alice sudo dash you Alice
+
+36:19.740 --> 36:26.240
+so I'm running sudo as Alice that's what the sudo dash you Alice does and Alice is
+
+36:26.240 --> 36:27.700
+gonna create a new file
+
+36:27.700 --> 36:39.600
+file called OPT in OPT project and we'll just call it Alice-file.txt
+
+36:39.600 --> 36:47.940
+okay and then we'll do an ls-l of auth directory slash OPT slash prog project
+
+36:47.940 --> 36:54.500
+and we see that there is a Alice-file in there where Alice is the
+
+36:54.500 --> 37:03.140
+owner and Alice's group is the owner okay which is fine she can do it but Bob
+
+37:03.140 --> 37:08.480
+can't do anything with that file because it's in the Alice group not the dev team
+
+37:08.480 --> 37:18.820
+group okay okay so this is where that set bit set group ID bit in the directory
+
+37:18.820 --> 37:24.260
+but before that T thing would help because it would automatically
+
+37:26.720 --> 37:35.160
+you could set it up to automatically make the group the same as the dev team
+
+37:41.080 --> 37:49.220
+okay so ideally what you need this to say is Alice space dev team okay and we
+
+37:49.240 --> 37:54.300
+say is Alice space dev team okay and we could do that right pseudo change owner
+
+37:54.320 --> 38:11.580
+ownership of to alice colon dev team okay slash opt slash project slash alice file dot txt
+
+38:11.580 --> 38:21.200
+and then if we look at our ls so you do it manually but ideally and we're not going to
+
+38:21.200 --> 38:30.980
+cover this right now but ideally we would set it up in our by using this set g id flag
+
+38:30.980 --> 38:36.860
+to automatically every time someone created a file in there everybody anybody on the dev
+
+38:36.860 --> 38:42.240
+could get a file the dev team group would be the owner that way that's the only way you can
+
+38:42.240 --> 38:45.680
+share it without doing something manual like we just did
+
+38:45.680 --> 38:51.180
+all right so now what i'm going to do is clean my clean my stuff up
+
+38:51.200 --> 38:55.260
+i don't really want all this stuff because i'm done with it and we're pretty much done with my
+
+38:55.260 --> 39:01.980
+demo so i want to delete alice
+
+39:01.980 --> 39:08.920
+okay and bob
+
+39:08.920 --> 39:18.100
+and you don't have to worry about alice mail's whole thing basically what happens when i use
+
+39:18.100 --> 39:20.900
+user delete dash r it's recursive to delete everything
+
+39:21.200 --> 39:22.980
+and that's what i'm going to do is i'm going to close you with alice
+
+39:22.980 --> 39:32.820
+okay sudo group delete group del dev team let's get rid of that group and then
+
+39:34.820 --> 39:44.060
+sudo rm-rf that's rf for recursive force and what that means is i'm going to get rid of this
+
+39:44.060 --> 39:51.180
+folder i created and all the files in it all right so you know if i do an ls file i'm going to do a
+
+39:51.200 --> 39:59.740
+ls-l of or maybe i do a sudo ls-l of slash opt slash project
+
+39:59.740 --> 40:04.640
+it's going to say i have no such file or directory because i just deleted it
+
+40:04.640 --> 40:14.320
+okay so dash l in summary dash l to see all the um permissions
+
+40:14.320 --> 40:20.980
+okay so user group other permissions you can change them
+
+40:21.200 --> 40:34.740
+using chmod with um you know r user group or other ugo and adding or subtracting rwx
+
+40:34.740 --> 40:43.120
+or setting it equal to rwx or you can do numeric mode 777-755-644
+
+40:43.120 --> 40:50.960
+um you can change ownership using ch own ch group to drp if you want
+
+40:51.200 --> 40:59.580
+um you can set up a shared directory and set the group to be the owner and then everybody in the
+
+40:59.580 --> 41:05.400
+group then has those rights okay and you're going to practice these in chapter 17 lab a lot of these
+
+41:05.400 --> 41:12.620
+in chapter 17 lab permissions and ownership work together to create your safe and secure
+
+41:12.620 --> 41:15.960
+structure okay
+
+41:15.960 --> 41:21.040
+and next week we're going to build a web server i'm going to have to
+
+41:21.200 --> 41:25.120
+permissions and so you'll get a little practical experience doing it there
+
+41:27.040 --> 41:31.200
+all right so that's my users owners file permissions
+
+41:33.440 --> 41:36.720
+quick demo and in the next video i'll
+
+41:36.720 --> 41:51.040
+talk about the basics of networking and the commands to do basic networking okay thanks`;
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.innerHTML = '';
+    transcript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspecting Your Network from the Command Line | CSC 106 · Week 6</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 3.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+/* ── Intro ── */
+#overview {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.intro-note {
+  background: #f0f4ff;
+  border-left: 4px solid #6366f1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+}
+
+/* ── Video + Transcript ── */
+#video {
+  scroll-margin-top: 3.5rem;
+  margin-bottom: 2rem;
+}
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Commands Section ── */
+#commands {
+  scroll-margin-top: 3.5rem;
+}
+.cmd-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  counter-reset: cmd-counter;
+}
+.cmd-list li {
+  counter-increment: cmd-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.93rem;
+}
+.cmd-list li:first-child { border-top: 1px solid #e2e8f0; }
+.cmd-list li::before {
+  content: counter(cmd-counter);
+  min-width: 1.5rem;
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+.cmd-list code {
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cmd-desc {
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+code {
+  background: #f1f5f9;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#overview">Overview</a>
+  <a href="#video">Video</a>
+  <a href="#commands">Commands</a>
+</nav>
+
+<main class="container" id="main-content">
+
+  <!-- ── Overview ─────────────────────────────────────────────────────── -->
+  <section id="overview" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 · Week 6</p>
+    <h1 id="page-heading">Inspecting Your Network from the Command Line</h1>
+    <p>This video walks through five essential questions you can answer using Linux networking commands on your Ubuntu Server VM: What is my IP address? What is my default gateway? Can I reach the internet? Is DNS working? What services are currently listening for connections? The instructor demonstrates each command live in the terminal and explains how to interpret the output. This is the foundation you need for the Network Basics Check assignment and for Week 7's server configuration work.</p>
+    <div class="intro-note" role="note">
+      <strong>Tip:</strong> Use the transcript panel to jump to any topic in the video. Click any line to seek directly to that point.
+    </div>
+  </section>
+
+  <!-- ── Video ─────────────────────────────────────────────────────────── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video: Inspecting Your Network from the Command Line</h2>
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/cl4Jfyv566I?enablejsapi=1"
+                  title="Inspecting Your Network from the Command Line — CSC 106 Week 6"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container" role="region" aria-label="Transcript for Inspecting Your Network from the Command Line video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands ──────────────────────────────────────────────────────── -->
+  <section id="commands" aria-labelledby="commands-heading">
+    <h2 id="commands-heading">Commands Used in This Video</h2>
+    <p style="font-size:0.92rem;color:#475569;">Commands appear in the order they are demonstrated in the video.</p>
+    <ol class="cmd-list" aria-label="Commands demonstrated in the video">
+      <li><code>ip addr</code> <span class="cmd-desc">List all network interfaces and their IP addresses</span></li>
+      <li><code>ip a</code> <span class="cmd-desc">Shorthand for <code>ip addr</code> — same output, fewer keystrokes</span></li>
+      <li><code>ip addr show enp0s3</code> <span class="cmd-desc">Show details for a single named interface (your interface name may differ, e.g., <code>eth0</code>)</span></li>
+      <li><code>ip route</code> <span class="cmd-desc">Show the routing table — the <em>default via</em> line shows your default gateway address</span></li>
+      <li><code>ping -c 4 8.8.8.8</code> <span class="cmd-desc">Send 4 ping packets to Google's DNS server — confirms basic internet connectivity</span></li>
+      <li><code>ping -c 4 1.1.1.1</code> <span class="cmd-desc">Alternate connectivity test using Cloudflare's DNS server</span></li>
+      <li><code>ping -c 4 google.com</code> <span class="cmd-desc">Tests DNS resolution and connectivity together — if this works but <code>ping 8.8.8.8</code> also works, DNS is functioning</span></li>
+      <li><code>dig google.com</code> <span class="cmd-desc">Detailed DNS query — shows the question sent, the answer (IP address returned), and the DNS server that responded</span></li>
+      <li><code>sudo apt install dnsutils</code> <span class="cmd-desc">Install the <code>dig</code> tool if it is not already present on your system</span></li>
+      <li><code>ss -tlnp</code> <span class="cmd-desc">List TCP listening sockets with numeric port numbers and the process name for each socket</span></li>
+      <li><code>ss -tlp</code> <span class="cmd-desc">Same as above but shows service names (e.g., <em>http</em>, <em>domain</em>) instead of port numbers</span></li>
+      <li><code>systemctl status nginx</code> <span class="cmd-desc">Check whether the Nginx web server is installed and running — substitute any service name to check its status</span></li>
+    </ol>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var PLAYER_ID     = 'yt-1';
+  var CONTAINER_ID  = 'vc-1';
+  var TRANSCRIPT_ID = 'tc-1';
+
+  var player;
+  var timer;
+  var transcript = [];
+
+  var VTT_CONTENT = `WEBVTT
+
+00:00.800 --> 00:06.800
+Aloha and welcome back. This is our second video on inspecting your network from the command line.
+
+00:07.760 --> 00:13.840
+So this is all our VM network connection information on our Ubuntu server.
+
+00:15.120 --> 00:18.400
+So far it's just been connected and we haven't really thought about it.
+
+00:18.720 --> 00:22.400
+It just worked. We got DHCP running on it and it's working.
+
+00:23.100 --> 00:27.800
+And so we don't really care, but we really need to know how to find out information
+
+00:27.800 --> 00:35.240
+so that we can troubleshoot or set it up properly if it's not already set up properly.
+
+00:36.220 --> 00:41.720
+So today what we're going to cover is answering these five questions.
+
+00:42.540 --> 00:44.160
+What is my IP address?
+
+00:45.240 --> 00:47.640
+So what's my IP address? You need to know that.
+
+00:48.140 --> 00:54.840
+What's my default gateway? Meaning where does any request I make go first?
+
+00:54.840 --> 00:56.520
+It goes to my default gateway.
+
+00:57.800 --> 01:00.580
+connected to. Can I reach the Internet?
+
+01:02.040 --> 01:03.380
+Is DNS working?
+
+01:04.040 --> 01:05.540
+So is domain name system working?
+
+01:05.540 --> 01:08.120
+So when I type in domain name, do I get the right IP address back?
+
+01:08.920 --> 01:13.880
+And what services are currently listening for connections on my computer?
+
+01:14.700 --> 01:15.680
+You know, on my server.
+
+01:16.720 --> 01:18.560
+So we're going to answer those five questions.
+
+01:19.800 --> 01:21.320
+All right, so let's start with the first one.
+
+01:21.340 --> 01:22.980
+What's my IP address?
+
+01:24.180 --> 01:27.460
+So let's open up our server.
+
+01:30.880 --> 01:34.580
+Okay, and the command is really easy.
+
+01:34.580 --> 01:36.580
+It's ip addr space addr.
+
+01:38.740 --> 01:46.400
+And what you'll get is you'll get a listing of all the interfaces on your server and if they're connected, what their IP address is.
+
+01:46.700 --> 01:47.820
+So I have two.
+
+01:48.300 --> 01:50.300
+The first one is LO for loopback.
+
+01:50.600 --> 01:53.720
+That's essentially the computer talking to itself.
+
+01:53.720 --> 01:58.840
+It's IP address is always 127.0.0.1.
+
+01:58.840 --> 02:04.840
+Okay, that's this number up here and it's after INET.
+
+02:04.840 --> 02:08.220
+There's also an INET 6, which is IPv6.
+
+02:08.220 --> 02:12.080
+We're going to worry about 4 for now, so don't worry too much about that.
+
+02:13.420 --> 02:18.420
+Okay, so the key things here are interface name.
+
+02:20.920 --> 02:22.420
+Interface address, INET.
+
+02:23.720 --> 02:31.660
+And state up, if it's down, then it's not actually active.
+
+02:31.660 --> 02:42.720
+Okay, now we care about number two here, which says my interface name is ENP0S3.
+
+02:43.380 --> 02:44.440
+Doesn't matter what this is.
+
+02:44.440 --> 02:47.980
+This is your interface name and your IP address.
+
+02:49.360 --> 02:53.400
+So your first VM typically will be 10.0.2.15.
+
+02:53.720 --> 03:00.720
+So that's what you probably get these exactly the same number I got, you might not, but
+
+03:00.720 --> 03:01.720
+you probably do.
+
+03:01.720 --> 03:11.480
+And slash 24 says it's on the, um, slash 24, how many bits are in your network?
+
+03:11.480 --> 03:15.780
+So 10.0.2, this is the sum that you're on 10.0.2.
+
+03:15.780 --> 03:20.260
+And then you could be anywhere from one to two 54.
+
+03:23.400 --> 03:24.400
+Okay.
+
+03:25.400 --> 03:33.900
+Um, you don't really need to know this ENP0S3 too much, but sometimes you might need to
+
+03:33.900 --> 03:34.900
+know it.
+
+03:34.900 --> 03:43.060
+So let's see, I think you can do IP space A and it's exactly the same.
+
+03:43.060 --> 03:50.400
+If you're know your, um, interface name, ENP0S3 is ours and you don't want to use the same
+
+03:50.400 --> 03:51.400
+name.
+
+03:53.400 --> 03:55.200
+So you might have to look at the loop back.
+
+03:55.200 --> 04:08.400
+You can do IP space address or ADDR show ENP, uh, I don't know, is it 3S0?
+
+04:09.400 --> 04:10.400
+No.
+
+04:10.400 --> 04:11.400
+It's ENP0S3.
+
+04:11.400 --> 04:18.400
+ENP, ENP0S3.
+
+04:24.400 --> 04:25.400
+And then we'll only show that one.
+
+04:30.400 --> 04:32.400
+All right.
+
+04:32.400 --> 04:38.400
+Uh, so typically in VirtualBox, it'll be like ENP0S3S4, something like that.
+
+04:38.400 --> 04:43.400
+In UTM it might be ETH0.
+
+04:43.400 --> 04:49.200
+If you were doing it in VMware, it'd be ETH0 cause that's what they use.
+
+04:54.200 --> 04:55.200
+Okay.
+
+04:55.200 --> 05:03.200
+And then the other thing here we will see on our, in our print-out is you see inet10.0.2.15.
+
+05:03.200 --> 05:04.280
+Um, scope global dynamic.
+
+05:05.280 --> 05:10.120
+Dynamic means I got it through DHCP, wasn't fixed.
+
+05:10.120 --> 05:11.120
+Next week.
+
+05:11.120 --> 05:18.900
+We're going to show you how to fix that and make a static address.
+
+05:25.860 --> 05:34.820
+All right, so that's how you find your IP address. The shortest way is IP space A. All right, now what's my default gateway?
+
+05:34.820 --> 05:37.660
+So we want to go IP space route.
+
+05:37.660 --> 05:46.540
+All right, and the first line here, the one that starts with default, be a 10.0.2.2.
+
+05:46.540 --> 05:49.460
+So 10.0.2.2 is my default gateway.
+
+05:49.460 --> 05:59.120
+You'll see other stuff in here, I don't really care about it too much, but because we really
+
+05:59.120 --> 06:02.220
+care just about what the default gateway is.
+
+06:02.220 --> 06:12.700
+Okay, so 10.0.2.2, where .15.2 is the corresponding VirtualBox connection that connects to all
+
+06:12.700 --> 06:16.500
+of the VMs inside VirtualBox.
+
+06:16.500 --> 06:19.440
+So every VM you create inside VirtualBox will have this default gateway.
+
+06:19.440 --> 06:26.100
+This default gateway is 2.2, and then that is used within VirtualBox as a NAT box.
+
+06:26.100 --> 06:31.820
+When it goes out, it has a different IP address on the other side, okay, and the other side
+
+06:31.820 --> 06:38.120
+it connects to, in my case, it connects to 192.168.50.1 on my home network, because that's
+
+06:38.120 --> 06:47.100
+my 50.1 is my router on my home network, okay.
+
+06:49.440 --> 06:55.940
+So that's route, that's how you find your default gateway.
+
+06:55.940 --> 06:59.960
+Question three was, how can I reach the internet?
+
+06:59.960 --> 07:07.680
+So what we do for that one, ping, okay, so we use ping as a tool that sends a message
+
+07:07.680 --> 07:14.520
+out and gets a response back, assuming the server's there, one, and two, they don't have
+
+07:14.520 --> 07:16.100
+echo reply turned off.
+
+07:17.100 --> 07:19.100
+So we're going to pick something that we know doesn't have it.
+
+07:19.100 --> 07:20.100
+It doesn't have it turned off.
+
+07:20.100 --> 07:27.560
+And I'm going to use the dash C space four command with ping, dash C says only send this
+
+07:27.560 --> 07:33.960
+many ping packets and you follow it with a number and that's how many it will send, okay.
+
+07:33.960 --> 07:41.300
+And I'm going to pick 8.8.8.8 for Google's DNS server, okay.
+
+07:41.300 --> 07:45.860
+And if you get replies, you can connect it to the internet, okay.
+
+07:45.860 --> 07:46.860
+Notice this N4.
+
+07:46.860 --> 07:48.860
+I had an average.
+
+07:48.860 --> 07:57.620
+17.879 millisecond response time for each, for those four combined.
+
+07:57.620 --> 08:07.300
+And if you look at them 17.9, 18, 17.8, 17.9, right, I could have, if you look closely,
+
+08:07.300 --> 08:18.560
+you would have seen this other 1.1.1.1 that's also on the internet and that is cloud flares.
+
+08:18.860 --> 08:26.860
+And you can see that one's a little slower when I did it early, it was a little faster.
+
+08:26.860 --> 08:34.860
+So on average, um, the minimum was faster with cloud fire, but the average was higher.
+
+08:39.280 --> 08:48.260
+If I don't put the dash C in there, like if I just ping 8.8.8.8 and hit enter, it's going
+
+08:48.260 --> 08:48.860
+to ping it.
+
+08:48.860 --> 08:51.860
+And it's just going to keep going until I tell it to stop.
+
+08:52.860 --> 08:56.860
+And the only way to tell it to stop is you have to interrupt it.
+
+08:56.860 --> 09:01.860
+And on Windows, it's control C. On Mac, it's command C.
+
+09:02.860 --> 09:08.860
+So I control C and that hits an interrupt and it stops and does all the calculations
+
+09:08.860 --> 09:09.860
+now.
+
+09:14.860 --> 09:16.860
+You'll just stop it automatically.
+
+09:23.860 --> 09:28.860
+All right, so, uh, let's see, is DNS working?
+
+09:28.860 --> 09:30.860
+And there's two ways to do DNS working.
+
+09:30.860 --> 09:38.860
+One way is you can do ping and it doesn't always work, but ping is a quick way to check.
+
+09:41.860 --> 09:46.860
+So if I go ping Google, let's go dash C space four.
+
+09:46.860 --> 09:52.860
+Google.com and I get replies.
+
+09:52.860 --> 09:53.860
+DNS is working.
+
+09:53.860 --> 09:59.860
+Meaning I went out and said, Hey, what's the IP address for Google.com?
+
+09:59.860 --> 10:01.860
+Go to DNS, get the IP address for Google.com.
+
+10:01.860 --> 10:05.860
+It comes back as 172.217.12.110.
+
+10:05.860 --> 10:07.860
+And then I ping that.
+
+10:08.860 --> 10:12.860
+The other way is to do dig.
+
+10:13.860 --> 10:14.860
+I could go dig google.com.
+
+10:15.860 --> 10:23.860
+And dig gives me this answer here.
+
+10:23.860 --> 10:28.860
+And the key things we want to look at is the question.
+
+10:28.860 --> 10:32.860
+So in DNS, I sent the question, what is google.com?
+
+10:32.860 --> 10:38.860
+And answer I got google.com is 172.217.12.110.
+
+10:38.860 --> 10:40.860
+We know it's working.
+
+10:41.860 --> 10:43.860
+I know my server here.
+
+10:43.860 --> 10:44.860
+127.0.0.53.
+
+10:44.860 --> 10:45.860
+That's my local.
+
+10:53.860 --> 10:56.860
+And then the status.
+
+10:57.860 --> 10:58.860
+So status says no error.
+
+10:58.860 --> 10:59.860
+Meaning it worked.
+
+11:00.860 --> 11:03.860
+It means my query succeeded.
+
+11:13.860 --> 11:26.860
+So this is the DNS question and response, if you will.
+
+11:27.860 --> 11:28.860
+All right.
+
+11:28.860 --> 11:29.860
+So dig is a good command.
+
+11:29.860 --> 11:30.860
+It gives you more information than that ping did.
+
+11:30.860 --> 11:31.860
+Ping just says, hey, yeah, it's there.
+
+11:31.860 --> 11:32.860
+It's responding.
+
+11:32.860 --> 11:33.860
+But you don't know why.
+
+11:33.860 --> 11:38.860
+If dig does not work, like it comes back as this is a command that doesn't work, you can
+
+11:38.860 --> 11:45.860
+call it with sudo apt install DNS utils.
+
+11:47.860 --> 11:51.860
+It's already in mine, so I don't have to install it.
+
+11:53.860 --> 12:03.860
+Now, if we wanted to, if we did, say, I don't know.
+
+12:03.860 --> 12:04.860
+I think it's from google.mog.
+
+12:04.860 --> 12:05.860
+Google.mog.
+
+12:14.320 --> 12:28.860
+It said, got an answer header, answer zero, question google.mog.
+
+12:28.860 --> 12:31.860
+So I didn't really get an answer.
+
+12:32.860 --> 12:38.460
+definitive answer dns worked but i sent it a a request for a
+
+12:38.460 --> 12:46.460
+you know a website or a domain name that doesn't exist they couldn't find it anywhere
+
+12:46.460 --> 12:48.920
+right so that's what that means
+
+12:48.920 --> 12:59.180
+all right the last part is how do i need know what's listening so go back to our questions
+
+12:59.180 --> 13:09.200
+we figured an ip address right 10.0.2.15 we got our default gateway at 10.0.2.2
+
+13:09.200 --> 13:16.160
+can i reach the internet yes is dns working yes and what services are current listening
+
+13:16.160 --> 13:28.200
+for connections so i can use the ss command ss dash for us we're going to use dash t
+
+13:29.180 --> 13:34.580
+lnt the list tcp services that are listening
+
+13:41.740 --> 13:52.140
+oh look at that i got uh 86 you know i got something's listening
+
+13:59.060 --> 14:05.220
+is TCP the L is listening the dash n is show the port number instead of service
+
+14:05.220 --> 14:13.220
+names so I had the port numbers and then the dash P is which process owns each
+
+14:13.220 --> 14:20.880
+socket and have no processes labeled but if you look obviously I don't know if
+
+14:20.880 --> 14:35.200
+you can sell on 80 is HTTP if we did a say dash TL P instead of n so what
+
+14:35.200 --> 14:47.700
+happens if we go SS dash TL P okay well we can see that 80 is HTTP 631 is IPP 53
+
+14:47.700 --> 14:50.500
+and 53 your domain 80 HTTP
+
+14:50.880 --> 15:03.760
+IPP so basically I have a web server running all right if I had T if I had a
+
+15:03.760 --> 15:12.000
+SSH running I would get port 22 that's what SSH is on but I don't have SSH
+
+15:12.000 --> 15:18.660
+installed online you may or you may not if you're not sure you can always do we
+
+15:18.660 --> 15:20.860
+did last week a system CT
+
+15:38.960 --> 15:49.300
+OH to find the status this is HD you'll find see I don't have it it's not
+
+15:49.300 --> 15:50.840
+found I know what my web server is so it's next okay and then this gives me a
+
+15:50.860 --> 15:56.200
+thing it's engine next so it's x and then it's engine next so it's next you know
+
+15:56.200 --> 15:59.340
+Linux is a web server, and that's what we're probably going to set up next week on our machines.
+
+16:00.940 --> 16:04.420
+You may or may not have it running like I do.
+
+16:04.460 --> 16:05.020
+I don't remember installing it, so maybe it's something I set up.
+
+16:05.780 --> 16:06.720
+But it's enabled.
+
+16:06.980 --> 16:07.900
+It's active and running.
+
+16:08.060 --> 16:09.020
+You see the green things.
+
+16:09.860 --> 16:10.540
+It's running.
+
+16:11.380 --> 16:18.440
+If you ever get in one of these, it says lines 1 to 19, slash 19 end.
+
+16:19.020 --> 16:20.240
+You want to get out, just hit Q.
+
+16:21.220 --> 16:23.840
+And you will get out to your prompt.
+
+16:25.800 --> 16:28.960
+From the system CTL status page, you'll get to the prompt.
+
+16:31.900 --> 16:34.860
+All right, so that's pretty much it this week.
+
+16:37.720 --> 16:43.580
+IP address, IPA, space A, IP route, ping for connectivity,
+
+16:44.440 --> 16:50.840
+dig to test DNS resolution, and SS-TLNP for what services are listed.
+
+16:50.860 --> 16:56.220
+In the lab, you're going to basically do the same things I just did in the lab.
+
+16:56.380 --> 17:00.520
+So you should be good to go on the lab pretty well.
+
+17:02.200 --> 17:11.080
+All right, and then, yeah, so this week, then once you get the, oops, didn't want to do that.
+
+17:11.180 --> 17:11.860
+Sorry about that.
+
+17:15.940 --> 17:20.100
+Once you do your Linux essentials chapter 17, I would do that first.
+
+17:20.300 --> 17:20.820
+Read.
+
+17:20.860 --> 17:22.460
+Read chapter 17, do the 17 lab.
+
+17:23.100 --> 17:26.920
+Then I'd read chapter 14, and then work on this lab 4.
+
+17:29.040 --> 17:34.300
+And then if you want, you can work on and do the extra credit network troubleshooting labs as well.
+
+17:36.060 --> 17:38.060
+All right, if you have any questions, as always, reach out.
+
+17:38.240 --> 17:42.580
+And hopefully, I will be posting some scores this week, so you'll know exactly where you stand.
+
+17:43.460 --> 17:45.420
+As we only have a couple weeks left of class.
+
+17:47.840 --> 17:50.160
+So have a great week, and talk to you soon.
+
+17:50.160 --> 17:50.800
+Thanks.
+
+17:50.860 --> 17:52.860
+Bye.`;
+
+  function timeToSeconds(s) {
+    if (!s) return 0;
+    var parts = s.trim().split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    return 0;
+  }
+
+  function parseVtt(text) {
+    var blocks = text.trim().split(/\n\n+/);
+    var result = [];
+    blocks.forEach(function (block) {
+      if (!block.trim() || block.trim() === 'WEBVTT') return;
+      var lines = block.trim().split('\n');
+      var timeLine = null;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('-->') !== -1) { timeLine = lines[i]; break; }
+      }
+      if (!timeLine) return;
+      var idx = lines.indexOf(timeLine);
+      var txt = lines.slice(idx + 1).join(' ').trim();
+      if (!txt) return;
+      var times = timeLine.split(' --> ');
+      result.push({ start: timeToSeconds(times[0]), end: timeToSeconds(times[1]), text: txt });
+    });
+    return result;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.innerHTML = '';
+    transcript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end   = cue.end;
+      el.textContent   = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function seek() {
+        if (player && player.seekTo) { player.seekTo(cue.start, true); player.playVideo(); }
+      }
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightLine() {
+    if (!player || !player.getCurrentTime) return;
+    var t = player.getCurrentTime();
+    var container = document.getElementById(TRANSCRIPT_ID);
+    container.querySelectorAll('.transcript-line').forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end   = parseFloat(line.dataset.end);
+      if (t >= start && t < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = container.querySelector('.active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          container.scrollTop = line.offsetTop - container.clientHeight / 3;
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncHeight() {
+    var vc = document.getElementById(CONTAINER_ID);
+    var tc = document.getElementById(TRANSCRIPT_ID);
+    if (!vc || !tc) return;
+    if (window.matchMedia('(min-width: 860px)').matches) {
+      tc.style.maxHeight = vc.offsetHeight + 'px';
+    } else {
+      tc.style.maxHeight = '22rem';
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player(PLAYER_ID, {
+      events: {
+        onStateChange: function (e) {
+          clearInterval(timer);
+          if (e.data === YT.PlayerState.PLAYING) {
+            timer = setInterval(highlightLine, 300);
+          }
+        }
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    transcript = parseVtt(VTT_CONTENT);
+    populateTranscript();
+    setTimeout(syncHeight, 150);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncHeight, 250);
+  });
+
+}());
+</script>
+
+</body>
+</html>
