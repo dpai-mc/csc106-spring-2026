@@ -1,405 +1,584 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Week 7 Overview - CSC 106</title>
-<style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Week 7 Overview - CSC 106</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-  color: #222;
-  background: #fff;
-  padding: 0;
-}
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+                line-height: 1.6;
+                color: #222;
+                background: #fff;
+                padding: 0;
+            }
 
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: #1a5276;
-  color: #fff;
-  padding: 8px 16px;
-  z-index: 1000;
-  text-decoration: none;
-}
+            .skip-link {
+                position: absolute;
+                top: -40px;
+                left: 0;
+                background: #1a5276;
+                color: #fff;
+                padding: 8px 16px;
+                z-index: 1000;
+                text-decoration: none;
+            }
 
-.skip-link:focus {
-  top: 0;
-}
+            .skip-link:focus {
+                top: 0;
+            }
 
-nav.top-nav {
-  background: #1a5276;
-  padding: 12px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
+            nav.top-nav {
+                background: #1a5276;
+                padding: 12px 20px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
 
-nav.top-nav ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-}
+            nav.top-nav ul {
+                list-style: none;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 20px;
+            }
 
-nav.top-nav a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
+            nav.top-nav a {
+                color: #fff;
+                text-decoration: none;
+                font-size: 0.9rem;
+                padding: 4px 8px;
+                border-radius: 4px;
+            }
 
-nav.top-nav a:hover,
-nav.top-nav a:focus {
-  background: rgba(255,255,255,0.2);
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
+            nav.top-nav a:hover,
+            nav.top-nav a:focus {
+                background: rgba(255, 255, 255, 0.2);
+                outline: 2px solid #fff;
+                outline-offset: 2px;
+            }
 
-main {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 24px 20px 60px;
-}
+            main {
+                max-width: 820px;
+                margin: 0 auto;
+                padding: 24px 20px 60px;
+            }
 
-h1 {
-  font-size: 1.8rem;
-  color: #1a5276;
-  margin-bottom: 8px;
-}
+            h1 {
+                font-size: 1.8rem;
+                color: #1a5276;
+                margin-bottom: 8px;
+            }
 
-.week-subtitle {
-  font-size: 1.1rem;
-  color: #555;
-  margin-bottom: 24px;
-  font-style: italic;
-}
+            .week-subtitle {
+                font-size: 1.1rem;
+                color: #555;
+                margin-bottom: 24px;
+                font-style: italic;
+            }
 
-h2 {
-  font-size: 1.3rem;
-  color: #1a5276;
-  margin-top: 32px;
-  margin-bottom: 12px;
-  padding-bottom: 4px;
-  border-bottom: 2px solid #d4e6f1;
-}
+            h2 {
+                font-size: 1.3rem;
+                color: #1a5276;
+                margin-top: 32px;
+                margin-bottom: 12px;
+                padding-bottom: 4px;
+                border-bottom: 2px solid #d4e6f1;
+            }
 
-h3 {
-  font-size: 1.1rem;
-  color: #2c3e50;
-  margin-top: 20px;
-  margin-bottom: 8px;
-}
+            h3 {
+                font-size: 1.1rem;
+                color: #2c3e50;
+                margin-top: 20px;
+                margin-bottom: 8px;
+            }
 
-p {
-  margin-bottom: 14px;
-}
+            p {
+                margin-bottom: 14px;
+            }
 
-ul, ol {
-  margin-left: 24px;
-  margin-bottom: 14px;
-}
+            ul,
+            ol {
+                margin-left: 24px;
+                margin-bottom: 14px;
+            }
 
-li {
-  margin-bottom: 6px;
-}
+            li {
+                margin-bottom: 6px;
+            }
 
-.welcome-box {
-  background: #eaf2f8;
-  border-left: 4px solid #1a5276;
-  padding: 16px 20px;
-  border-radius: 4px;
-  margin-bottom: 24px;
-}
+            .welcome-box {
+                background: #eaf2f8;
+                border-left: 4px solid #1a5276;
+                padding: 16px 20px;
+                border-radius: 4px;
+                margin-bottom: 24px;
+            }
 
-.checklist-section {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 20px;
-  margin-top: 12px;
-}
+            .checklist-section {
+                background: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 20px;
+                margin-top: 12px;
+            }
 
-.checklist-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
+            .checklist-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
 
-.checklist-item:last-child {
-  border-bottom: none;
-}
+            .checklist-item:last-child {
+                border-bottom: none;
+            }
 
-.checklist-item input[type="checkbox"] {
-  margin-top: 4px;
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
+            .checklist-item input[type="checkbox"] {
+                margin-top: 4px;
+                width: 18px;
+                height: 18px;
+                flex-shrink: 0;
+            }
 
-.checklist-label {
-  flex: 1;
-}
+            .checklist-label {
+                flex: 1;
+            }
 
-.checklist-label .item-name {
-  font-weight: 600;
-}
+            .checklist-label .item-name {
+                font-weight: 600;
+            }
 
-.checklist-label .item-detail {
-  font-size: 0.88rem;
-  color: #555;
-  display: block;
-  margin-top: 2px;
-}
+            .checklist-label .item-detail {
+                font-size: 0.88rem;
+                color: #555;
+                display: block;
+                margin-top: 2px;
+            }
 
-.points-badge {
-  background: #1a5276;
-  color: #fff;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-  align-self: center;
-}
+            .points-badge {
+                background: #1a5276;
+                color: #fff;
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                border-radius: 10px;
+                white-space: nowrap;
+                align-self: center;
+            }
 
-.collapsible-toggle {
-  background: none;
-  border: 1px solid #1a5276;
-  color: #1a5276;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+            .collapsible-toggle {
+                background: none;
+                border: 1px solid #1a5276;
+                color: #1a5276;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.95rem;
+                margin-top: 12px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
 
-.collapsible-toggle:hover,
-.collapsible-toggle:focus {
-  background: #eaf2f8;
-  outline: 2px solid #1a5276;
-  outline-offset: 2px;
-}
+            .collapsible-toggle:hover,
+            .collapsible-toggle:focus {
+                background: #eaf2f8;
+                outline: 2px solid #1a5276;
+                outline-offset: 2px;
+            }
 
-.collapsible-toggle[aria-expanded="true"] .toggle-icon {
-  transform: rotate(90deg);
-}
+            .collapsible-toggle[aria-expanded="true"] .toggle-icon {
+                transform: rotate(90deg);
+            }
 
-.toggle-icon {
-  display: inline-block;
-  transition: transform 0.2s ease;
-  font-size: 0.8rem;
-}
+            .toggle-icon {
+                display: inline-block;
+                transition: transform 0.2s ease;
+                font-size: 0.8rem;
+            }
 
-.collapsible-content {
-  display: none;
-  margin-top: 12px;
-  padding: 16px;
-  background: #fafafa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
+            .collapsible-content {
+                display: none;
+                margin-top: 12px;
+                padding: 16px;
+                background: #fafafa;
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
+            }
 
-.collapsible-content.open {
-  display: block;
-}
+            .collapsible-content.open {
+                display: block;
+            }
 
-.looking-ahead {
-  background: #fef9e7;
-  border-left: 4px solid #d4ac0d;
-  padding: 16px 20px;
-  border-radius: 4px;
-  margin-top: 12px;
-}
+            .looking-ahead {
+                background: #fef9e7;
+                border-left: 4px solid #d4ac0d;
+                padding: 16px 20px;
+                border-radius: 4px;
+                margin-top: 12px;
+            }
 
-.key-concepts-list li {
-  padding: 4px 0;
-}
+            .key-concepts-list li {
+                padding: 4px 0;
+            }
 
-@media (max-width: 600px) {
-  nav.top-nav ul {
-    flex-direction: column;
-    gap: 6px;
-  }
-  main {
-    padding: 16px 14px 40px;
-  }
-  h1 {
-    font-size: 1.5rem;
-  }
-}
-</style>
-</head>
-<body>
+            @media (max-width: 600px) {
+                nav.top-nav ul {
+                    flex-direction: column;
+                    gap: 6px;
+                }
+                main {
+                    padding: 16px 14px 40px;
+                }
+                h1 {
+                    font-size: 1.5rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<a href="#main-content" class="skip-link">Skip to main content</a>
+        <nav class="top-nav" aria-label="Page navigation">
+            <ul>
+                <li><a href="#welcome">Welcome</a></li>
+                <li><a href="#goals">Learning Goals</a></li>
+                <li><a href="#activities">Activities</a></li>
+                <li><a href="#concepts">Key Concepts</a></li>
+                <li><a href="#ahead">Looking Ahead</a></li>
+                <li><a href="#arc">Course Arc</a></li>
+            </ul>
+        </nav>
 
-<nav class="top-nav" aria-label="Page navigation">
-  <ul>
-    <li><a href="#welcome">Welcome</a></li>
-    <li><a href="#goals">Learning Goals</a></li>
-    <li><a href="#activities">Activities</a></li>
-    <li><a href="#concepts">Key Concepts</a></li>
-    <li><a href="#ahead">Looking Ahead</a></li>
-    <li><a href="#arc">Course Arc</a></li>
-  </ul>
-</nav>
+        <main id="main-content">
+            <h1>Week 7: Network Configuration, Server Setup, and Security</h1>
+            <p class="week-subtitle">
+                Connecting your system to the network and hardening it for
+                service
+            </p>
 
-<main id="main-content">
+            <section id="welcome">
+                <div class="welcome-box">
+                    <p>
+                        <strong>Welcome to Week 7.</strong> This is the week
+                        where your Ubuntu Server VM stops being an isolated box
+                        and becomes something that could actually serve traffic
+                        on a network. You will configure networking with
+                        Netplan, set up a basic server service, schedule
+                        automated tasks with cron, and apply firewall rules to
+                        lock things down.
+                    </p>
+                    <p>
+                        If the past few weeks felt like building the engine and
+                        interior of a car, this week you are putting it on the
+                        road and making sure the doors lock.
+                    </p>
+                </div>
+            </section>
 
-  <h1>Week 7: Network Configuration, Server Setup, and Security</h1>
-  <p class="week-subtitle">Connecting your system to the network and hardening it for service</p>
+            <section id="goals">
+                <h2>Learning Goals</h2>
+                <p>By the end of this week, you should be able to:</p>
+                <ul>
+                    <li>
+                        Configure a static IP address on Ubuntu Server using
+                        Netplan
+                    </li>
+                    <li>
+                        Explain how DNS resolution works on a Linux system and
+                        configure it
+                    </li>
+                    <li>
+                        Set up a basic network service (such as a web server or
+                        SSH) and verify it is accessible
+                    </li>
+                    <li>Use cron and crontab to schedule recurring tasks</li>
+                    <li>
+                        Configure UFW (Uncomplicated Firewall) to allow or deny
+                        traffic by port and protocol
+                    </li>
+                    <li>
+                        Apply basic security hardening practices to a Linux
+                        server
+                    </li>
+                </ul>
+            </section>
 
-  <section id="welcome">
-    <div class="welcome-box">
-      <p><strong>Welcome to Week 7.</strong> This is the week where your Ubuntu Server VM stops being an isolated box and becomes something that could actually serve traffic on a network. You will configure networking with Netplan, set up a basic server service, schedule automated tasks with cron, and apply firewall rules to lock things down.</p>
-      <p>If the past few weeks felt like building the engine and interior of a car, this week you are putting it on the road and making sure the doors lock.</p>
-    </div>
-  </section>
+            <section id="activities">
+                <h2>Required Activities</h2>
+                <p>
+                    Here is everything you need to complete this week. Use the
+                    checkboxes to track your progress (these are for your own
+                    reference and are not saved or submitted).
+                </p>
 
-  <section id="goals">
-    <h2>Learning Goals</h2>
-    <p>By the end of this week, you should be able to:</p>
-    <ul>
-      <li>Configure a static IP address on Ubuntu Server using Netplan</li>
-      <li>Explain how DNS resolution works on a Linux system and configure it</li>
-      <li>Set up a basic network service (such as a web server or SSH) and verify it is accessible</li>
-      <li>Use cron and crontab to schedule recurring tasks</li>
-      <li>Configure UFW (Uncomplicated Firewall) to allow or deny traffic by port and protocol</li>
-      <li>Apply basic security hardening practices to a Linux server</li>
-    </ul>
-  </section>
+                <div
+                    class="checklist-section"
+                    role="group"
+                    aria-label="Weekly activity checklist"
+                >
+                    <div class="checklist-item">
+                        <input
+                            type="checkbox"
+                            id="chk1"
+                            aria-label="Linux Essentials Chapter 14 reading"
+                        />
+                        <label class="checklist-label" for="chk1">
+                            <span class="item-name"
+                                >Reading: Linux Essentials Chapter 14 (Network
+                                Configuration)</span
+                            >
+                            <span class="item-detail"
+                                >Primary reading for this week. Covers TCP/IP
+                                basics, network interfaces, DNS, and network
+                                troubleshooting commands.</span
+                            >
+                        </label>
+                    </div>
 
-  <section id="activities">
-    <h2>Required Activities</h2>
-    <p>Here is everything you need to complete this week. Use the checkboxes to track your progress (these are for your own reference and are not saved or submitted).</p>
+                    <div class="checklist-item">
+                        <input
+                            type="checkbox"
+                            id="chk2"
+                            aria-label="Supplemental reading on Netplan, UFW, and cron"
+                        />
+                        <label class="checklist-label" for="chk2">
+                            <span class="item-name"
+                                >Reading: Supplemental Web Resources (Netplan,
+                                UFW, cron)</span
+                            >
+                            <span class="item-detail"
+                                >Shorter reference readings on Netplan YAML
+                                configuration, UFW basics, and crontab syntax.
+                                Links provided in the weekly module.</span
+                            >
+                        </label>
+                    </div>
 
-    <div class="checklist-section" role="group" aria-label="Weekly activity checklist">
+                    <div class="checklist-item">
+                        <input
+                            type="checkbox"
+                            id="chk3"
+                            aria-label="Watch recommended instructor videos"
+                        />
+                        <label class="checklist-label" for="chk3">
+                            <span class="item-name"
+                                >Videos: Recommended Instructor Videos (2)</span
+                            >
+                            <span class="item-detail"
+                                >Short walkthroughs covering Netplan
+                                configuration and UFW/cron setup on Ubuntu
+                                Server.</span
+                            >
+                        </label>
+                    </div>
 
-      <div class="checklist-item">
-        <input type="checkbox" id="chk1" aria-label="Linux Essentials Chapter 14 reading">
-        <label class="checklist-label" for="chk1">
-          <span class="item-name">Reading: Linux Essentials Chapter 14 (Network Configuration)</span>
-          <span class="item-detail">Primary reading for this week. Covers TCP/IP basics, network interfaces, DNS, and network troubleshooting commands.</span>
-        </label>
-      </div>
+                    <div class="checklist-item">
+                        <input
+                            type="checkbox"
+                            id="chk4"
+                            aria-label="Server Configuration Assignment"
+                        />
+                        <label class="checklist-label" for="chk4">
+                            <span class="item-name"
+                                >Server Configuration Assignment</span
+                            >
+                            <span class="item-detail"
+                                >Configure networking (static IP via Netplan),
+                                set up a basic service, create at least one cron
+                                job, and configure UFW firewall rules on your
+                                VM. Submit documentation of your configuration
+                                with screenshots and explanation.</span
+                            >
+                        </label>
+                        <span class="points-badge">40 pts</span>
+                    </div>
+                </div>
 
-      <div class="checklist-item">
-        <input type="checkbox" id="chk2" aria-label="Supplemental reading on Netplan, UFW, and cron">
-        <label class="checklist-label" for="chk2">
-          <span class="item-name">Reading: Supplemental Web Resources (Netplan, UFW, cron)</span>
-          <span class="item-detail">Shorter reference readings on Netplan YAML configuration, UFW basics, and crontab syntax. Links provided in the weekly module.</span>
-        </label>
-      </div>
+                <p style="margin-top: 12px; font-size: 0.9rem; color: #555">
+                    <strong>Week 7 Required Points:</strong> 55 &nbsp;|&nbsp;
+                    <strong>Extra Credit Available:</strong> 5 pts (see weekly
+                    module for details)
+                </p>
+            </section>
 
-      <div class="checklist-item">
-        <input type="checkbox" id="chk3" aria-label="Watch recommended instructor videos">
-        <label class="checklist-label" for="chk3">
-          <span class="item-name">Videos: Recommended Instructor Videos (2)</span>
-          <span class="item-detail">Short walkthroughs covering Netplan configuration and UFW/cron setup on Ubuntu Server.</span>
-        </label>
-      </div>
+            <section id="concepts">
+                <h2>Key Concepts and Themes</h2>
+                <p>
+                    As you work through this week, pay particular attention to
+                    these ideas:
+                </p>
+                <ul class="key-concepts-list">
+                    <li>
+                        <strong>Netplan and YAML configuration:</strong> Ubuntu
+                        Server uses Netplan for network configuration. The
+                        config files are in YAML format, which means indentation
+                        matters. A misplaced space can break your network. Take
+                        your time with these files.
+                    </li>
+                    <li>
+                        <strong>Static vs. dynamic IP addressing:</strong> In
+                        Week 1, your VM used DHCP. This week you assign a static
+                        IP, which is what real servers need so clients can
+                        reliably find them.
+                    </li>
+                    <li>
+                        <strong>DNS resolution:</strong> Understanding
+                        /etc/resolv.conf and systemd-resolved helps you
+                        troubleshoot "I can ping an IP but can't reach a
+                        hostname" problems.
+                    </li>
+                    <li>
+                        <strong>Cron scheduling:</strong> The crontab syntax
+                        (minute, hour, day-of-month, month, day-of-week) looks
+                        cryptic at first, but it is one of those things that
+                        clicks once you write a few entries. Practice reading
+                        cron expressions out loud: "At minute 30, every hour,
+                        every day..."
+                    </li>
+                    <li>
+                        <strong>Firewall as default-deny:</strong> UFW makes
+                        firewall management approachable, but the underlying
+                        concept is important: start by blocking everything, then
+                        open only what you need. This is a security mindset, not
+                        just a tool.
+                    </li>
+                    <li>
+                        <strong>Defense in depth:</strong> A firewall is one
+                        layer. Keeping software updated, disabling unused
+                        services, and using strong authentication are other
+                        layers. No single measure is enough on its own.
+                    </li>
+                </ul>
+            </section>
 
-      <div class="checklist-item">
-        <input type="checkbox" id="chk4" aria-label="Server Configuration Assignment">
-        <label class="checklist-label" for="chk4">
-          <span class="item-name">Server Configuration Assignment</span>
-          <span class="item-detail">Configure networking (static IP via Netplan), set up a basic service, create at least one cron job, and configure UFW firewall rules on your VM. Submit documentation of your configuration with screenshots and explanation.</span>
-        </label>
-        <span class="points-badge">40 pts</span>
-      </div>
+            <section id="ahead">
+                <h2>Looking Ahead</h2>
+                <div class="looking-ahead">
+                    <p>
+                        <strong>Week 8</strong> is the final week of the course,
+                        and it is entirely devoted to Mini-Project 2: building
+                        and documenting a complete Linux server from scratch.
+                        Everything you configure this week (networking,
+                        services, firewall, cron) feeds directly into that
+                        capstone project.
+                    </p>
+                    <p>
+                        Think of this week as your dress rehearsal. The server
+                        configuration assignment gives you hands-on practice
+                        with exactly the skills you will need to demonstrate in
+                        Week 8. If you run into trouble with Netplan or UFW this
+                        week, that is the time to ask questions and work through
+                        it. By Week 8, you will want these skills to feel
+                        familiar so you can focus on building a polished,
+                        well-documented final deliverable.
+                    </p>
+                </div>
+            </section>
 
-      <div class="checklist-item">
-        <input type="checkbox" id="chk5" aria-label="RSI Discussion 3">
-        <label class="checklist-label" for="chk5">
-          <span class="item-name">RSI Discussion 3</span>
-          <span class="item-detail">Original post (min. 150 words) plus two substantive replies to classmates. Topic relates to network services, server security, or deployment decisions.</span>
-        </label>
-        <span class="points-badge">15 pts</span>
-      </div>
+            <section id="arc">
+                <h2>Course Arc</h2>
+                <button
+                    class="collapsible-toggle"
+                    aria-expanded="false"
+                    aria-controls="arc-content"
+                    id="arc-toggle"
+                >
+                    <span class="toggle-icon" aria-hidden="true">&#9654;</span>
+                    Where does Week 7 fit in the course?
+                </button>
+                <div
+                    class="collapsible-content"
+                    id="arc-content"
+                    role="region"
+                    aria-labelledby="arc-toggle"
+                >
+                    <h3>The 8-Week Path</h3>
+                    <ul>
+                        <li>
+                            <strong>Week 1:</strong> Install Ubuntu Server,
+                            learn package management
+                        </li>
+                        <li>
+                            <strong>Week 2:</strong> Explore the kernel,
+                            hardware, and boot process
+                        </li>
+                        <li>
+                            <strong>Week 3:</strong> Manage services and startup
+                            with systemd
+                        </li>
+                        <li>
+                            <strong>Week 4:</strong> Advanced shell scripting
+                            (Mini-Project 1)
+                        </li>
+                        <li>
+                            <strong>Week 5:</strong> Users, groups, and system
+                            security
+                        </li>
+                        <li>
+                            <strong>Week 6:</strong> File permissions and
+                            ownership
+                        </li>
+                        <li>
+                            <strong>Week 7 (you are here):</strong> Networking,
+                            server setup, cron, and firewall
+                        </li>
+                        <li>
+                            <strong>Week 8:</strong> Mini-Project 2 (capstone
+                            server build)
+                        </li>
+                    </ul>
+                    <p>
+                        Weeks 1 through 3 built your system from the ground up.
+                        Week 4 taught you to automate tasks with scripts. Weeks
+                        5 and 6 gave you control over who can access what. Now,
+                        Week 7 connects your server to the outside world and
+                        secures it. Week 8 pulls all of these threads together
+                        into one final project.
+                    </p>
+                    <h3>CSLO Alignment This Week</h3>
+                    <ul>
+                        <li>
+                            <strong>CSLO 1:</strong> Install and configure a
+                            Linux operating system. (Network configuration is a
+                            core part of system configuration.)
+                        </li>
+                        <li>
+                            <strong>CSLO 2:</strong> Configure a Linux operating
+                            system as a platform for web-based and other
+                            applications. (Setting up a network service and
+                            making it accessible is exactly this.)
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
 
-    </div>
+        <script>
+            (function () {
+                var toggle = document.getElementById("arc-toggle");
+                var content = document.getElementById("arc-content");
 
-    <p style="margin-top: 12px; font-size: 0.9rem; color: #555;"><strong>Week 7 Required Points:</strong> 55 &nbsp;|&nbsp; <strong>Extra Credit Available:</strong> 5 pts (see weekly module for details)</p>
-  </section>
-
-  <section id="concepts">
-    <h2>Key Concepts and Themes</h2>
-    <p>As you work through this week, pay particular attention to these ideas:</p>
-    <ul class="key-concepts-list">
-      <li><strong>Netplan and YAML configuration:</strong> Ubuntu Server uses Netplan for network configuration. The config files are in YAML format, which means indentation matters. A misplaced space can break your network. Take your time with these files.</li>
-      <li><strong>Static vs. dynamic IP addressing:</strong> In Week 1, your VM used DHCP. This week you assign a static IP, which is what real servers need so clients can reliably find them.</li>
-      <li><strong>DNS resolution:</strong> Understanding /etc/resolv.conf and systemd-resolved helps you troubleshoot "I can ping an IP but can't reach a hostname" problems.</li>
-      <li><strong>Cron scheduling:</strong> The crontab syntax (minute, hour, day-of-month, month, day-of-week) looks cryptic at first, but it is one of those things that clicks once you write a few entries. Practice reading cron expressions out loud: "At minute 30, every hour, every day..."</li>
-      <li><strong>Firewall as default-deny:</strong> UFW makes firewall management approachable, but the underlying concept is important: start by blocking everything, then open only what you need. This is a security mindset, not just a tool.</li>
-      <li><strong>Defense in depth:</strong> A firewall is one layer. Keeping software updated, disabling unused services, and using strong authentication are other layers. No single measure is enough on its own.</li>
-    </ul>
-  </section>
-
-  <section id="ahead">
-    <h2>Looking Ahead</h2>
-    <div class="looking-ahead">
-      <p><strong>Week 8</strong> is the final week of the course, and it is entirely devoted to Mini-Project 2: building and documenting a complete Linux server from scratch. Everything you configure this week (networking, services, firewall, cron) feeds directly into that capstone project.</p>
-      <p>Think of this week as your dress rehearsal. The server configuration assignment gives you hands-on practice with exactly the skills you will need to demonstrate in Week 8. If you run into trouble with Netplan or UFW this week, that is the time to ask questions and work through it. By Week 8, you will want these skills to feel familiar so you can focus on building a polished, well-documented final deliverable.</p>
-    </div>
-  </section>
-
-  <section id="arc">
-    <h2>Course Arc</h2>
-    <button class="collapsible-toggle" aria-expanded="false" aria-controls="arc-content" id="arc-toggle">
-      <span class="toggle-icon" aria-hidden="true">&#9654;</span> Where does Week 7 fit in the course?
-    </button>
-    <div class="collapsible-content" id="arc-content" role="region" aria-labelledby="arc-toggle">
-      <h3>The 8-Week Path</h3>
-      <ul>
-        <li><strong>Week 1:</strong> Install Ubuntu Server, learn package management</li>
-        <li><strong>Week 2:</strong> Explore the kernel, hardware, and boot process</li>
-        <li><strong>Week 3:</strong> Manage services and startup with systemd</li>
-        <li><strong>Week 4:</strong> Advanced shell scripting (Mini-Project 1)</li>
-        <li><strong>Week 5:</strong> Users, groups, and system security</li>
-        <li><strong>Week 6:</strong> File permissions and ownership</li>
-        <li><strong>Week 7 (you are here):</strong> Networking, server setup, cron, and firewall</li>
-        <li><strong>Week 8:</strong> Mini-Project 2 (capstone server build)</li>
-      </ul>
-      <p>Weeks 1 through 3 built your system from the ground up. Week 4 taught you to automate tasks with scripts. Weeks 5 and 6 gave you control over who can access what. Now, Week 7 connects your server to the outside world and secures it. Week 8 pulls all of these threads together into one final project.</p>
-      <h3>CSLO Alignment This Week</h3>
-      <ul>
-        <li><strong>CSLO 1:</strong> Install and configure a Linux operating system. (Network configuration is a core part of system configuration.)</li>
-        <li><strong>CSLO 2:</strong> Configure a Linux operating system as a platform for web-based and other applications. (Setting up a network service and making it accessible is exactly this.)</li>
-      </ul>
-    </div>
-  </section>
-
-</main>
-
-<script>
-(function() {
-  var toggle = document.getElementById('arc-toggle');
-  var content = document.getElementById('arc-content');
-
-  toggle.addEventListener('click', function() {
-    var expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    if (!expanded) {
-      content.classList.add('open');
-    } else {
-      content.classList.remove('open');
-    }
-  });
-})();
-</script>
-
-</body>
+                toggle.addEventListener("click", function () {
+                    var expanded =
+                        toggle.getAttribute("aria-expanded") === "true";
+                    toggle.setAttribute("aria-expanded", String(!expanded));
+                    if (!expanded) {
+                        content.classList.add("open");
+                    } else {
+                        content.classList.remove("open");
+                    }
+                });
+            })();
+        </script>
+    </body>
 </html>
