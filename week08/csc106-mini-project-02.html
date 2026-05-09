@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Project 2: Build and Document a Linux Server — CSC 106 Week 8</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f6f8;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #1e4d8c;
+      color: #fff;
+      padding: 8px 16px;
+      z-index: 1000;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Sticky nav */
+    .sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1e4d8c;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .sticky-nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      gap: 2px;
+      padding: 6px 12px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .sticky-nav a {
+      display: block;
+      color: #d6e4ff;
+      text-decoration: none;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .sticky-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .sticky-nav a:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 1px;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+    .sticky-nav a.active { background: rgba(255,255,255,0.25); color: #fff; }
+
+    /* Layout */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* Page header */
+    .page-header {
+      background: #1e4d8c;
+      color: #fff;
+      padding: 28px 32px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .page-header .course-meta { font-size: 0.85rem; opacity: 0.85; margin-bottom: 6px; }
+    .page-header h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+    .points-badge {
+      display: inline-block;
+      background: #fff;
+      color: #1e4d8c;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 3px 14px;
+      border-radius: 99px;
+    }
+
+    /* Sections */
+    .content-section {
+      background: #fff;
+      border: 1px solid #d8dde6;
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      scroll-margin-top: 52px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e4d8c;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f4;
+    }
+    h3 { font-size: 1rem; font-weight: 700; color: #1a3660; margin: 18px 0 8px; }
+
+    p { margin-bottom: 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 1.5em; margin-bottom: 10px; }
+    li { margin-bottom: 4px; }
+
+    /* Phase header */
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f4;
+    }
+    .phase-badge {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: #1e4d8c;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .phase-title { font-size: 1.2rem; font-weight: 700; color: #1e4d8c; }
+    .phase-subtitle { font-size: 0.83rem; color: #555; margin-top: 2px; }
+
+    /* Code */
+    pre {
+      background: #1e2535;
+      color: #e2e8f0;
+      padding: 14px 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0 14px;
+      font-size: 0.87rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    code { font-family: 'Courier New', Courier, monospace; }
+    p code, li code {
+      background: #eef1f8;
+      color: #1a3660;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    /* Callouts */
+    .callout {
+      border-left: 4px solid;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.93rem;
+    }
+    .callout-info  { border-color: #3b82f6; background: #eff6ff; color: #1e3a5f; }
+    .callout-tip   { border-color: #10b981; background: #ecfdf5; color: #064e3b; }
+    .callout-warn  { border-color: #f59e0b; background: #fffbeb; color: #78350f; }
+    .callout strong { font-weight: 700; }
+
+    /* Hints */
+    details.hint {
+      border: 1px solid #c7d2e8;
+      border-radius: 6px;
+      margin: 12px 0;
+      background: #f8faff;
+    }
+    details.hint > summary {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #1e4d8c;
+      font-size: 0.91rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    details.hint > summary::-webkit-details-marker { display: none; }
+    details.hint > summary::before {
+      content: '\25B6';
+      font-size: 0.68em;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details.hint[open] > summary::before { transform: rotate(90deg); }
+    details.hint > summary:focus-visible {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .hint-body {
+      padding: 0 16px 14px;
+      font-size: 0.91rem;
+      color: #2d3748;
+    }
+    .hint-body p { margin-bottom: 6px; }
+    .hint-body pre { font-size: 0.83rem; }
+    .hint-body ul { padding-left: 1.5em; }
+    .hint-body li { margin-bottom: 4px; }
+
+    /* Task steps */
+    .task-step {
+      background: #f8f9fb;
+      border: 1px solid #dde3ef;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 12px 0;
+    }
+    .task-step-label {
+      font-size: 0.77rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #1e4d8c;
+      margin-bottom: 6px;
+    }
+
+    /* Alert (critical warning) */
+    .alert-box {
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-left: 4px solid #e53e3e;
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.92rem;
+      color: #742a2a;
+    }
+    .alert-box strong { color: #c53030; }
+
+    /* Deliverables checklist */
+    .deliverables-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+    .deliverables-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #eef0f4;
+      font-size: 0.92rem;
+    }
+    .deliverables-list li:last-child { border-bottom: none; }
+    .deliverables-list .del-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border: 2px solid #1e4d8c;
+      border-radius: 4px;
+      margin-top: 1px;
+    }
+
+    /* Response fields */
+    .response-field { margin: 16px 0; }
+    .response-field label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #1a3660;
+      margin-bottom: 6px;
+    }
+    .req { color: #c0392b; margin-left: 2px; }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 10px 12px;
+      border: 1px solid #b0bcd4;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: 0.91rem;
+      color: #1a1a1a;
+      background: #fefefe;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    textarea:focus {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 1px;
+      border-color: #1e4d8c;
+    }
+    textarea.code-input {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      min-height: 130px;
+    }
+
+    /* Screenshot upload */
+    .screenshot-upload {
+      margin: 14px 0;
+      border: 1px solid #b0bcd4;
+      border-radius: 6px;
+      padding: 12px 16px;
+      background: #fafbfd;
+    }
+    .screenshot-upload label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.91rem;
+      color: #1a3660;
+      margin-bottom: 8px;
+    }
+    .screenshot-upload input[type="file"] {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.87rem;
+    }
+    .screenshot-upload input[type="file"]:focus-visible {
+      outline: 2px solid #1e4d8c;
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+    .ss-preview {
+      display: none;
+      max-width: 100%;
+      border: 1px solid #c7d2e8;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    .ss-preview.visible { display: block; }
+
+    /* Objectives list */
+    .obj-list { list-style: none; padding: 0; }
+    .obj-list li {
+      padding: 7px 0 7px 28px;
+      position: relative;
+      border-bottom: 1px solid #eef0f4;
+    }
+    .obj-list li:last-child { border-bottom: none; }
+    .obj-list li::before { content: '\2713'; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+
+    /* Rubric table */
+    .rubric-table { width: 100%; border-collapse: collapse; font-size: 0.89rem; margin: 12px 0; }
+    .rubric-table th, .rubric-table td {
+      border: 1px solid #c7d2e8;
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .rubric-table th { background: #1e4d8c; color: #fff; font-weight: 600; }
+    .rubric-table tr:nth-child(even) td { background: #f5f8ff; }
+    .rubric-table td:last-child { width: 60px; text-align: center; font-weight: 700; }
+
+    /* EC section */
+    .ec-section {
+      border: 2px solid #6b46c1;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-top: 16px;
+      background: #faf5ff;
+    }
+    .ec-badge {
+      display: inline-block;
+      background: #6b46c1;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+    .ec-section h3 { color: #44337a; margin-top: 0; }
+
+    /* Reflection section */
+    .reflection-callout {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 14px 0;
+    }
+    .reflection-callout h3 { color: #0c4a6e; margin-top: 0; }
+
+    /* Save as PDF button */
+    .pdf-btn-wrap { text-align: center; padding: 20px 0 8px; }
+    .btn-pdf {
+      display: inline-block;
+      background: #1e4d8c;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-pdf:hover { background: #163d72; }
+    .btn-pdf:focus-visible { outline: 3px solid #1e4d8c; outline-offset: 3px; background: #163d72; }
+    .pdf-note { font-size: 0.84rem; color: #555; margin-top: 8px; }
+
+    /* Print */
+    @media print {
+      .skip-link, .sticky-nav, .pdf-btn-wrap, details.hint,
+      input[type="file"], .pdf-note { display: none !important; }
+
+      body { background: #fff; font-size: 11pt; color: #000; }
+      .page-wrap { max-width: 100%; padding: 0; }
+
+      .page-header {
+        background: #1e4d8c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border-radius: 0;
+        margin-bottom: 12pt;
+        padding: 16pt 20pt;
+      }
+
+      .content-section {
+        border: 1pt solid #aaa;
+        border-radius: 0;
+        margin-bottom: 10pt;
+        padding: 12pt 16pt;
+        page-break-inside: avoid;
+      }
+
+      .phase-badge {
+        background: #1e4d8c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      pre {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-size: 8.5pt;
+        border: 1pt solid #ccc;
+      }
+
+      h2 { color: #1e4d8c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      h3 { color: #1a3660 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .rubric-table th {
+        background: #1e4d8c !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      textarea { display: none !important; }
+
+      .print-response {
+        border: 1pt solid #999;
+        padding: 8pt 10pt;
+        min-height: 36pt;
+        font-size: 10pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #fafafa;
+        color: #000;
+      }
+
+      .screenshot-upload { border: 1pt solid #aaa; }
+      .ss-preview.visible { max-width: 100%; }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .content-section { padding: 18px 14px; }
+      .page-header { padding: 20px 16px; }
+      .page-header h1 { font-size: 1.3rem; }
+      .phase-title { font-size: 1.05rem; }
+      pre { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="sticky-nav" aria-label="Page sections">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#phase1">1: Install</a></li>
+    <li><a href="#phase2">2: Packages &amp; Script</a></li>
+    <li><a href="#phase3">3: Boot &amp; Services</a></li>
+    <li><a href="#phase4">4: Maintenance Script</a></li>
+    <li><a href="#phase5">5: Users &amp; Shared Dir</a></li>
+    <li><a href="#phase6">6: Networking</a></li>
+    <li><a href="#phase7">7: Security</a></li>
+    <li><a href="#phase8">8: Documentation</a></li>
+    <li><a href="#submission">Submission</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="page-header" id="main-content" tabindex="-1">
+    <p class="course-meta">CSC 106 – Introduction to Linux II &nbsp;&middot;&nbsp; Week 8</p>
+    <h1>Mini Project 2: Build and Document a Linux Server</h1>
+    <span class="points-badge">80 Points &nbsp;&middot;&nbsp; CSLOs 1, 2, 3</span>
+  </header>
+
+  <!-- OVERVIEW -->
+  <section class="content-section" id="overview" aria-labelledby="overview-h">
+    <h2 id="overview-h">Project Overview</h2>
+
+    <p>This is your capstone project for the course. You will build a fully configured Ubuntu Server from scratch — installing the OS, configuring networking, setting up services, managing users, writing automation scripts, and hardening the system against common threats. Then you will document everything in a README and demonstrate the working server in a short screencast.</p>
+
+    <p>This project is cumulative. It draws on every skill you have practiced since Week 1: bash scripting, package management, user administration, systemd, Netplan, Nginx, ufw, cron, and SSH key authentication. You will not be writing code from memory — you will be applying concepts in a realistic, integrated context.</p>
+
+    <div class="callout callout-info">
+      <strong>What you are building:</strong> A production-ready Linux server that a real administrator could hand off to a colleague, accompanied by documentation detailed enough that the colleague could reproduce your entire setup from scratch.
+    </div>
+
+    <h3>What You Will Demonstrate</h3>
+    <ul class="obj-list">
+      <li>Install Ubuntu Server with a non-root admin user and appropriate disk partitioning.</li>
+      <li>Install packages via a documented script or command sequence.</li>
+      <li>Configure the system to boot to <code>multi-user.target</code> with at least two services enabled.</li>
+      <li>Write at least one automation script (backup or health-check) and schedule it with cron.</li>
+      <li>Create multiple non-root users, manage groups, configure sudo, and set up a shared directory.</li>
+      <li>Assign a static IP via Netplan, configure ufw, and enable SSH key authentication.</li>
+      <li>Harden the system: disable root SSH login, open only needed ports, keep packages updated.</li>
+      <li>Produce a README and all configuration files that allow another student to reproduce your setup.</li>
+      <li>Record a 5–10 minute screencast demonstrating your working server.</li>
+    </ul>
+
+    <h3>Deliverables Summary</h3>
+    <p>Submit all of the following to Canvas:</p>
+    <ul>
+      <li><strong>README file</strong> — walks through your entire setup, explains your decisions, and includes all commands and scripts used</li>
+      <li><strong>All scripts</strong> — your package installation script, automation script, and any other scripts you wrote</li>
+      <li><strong>Configuration files</strong> — your Netplan YAML, Nginx site config, crontab export, and any other config files you modified</li>
+      <li><strong>Screencast</strong> (5–10 minutes) — demonstrates that all required features work on your running server</li>
+      <li><strong>This workbook as a PDF</strong> — with your reflection responses and screenshots filled in</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <strong>Working through the phases:</strong> Each phase below guides you through one area of the project. The phases are roughly in build order — complete them in sequence for the smoothest experience. Snapshot your VM at the end of each phase so you can roll back if something breaks.
+    </div>
+  </section>
+
+  <!-- PHASE 1: INSTALLATION -->
+  <section class="content-section" id="phase1" aria-labelledby="phase1-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">1</div>
+      <div>
+        <div class="phase-title" id="phase1-h">Installation &amp; Initial Setup</div>
+        <div class="phase-subtitle">Starting from scratch — fresh OS, first admin user</div>
+      </div>
+    </div>
+
+    <p>Begin with a clean Ubuntu Server installation. If you have an existing VM from earlier in the course, you may use it — but start from a snapshot taken right after the initial install so you are working from a known-good baseline.</p>
+
+    <h3>Installation Requirements</h3>
+    <ul>
+      <li>Ubuntu Server (22.04 LTS or later)</li>
+      <li>Guided storage layout is acceptable; document what partitions you created</li>
+      <li>Create a non-root admin user during installation (not the default <code>ubuntu</code> user)</li>
+      <li>Install OpenSSH Server when prompted during setup</li>
+    </ul>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 1.1 — Verify your installation</div>
+      <p>After first boot, log in as your admin user and confirm the system is healthy:</p>
+<pre><code>uname -a
+lsb_release -a
+df -h
+free -h
+id</code></pre>
+      <p>Confirm you see Ubuntu Server, your storage layout, and that your user account is present.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 1.2 — Take a baseline snapshot</div>
+      <p>In VirtualBox, take a snapshot named <strong>baseline-fresh-install</strong> before making any changes. This is your recovery point for the entire project.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: If you are reusing a VM from earlier in the course</summary>
+      <div class="hint-body">
+        <p>That is fine — just document it. In your README, note that you started from a VM used in Lab 3 or Lab 5 rather than a fresh install, and describe its initial state. Graders will look for evidence that you built the required features, not that you necessarily reinstalled from scratch.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p1a">Screenshot: Terminal showing <code>uname -a</code> and <code>lsb_release -a</code> output after first login</label>
+      <input type="file" id="ss-p1a" accept="image/*" aria-describedby="ss-p1a-note">
+      <p id="ss-p1a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p1a-img" src="" alt="Terminal showing uname and lsb_release output">
+    </div>
+
+    <div class="response-field">
+      <label for="p1-setup">1a. Describe your installation setup: VM specs (RAM, disk, CPUs), storage layout, admin username, and any choices you made during the installer. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-setup" rows="5" placeholder="Example: 2 GB RAM, 20 GB disk, 2 CPUs. Used guided storage with one root partition. Admin username: alex. OpenSSH installed during setup."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p1-df">1b. Paste the output of <code>df -h</code> showing your disk layout. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p1-df" class="code-input" rows="7" placeholder="Filesystem      Size  Used Avail Use% Mounted on&#10;/dev/sda1        20G  3.1G   16G  17% /&#10;..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 2: PACKAGES & INSTALLATION SCRIPT -->
+  <section class="content-section" id="phase2" aria-labelledby="phase2-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">2</div>
+      <div>
+        <div class="phase-title" id="phase2-h">Package Management &amp; Installation Script</div>
+        <div class="phase-subtitle">Automate your package installation — make your setup reproducible</div>
+      </div>
+    </div>
+
+    <p>Create a script that installs all the packages your server needs. Running this script on a fresh Ubuntu Server should bring it to a fully-equipped state without any manual package installation. This is the same concept as Mini-Project 1, but now integrated into a real working server rather than a standalone exercise.</p>
+
+    <h3>Minimum Package Requirements</h3>
+    <p>Your server must have at least the following installed:</p>
+    <ul>
+      <li><code>nginx</code> — web server (required for Phase 3)</li>
+      <li><code>ufw</code> — firewall management (required for Phase 6)</li>
+      <li><code>curl</code> — for testing HTTP connectivity</li>
+      <li>At least two additional packages of your choice that serve a purpose in your server setup</li>
+    </ul>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 2.1 — Write your package installation script</div>
+      <p>Create a script called <code>install-packages.sh</code> in your home directory. It must:</p>
+      <ul>
+        <li>Run <code>apt update</code> and <code>apt upgrade -y</code> before installing anything</li>
+        <li>Install all required packages using an array and a loop (not individual <code>apt install</code> calls)</li>
+        <li>Check for errors after each installation step</li>
+        <li>Print clear status messages so you can see what is happening</li>
+      </ul>
+<pre><code>nano ~/install-packages.sh
+chmod +x ~/install-packages.sh
+sudo ./install-packages.sh</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Package array loop pattern</summary>
+      <div class="hint-body">
+        <p>This pattern from Mini-Project 1 applies directly here. Define your packages as an array, then loop through them:</p>
+<pre><code>PACKAGES=("nginx" "ufw" "curl" "git" "htop")
+
+for pkg in "${PACKAGES[@]}"; do
+    echo "Installing $pkg..."
+    apt install -y "$pkg" || { echo "Failed to install $pkg"; exit 1; }
+done</code></pre>
+        <p>The <code>|| { ...; exit 1; }</code> pattern exits the script immediately if any package fails to install, rather than continuing with a broken state.</p>
+      </div>
+    </details>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 2.2 — Verify installations</div>
+      <p>After running your script, confirm each package is installed:</p>
+<pre><code>dpkg -l nginx ufw curl
+nginx -v
+ufw version</code></pre>
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p2a">Screenshot: Terminal showing successful package installation (the end of your script run, or <code>dpkg -l</code> output)</label>
+      <input type="file" id="ss-p2a" accept="image/*" aria-describedby="ss-p2a-note">
+      <p id="ss-p2a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p2a-img" src="" alt="Terminal showing successful package installation">
+    </div>
+
+    <div class="response-field">
+      <label for="p2-script">2a. Paste your complete <code>install-packages.sh</code> script. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p2-script" class="code-input" rows="20" placeholder="#!/bin/bash&#10;# install-packages.sh&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p2-packages">2b. List all packages you installed and briefly explain why each one is on your server. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p2-packages" rows="7" placeholder="nginx — web server for serving the custom page in Phase 3&#10;ufw — firewall management in Phase 6&#10;curl — testing HTTP responses without a browser&#10;..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 3: BOOT & SERVICES -->
+  <section class="content-section" id="phase3" aria-labelledby="phase3-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">3</div>
+      <div>
+        <div class="phase-title" id="phase3-h">Boot Configuration &amp; Services</div>
+        <div class="phase-subtitle">multi-user.target, Nginx, and SSH — a server that runs what it needs</div>
+      </div>
+    </div>
+
+    <p>A well-configured server boots to the right target and runs exactly the services it needs — no desktop environment, no unnecessary processes. Your server must boot to <code>multi-user.target</code> (the standard headless server mode) with at least two services enabled to start automatically.</p>
+
+    <h3>Configure the Boot Target</h3>
+    <p>Confirm your system is using <code>multi-user.target</code>:</p>
+<pre><code>systemctl get-default</code></pre>
+    <p>If it shows <code>graphical.target</code> instead, switch it:</p>
+<pre><code>sudo systemctl set-default multi-user.target</code></pre>
+
+    <h3>Enable and Configure Nginx</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 3.1 — Enable Nginx and SSH to start on boot</div>
+<pre><code>sudo systemctl enable nginx
+sudo systemctl enable ssh
+sudo systemctl start nginx</code></pre>
+      <p>Verify both are active:</p>
+<pre><code>systemctl status nginx
+systemctl status ssh</code></pre>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 3.2 — Create a custom Nginx page</div>
+      <p>Replace the default Nginx page with a custom one that identifies your server:</p>
+<pre><code>sudo nano /var/www/html/index.html</code></pre>
+      <p>Create a simple HTML page that includes your name, the date, and a description of what this server does. Then verify it is served correctly:</p>
+<pre><code>curl http://localhost</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Minimal custom index.html</summary>
+      <div class="hint-body">
+        <p>Your custom page does not need to be elaborate — a few lines is fine. What matters is that it clearly identifies your server:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Project Server&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;CSC 106 Mini-Project 2 Server&lt;/h1&gt;
+  &lt;p&gt;Configured by: Your Name&lt;/p&gt;
+  &lt;p&gt;Date: 2026-05-08&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p3a">Screenshot: Terminal showing <code>systemctl status nginx</code> and <code>systemctl status ssh</code> — both active and enabled</label>
+      <input type="file" id="ss-p3a" accept="image/*" aria-describedby="ss-p3a-note">
+      <p id="ss-p3a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p3a-img" src="" alt="Terminal showing nginx and ssh service status">
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p3b">Screenshot: Terminal showing <code>curl http://localhost</code> output with your custom page content</label>
+      <input type="file" id="ss-p3b" accept="image/*" aria-describedby="ss-p3b-note">
+      <p id="ss-p3b-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p3b-img" src="" alt="curl output showing custom Nginx page">
+    </div>
+
+    <div class="response-field">
+      <label for="p3-systemctl">3a. Paste the output of <code>systemctl list-units --type=service --state=enabled</code> showing your enabled services. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p3-systemctl" class="code-input" rows="10" placeholder="UNIT                    LOAD   ACTIVE SUB     DESCRIPTION&#10;cron.service            loaded active running Regular background program processing daemon&#10;nginx.service           loaded active running A high performance web server&#10;ssh.service             loaded active running OpenBSD Secure Shell server&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p3-html">3b. Paste the contents of your custom <code>/var/www/html/index.html</code>. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p3-html" class="code-input" rows="10" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p3-services">3c. Why is <code>multi-user.target</code> the right boot target for a server? What would change if you used <code>graphical.target</code> instead? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p3-services" rows="4" placeholder="multi-user.target is headless — it does not start a display manager or desktop environment..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 4: MAINTENANCE SCRIPT -->
+  <section class="content-section" id="phase4" aria-labelledby="phase4-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">4</div>
+      <div>
+        <div class="phase-title" id="phase4-h">Automation Script &amp; Cron Job</div>
+        <div class="phase-subtitle">Scheduled automation — the server maintains itself</div>
+      </div>
+    </div>
+
+    <p>Write at least one automation script and schedule it to run automatically with cron. Your script must do something genuinely useful: either a backup that archives important data, or a health-check that logs system state so you can review it later.</p>
+
+    <h3>Choose Your Script Type</h3>
+
+    <div class="callout callout-info">
+      <strong>Option A — Backup script:</strong> Archives a target directory (such as <code>/var/www/html</code> or <code>/etc/nginx</code>) using <code>tar</code>, names the archive with a timestamp, stores it in a backup directory, and optionally removes archives older than a set number of days.<br><br>
+      <strong>Option B — Health-check script:</strong> Logs disk usage, memory usage, and the status of key services to a dated log file in <code>/var/log/</code>. Useful for detecting problems before they become outages.
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 4.1 — Write your automation script</div>
+      <p>Create your script in <code>/usr/local/bin/</code> so it is available system-wide:</p>
+<pre><code>sudo nano /usr/local/bin/server-maintenance.sh
+sudo chmod +x /usr/local/bin/server-maintenance.sh</code></pre>
+      <p>Your script must include:</p>
+      <ul>
+        <li>A shebang (<code>#!/bin/bash</code>)</li>
+        <li>Timestamped output so you know when it ran</li>
+        <li>At least one conditional (e.g., check whether the backup directory exists before writing to it)</li>
+        <li>Clear status messages or log entries</li>
+      </ul>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Backup script skeleton</summary>
+      <div class="hint-body">
+<pre><code>#!/bin/bash
+# server-maintenance.sh — Backup /var/www/html daily
+
+BACKUP_DIR="/var/backups/html"
+SOURCE="/var/www/html"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+ARCHIVE="${BACKUP_DIR}/html_${TIMESTAMP}.tar.gz"
+
+mkdir -p "$BACKUP_DIR"
+
+echo "[$(date)] Starting backup of $SOURCE..."
+tar -czf "$ARCHIVE" "$SOURCE" && echo "[$(date)] Backup saved: $ARCHIVE" \
+  || echo "[$(date)] ERROR: backup failed"
+
+# Remove archives older than 7 days
+find "$BACKUP_DIR" -name "*.tar.gz" -mtime +7 -delete
+echo "[$(date)] Cleanup complete."</code></pre>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Hint: Health-check script skeleton</summary>
+      <div class="hint-body">
+<pre><code>#!/bin/bash
+# server-maintenance.sh — Daily health check
+
+LOG="/var/log/health-check.log"
+echo "=== Health Check: $(date) ===" >> "$LOG"
+echo "--- Disk Usage ---" >> "$LOG"
+df -h >> "$LOG"
+echo "--- Memory ---" >> "$LOG"
+free -h >> "$LOG"
+echo "--- Service Status ---" >> "$LOG"
+for svc in nginx ssh; do
+    STATUS=$(systemctl is-active "$svc")
+    echo "$svc: $STATUS" >> "$LOG"
+done
+echo "" >> "$LOG"</code></pre>
+      </div>
+    </details>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 4.2 — Test your script manually</div>
+      <p>Run it once by hand to confirm it works before scheduling it:</p>
+<pre><code>sudo /usr/local/bin/server-maintenance.sh</code></pre>
+      <p>Then verify the output — check the backup archive or log file to confirm it produced the expected result.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 4.3 — Schedule with cron</div>
+      <p>Add a cron job to run your script daily. Edit root's crontab (since the script likely needs root access):</p>
+<pre><code>sudo crontab -e</code></pre>
+      <p>Add a line that runs the script daily. Example — run every day at 2:00 AM:</p>
+<pre><code>0 2 * * * /usr/local/bin/server-maintenance.sh >> /var/log/maintenance.log 2>&1</code></pre>
+      <p>Verify the cron entry:</p>
+<pre><code>sudo crontab -l</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Cron field reference</summary>
+      <div class="hint-body">
+        <p>Cron fields from left to right: <strong>minute hour day-of-month month day-of-week command</strong></p>
+        <ul>
+          <li><code>0 2 * * *</code> — 2:00 AM every day</li>
+          <li><code>*/5 * * * *</code> — every 5 minutes (useful for testing)</li>
+          <li><code>0 0 * * 0</code> — midnight every Sunday</li>
+        </ul>
+        <p>For testing, set the cron job to run every minute (<code>* * * * *</code>), wait a minute, confirm the output, then change it to your production schedule.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p4a">Screenshot: Terminal showing your script running manually and its output (archive created or log entries written)</label>
+      <input type="file" id="ss-p4a" accept="image/*" aria-describedby="ss-p4a-note">
+      <p id="ss-p4a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p4a-img" src="" alt="Terminal showing automation script output">
+    </div>
+
+    <div class="response-field">
+      <label for="p4-script">4a. Paste your complete automation script. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p4-script" class="code-input" rows="22" placeholder="#!/bin/bash&#10;# server-maintenance.sh&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p4-cron">4b. Paste the output of <code>sudo crontab -l</code> showing your scheduled job. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p4-cron" class="code-input" rows="4" placeholder="# Edit this file to introduce tasks to be run by cron.&#10;0 2 * * * /usr/local/bin/server-maintenance.sh >> /var/log/maintenance.log 2>&1"></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p4-explain">4c. Explain what your script does, why you chose this type of maintenance task, and what problems it would help you catch or prevent. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p4-explain" rows="5" placeholder="I chose the backup script because... It runs daily and archives... This protects against..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 5: USER ADMINISTRATION -->
+  <section class="content-section" id="phase5" aria-labelledby="phase5-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">5</div>
+      <div>
+        <div class="phase-title" id="phase5-h">User Administration &amp; Shared Directory</div>
+        <div class="phase-subtitle">Multiple users, groups, sudo, and shared access</div>
+      </div>
+    </div>
+
+    <p>Real servers are not single-user environments. You will create multiple non-root accounts, organize them into a group, configure appropriate sudo access, and set up a shared directory that members of the group can read and write to.</p>
+
+    <h3>Create Non-Root User Accounts</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.1 — Create at least two non-root users</div>
+      <p>Create two new user accounts (use names of your choice — these are fictional team members):</p>
+<pre><code>sudo useradd -m -s /bin/bash alice
+sudo passwd alice
+sudo useradd -m -s /bin/bash bob
+sudo passwd bob</code></pre>
+      <p>The <code>-m</code> flag creates a home directory; <code>-s /bin/bash</code> sets the login shell.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.2 — Create a group and add users</div>
+      <p>Create a group called <code>webteam</code> and add both users:</p>
+<pre><code>sudo groupadd webteam
+sudo usermod -aG webteam alice
+sudo usermod -aG webteam bob</code></pre>
+      <p>Verify group membership:</p>
+<pre><code>getent group webteam</code></pre>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.3 — Configure sudo access</div>
+      <p>Grant one of your new users limited sudo access. You have two options:</p>
+      <ul>
+        <li><strong>Option A:</strong> Add the user to the <code>sudo</code> group for full sudo access: <code>sudo usermod -aG sudo alice</code></li>
+        <li><strong>Option B:</strong> Use <code>visudo</code> to grant the user access to specific commands only</li>
+      </ul>
+      <p>Document which approach you chose and why it fits your server's needs.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.4 — Create a shared directory</div>
+      <p>Create a shared directory that all <code>webteam</code> members can read and write:</p>
+<pre><code>sudo mkdir -p /srv/webteam
+sudo chown root:webteam /srv/webteam
+sudo chmod 2775 /srv/webteam</code></pre>
+      <p>The <code>2775</code> permission sets the setgid bit, which ensures new files created in the directory inherit the <code>webteam</code> group rather than the creating user's primary group.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 5.5 — Verify shared directory access</div>
+      <p>Test that both users can create and read files in the shared directory:</p>
+<pre><code>sudo -u alice touch /srv/webteam/alice-file.txt
+sudo -u bob touch /srv/webteam/bob-file.txt
+ls -la /srv/webteam/</code></pre>
+      <p>Both files should show <code>webteam</code> as the group owner.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Understanding the setgid bit (chmod 2775)</summary>
+      <div class="hint-body">
+        <p>The <code>2</code> in <code>2775</code> sets the setgid bit on the directory. Without it, files created in <code>/srv/webteam</code> would inherit the creating user's primary group (likely their personal group), not <code>webteam</code>. The setgid bit forces new files to inherit the directory's group, making true sharing work correctly.</p>
+        <p>Breaking down <code>2775</code>:</p>
+        <ul>
+          <li><code>2</code> — setgid bit</li>
+          <li><code>7</code> — owner: read, write, execute</li>
+          <li><code>7</code> — group: read, write, execute</li>
+          <li><code>5</code> — others: read, execute (can list and enter, but not write)</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p5a">Screenshot: Terminal showing <code>ls -la /srv/webteam/</code> with both test files and <code>webteam</code> as the group owner</label>
+      <input type="file" id="ss-p5a" accept="image/*" aria-describedby="ss-p5a-note">
+      <p id="ss-p5a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p5a-img" src="" alt="ls -la output showing shared directory contents">
+    </div>
+
+    <div class="response-field">
+      <label for="p5-users">5a. List the usernames you created, their group memberships, and their sudo configuration. Paste the output of <code>getent group webteam</code> and <code>getent group sudo</code>. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p5-users" class="code-input" rows="6" placeholder="webteam:x:1002:alice,bob&#10;sudo:x:27:your-admin-user,alice"></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p5-sudo">5b. Which sudo approach did you use for your new users, and why? Full sudo group membership or a restricted <code>visudo</code> entry? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p5-sudo" rows="4" placeholder="I gave alice full sudo access via the sudo group because she is an administrator..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p5-dir">5c. Paste the output of <code>ls -la /srv/webteam/</code> after creating both test files. What does the permission string on each file tell you? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p5-dir" class="code-input" rows="7" placeholder="total 8&#10;drwxrwsr-x 2 root webteam 4096 May  8 10:00 .&#10;drwxr-xr-x 4 root root     4096 May  8 10:00 ..&#10;-rw-rw-r-- 1 alice webteam    0 May  8 10:01 alice-file.txt&#10;-rw-rw-r-- 1 bob   webteam    0 May  8 10:02 bob-file.txt"></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 6: NETWORKING -->
+  <section class="content-section" id="phase6" aria-labelledby="phase6-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">6</div>
+      <div>
+        <div class="phase-title" id="phase6-h">Networking: Static IP, Firewall &amp; SSH Keys</div>
+        <div class="phase-subtitle">Stable, secure network access — the foundation of remote administration</div>
+      </div>
+    </div>
+
+    <p>This phase integrates the three major networking skills from Week 7: assigning a static IP so your server's address never changes, configuring ufw to allow only necessary traffic, and setting up SSH key authentication to eliminate password-based login.</p>
+
+    <div class="alert-box">
+      <strong>Critical order:</strong> Always configure ufw to allow SSH <em>before</em> enabling the firewall. If you enable ufw without allowing port 22 first, you will lock yourself out of your SSH session. The sequence below is intentional — follow it exactly.
+    </div>
+
+    <h3>Step A: Static IP with Netplan</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 6.1 — Identify your interface name and current IP</div>
+<pre><code>ip addr show
+ip route</code></pre>
+      <p>Note your interface name (commonly <code>enp0s3</code> or <code>ens33</code>) and your current IP address. Choose an IP in the same subnet that is outside your DHCP range.</p>
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 6.2 — Edit your Netplan configuration</div>
+<pre><code>sudo nano /etc/netplan/00-installer-config.yaml</code></pre>
+      <p>Replace DHCP configuration with a static assignment. Substitute your interface name, IP, gateway, and DNS:</p>
+<pre><code>network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: false
+      addresses:
+        - 192.168.1.100/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]</code></pre>
+    </div>
+
+    <div class="alert-box">
+      <strong>YAML uses spaces — never tabs.</strong> Indentation errors in Netplan YAML will prevent the configuration from applying and can leave your network interface in an undefined state. If <code>sudo netplan try</code> shows errors, recheck your spacing carefully before confirming.
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 6.3 — Apply and verify the static IP</div>
+<pre><code>sudo netplan try</code></pre>
+      <p>If no errors appear after 120 seconds, confirm the change:</p>
+<pre><code>sudo netplan apply
+ip addr show
+ping -c 3 8.8.8.8</code></pre>
+    </div>
+
+    <h3>Step B: Firewall with ufw</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 6.4 — Configure ufw (SSH first, then enable)</div>
+<pre><code>sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw enable
+sudo ufw status verbose</code></pre>
+      <p>Confirm the output shows rules for ports 22 (SSH) and 80 (HTTP) before and after enabling.</p>
+    </div>
+
+    <h3>Step C: SSH Key Authentication</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 6.5 — Generate an SSH key pair and configure key login</div>
+      <p>Generate an ed25519 key pair (on whichever machine you are using to connect — host or VM):</p>
+<pre><code>ssh-keygen -t ed25519 -C "mp2-key"</code></pre>
+      <p>Copy the public key to your server's admin user (using <code>ssh-copy-id</code> or the manual method):</p>
+<pre><code>ssh-copy-id -i ~/.ssh/id_ed25519.pub your-user@192.168.1.100</code></pre>
+      <p>Test key-based login:</p>
+<pre><code>ssh your-user@192.168.1.100</code></pre>
+      <p>You should connect without being prompted for a password.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Manual authorized_keys method (if ssh-copy-id is unavailable)</summary>
+      <div class="hint-body">
+        <p>On the server, as your admin user:</p>
+<pre><code>mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+nano ~/.ssh/authorized_keys</code></pre>
+        <p>Paste the contents of your public key file (<code>~/.ssh/id_ed25519.pub</code>) into this file, then:</p>
+<pre><code>chmod 600 ~/.ssh/authorized_keys</code></pre>
+        <p>Permissions must be exact: 700 on <code>.ssh/</code> and 600 on <code>authorized_keys</code>. SSH will silently refuse key authentication if permissions are too loose.</p>
+      </div>
+    </details>
+
+    <div class="screenshot-upload">
+      <label for="ss-p6a">Screenshot: Terminal showing <code>ip addr show</code> with your static IP assigned</label>
+      <input type="file" id="ss-p6a" accept="image/*" aria-describedby="ss-p6a-note">
+      <p id="ss-p6a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p6a-img" src="" alt="ip addr output showing static IP">
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p6b">Screenshot: Terminal showing <code>sudo ufw status verbose</code> with SSH and HTTP rules active</label>
+      <input type="file" id="ss-p6b" accept="image/*" aria-describedby="ss-p6b-note">
+      <p id="ss-p6b-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p6b-img" src="" alt="ufw status verbose output">
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p6c">Screenshot: Successful SSH key-based login (terminal showing connection without password prompt)</label>
+      <input type="file" id="ss-p6c" accept="image/*" aria-describedby="ss-p6c-note">
+      <p id="ss-p6c-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p6c-img" src="" alt="SSH key-based login output">
+    </div>
+
+    <div class="response-field">
+      <label for="p6-netplan">6a. Paste your final Netplan YAML configuration. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p6-netplan" class="code-input" rows="14" placeholder="network:&#10;  version: 2&#10;  ethernets:&#10;    enp0s3:&#10;      dhcp4: false&#10;      ..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p6-ufw">6b. Paste the output of <code>sudo ufw status verbose</code>. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p6-ufw" class="code-input" rows="10" placeholder="Status: active&#10;Logging: on (low)&#10;Default: deny (incoming), allow (outgoing), disabled (routed)&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p6-ssh">6c. Describe your SSH key setup: what key type did you generate, where did you place the public key, and how did you verify key-based login worked? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p6-ssh" rows="5" placeholder="I generated an ed25519 key pair on my host machine. I used ssh-copy-id to copy the public key to the admin user's authorized_keys file on the server..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 7: SECURITY HARDENING -->
+  <section class="content-section" id="phase7" aria-labelledby="phase7-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">7</div>
+      <div>
+        <div class="phase-title" id="phase7-h">Security Hardening</div>
+        <div class="phase-subtitle">Defense in depth — close unnecessary doors, keep the system current</div>
+      </div>
+    </div>
+
+    <p>Security is not a single configuration change — it is a set of practices layered on top of each other. You will implement three baseline hardening measures that are standard practice on any internet-facing Linux server: disabling root SSH login, ensuring only necessary ports are open, and keeping packages updated.</p>
+
+    <h3>Disable Root SSH Login</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 7.1 — Disable root login via SSH</div>
+      <p>Edit the SSH daemon configuration:</p>
+<pre><code>sudo nano /etc/ssh/sshd_config</code></pre>
+      <p>Find the <code>PermitRootLogin</code> line and set it to <code>no</code>. If it is commented out, uncomment it:</p>
+<pre><code>PermitRootLogin no</code></pre>
+      <p>Reload the SSH service to apply the change:</p>
+<pre><code>sudo systemctl reload ssh
+sudo sshd -T | grep permitrootlogin</code></pre>
+      <p>The <code>sshd -T</code> command prints the effective configuration — confirm <code>permitrootlogin no</code> appears in the output.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Before disabling root login:</strong> Confirm that your admin user can log in via SSH with key authentication and can run <code>sudo</code> commands. If you disable root login while your admin account is misconfigured, you may lose remote access.
+    </div>
+
+    <h3>Firewall Audit</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 7.2 — Verify only necessary ports are open</div>
+      <p>Check which ports are actually listening on your server:</p>
+<pre><code>ss -tlnp</code></pre>
+      <p>Compare the listening ports against your ufw rules. Every listening port should have a corresponding ufw rule that intentionally allows it, or it should only be bound to localhost (127.0.0.1) and not reachable from the network.</p>
+<pre><code>sudo ufw status numbered</code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>Hint: Interpreting ss -tlnp output</summary>
+      <div class="hint-body">
+        <p>Each line shows a listening TCP socket. The <code>Local Address:Port</code> column tells you where it is listening:</p>
+        <ul>
+          <li><code>0.0.0.0:22</code> — SSH listening on all interfaces (expected)</li>
+          <li><code>0.0.0.0:80</code> — Nginx listening on all interfaces (expected)</li>
+          <li><code>127.0.0.1:631</code> — something on port 631 bound only to localhost (not reachable from network — generally safe)</li>
+        </ul>
+        <p>If you see a port bound to <code>0.0.0.0</code> that you do not recognize and have not intentionally opened in ufw, investigate what service is listening there before proceeding.</p>
+      </div>
+    </details>
+
+    <h3>Keep Packages Updated</h3>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 7.3 — Apply available security updates</div>
+<pre><code>sudo apt update
+sudo apt upgrade -y</code></pre>
+      <p>Document the state after upgrading. Note whether any packages were upgraded and whether a reboot is recommended (<code>/var/run/reboot-required</code> exists if a kernel update needs a reboot).</p>
+<pre><code>ls /var/run/reboot-required 2>/dev/null && echo "Reboot required" || echo "No reboot needed"</code></pre>
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p7a">Screenshot: Terminal showing <code>sudo sshd -T | grep permitrootlogin</code> confirming root login is disabled</label>
+      <input type="file" id="ss-p7a" accept="image/*" aria-describedby="ss-p7a-note">
+      <p id="ss-p7a-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p7a-img" src="" alt="sshd -T output showing permitrootlogin no">
+    </div>
+
+    <div class="screenshot-upload">
+      <label for="ss-p7b">Screenshot: Terminal showing <code>ss -tlnp</code> output</label>
+      <input type="file" id="ss-p7b" accept="image/*" aria-describedby="ss-p7b-note">
+      <p id="ss-p7b-note" class="pdf-note">Upload this screenshot so it appears in your PDF.</p>
+      <img class="ss-preview" id="ss-p7b-img" src="" alt="ss -tlnp output showing listening ports">
+    </div>
+
+    <div class="response-field">
+      <label for="p7-sshd">7a. Paste the relevant lines from your <code>/etc/ssh/sshd_config</code> showing your security settings (at minimum the PermitRootLogin line). <span class="req" aria-label="required">*</span></label>
+      <textarea id="p7-sshd" class="code-input" rows="6" placeholder="PermitRootLogin no&#10;# PasswordAuthentication yes&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p7-ports">7b. List every port that <code>ss -tlnp</code> shows as listening. For each one, explain what service is using it and why it is or is not allowed through ufw. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p7-ports" rows="7" placeholder="Port 22 (SSH): allowed through ufw — needed for remote administration&#10;Port 80 (HTTP): allowed through ufw — Nginx web server&#10;Port 631 (localhost only): cups-browsed, not reachable from network, not in ufw&#10;..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p7-updates">7c. What is the security reason for disabling root SSH login rather than simply having a strong root password? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p7-updates" rows="4" placeholder="Disabling root login eliminates an entire attack surface. Even with a strong password, root is a known target..."></textarea>
+    </div>
+  </section>
+
+  <!-- PHASE 8: DOCUMENTATION & SCREENCAST -->
+  <section class="content-section" id="phase8" aria-labelledby="phase8-h">
+    <div class="phase-header">
+      <div class="phase-badge" aria-hidden="true">8</div>
+      <div>
+        <div class="phase-title" id="phase8-h">Documentation &amp; Screencast</div>
+        <div class="phase-subtitle">Write it up — make your work reproducible</div>
+      </div>
+    </div>
+
+    <p>The documentation and screencast together are worth as much as any individual technical phase. Graders will use your README to understand your decisions and verify that your configuration is reproducible. Your screencast demonstrates that everything actually works.</p>
+
+    <h3>README Requirements</h3>
+    <p>Your README must be detailed enough that a classmate who has completed the same labs could reproduce your server setup from scratch by following it. Include:</p>
+
+    <ul>
+      <li><strong>System overview</strong> — what your server does, what services run on it, and who the users are</li>
+      <li><strong>Step-by-step setup instructions</strong> — every command needed to reproduce your configuration, in order</li>
+      <li><strong>Configuration file explanations</strong> — explain the key decisions in your Netplan YAML, Nginx config, and sshd_config</li>
+      <li><strong>Script documentation</strong> — what each script does, how to run it, and what output to expect</li>
+      <li><strong>User and group structure</strong> — list all users, their groups, and their sudo access level</li>
+      <li><strong>Security decisions</strong> — explain your ufw rules and hardening choices</li>
+      <li><strong>Cron schedule</strong> — your full crontab with explanations of timing</li>
+      <li><strong>Verification steps</strong> — commands that can be run to confirm each feature is working correctly</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <strong>Write as you go:</strong> The easiest way to write a good README is to document each phase as you complete it, not all at once at the end. Copy the commands you actually ran, the output you actually saw, and the decisions you actually made. A README written from memory after the fact is always less accurate.
+    </div>
+
+    <h3>Screencast Requirements</h3>
+    <p>Record a 5–10 minute video demonstrating your working server. Your screencast must show:</p>
+
+    <ol>
+      <li>Your server's hostname and IP address (<code>hostname -I</code> and <code>ip addr</code>)</li>
+      <li>Nginx serving your custom page (<code>curl http://localhost</code>)</li>
+      <li>Both services enabled and active (<code>systemctl status nginx ssh</code>)</li>
+      <li>Your automation script running and producing output</li>
+      <li>The shared directory with correct group permissions (<code>ls -la /srv/webteam/</code>)</li>
+      <li>ufw status showing your firewall rules (<code>sudo ufw status verbose</code>)</li>
+      <li>SSH key-based login working (connect without a password)</li>
+      <li>Root SSH login disabled (<code>sudo sshd -T | grep permitrootlogin</code>)</li>
+    </ol>
+
+    <div class="callout callout-info">
+      <strong>Recording tool options:</strong> On Windows, use Xbox Game Bar (Win+G) or OBS Studio. On macOS, use QuickTime Player (File → New Screen Recording). Free options include OBS Studio and Loom. Upload to YouTube (unlisted is fine) or submit as a file to Canvas. Include the link or file in your submission.
+    </div>
+
+    <div class="task-step">
+      <div class="task-step-label">Task 8.1 — Prepare a script for your screencast</div>
+      <p>Before recording, write out the commands you will run in order. This prevents stumbling during the recording and ensures you cover all required demonstrations. A dry run is worth the five minutes it takes.</p>
+    </div>
+
+    <div class="response-field">
+      <label for="p8-readme-summary">8a. Paste the first section of your README (the system overview). The full README will be submitted as a separate file. <span class="req" aria-label="required">*</span></label>
+      <textarea id="p8-readme-summary" rows="12" placeholder="# CSC 106 Mini-Project 2 — Server Documentation&#10;&#10;## System Overview&#10;&#10;This server runs Ubuntu Server 22.04 LTS and is configured as a web server with automated backups and SSH key-based access..."></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p8-screencast">8b. Paste the URL of your screencast (YouTube unlisted link, or describe where the file is located in your submission). <span class="req" aria-label="required">*</span></label>
+      <textarea id="p8-screencast" rows="2" placeholder="https://youtu.be/...   or   Submitted as mp2-screencast.mp4 in the Canvas assignment"></textarea>
+    </div>
+
+    <div class="response-field">
+      <label for="p8-challenges">8c. What was the hardest part of this project? What would you do differently if you built this server again from scratch? <span class="req" aria-label="required">*</span></label>
+      <textarea id="p8-challenges" rows="6" placeholder="The hardest part was... I would approach it differently by..."></textarea>
+    </div>
+  </section>
+
+  <!-- SUBMISSION -->
+  <section class="content-section" id="submission" aria-labelledby="submission-h">
+    <h2 id="submission-h">Submission &amp; Grading</h2>
+
+    <h3>What to Submit to Canvas</h3>
+    <ul>
+      <li>This workbook saved as a PDF (use the button below)</li>
+      <li><code>README.md</code> or <code>README.txt</code> — your full server documentation</li>
+      <li>All scripts (e.g., <code>install-packages.sh</code>, <code>server-maintenance.sh</code>)</li>
+      <li>Configuration files: Netplan YAML, Nginx site config, crontab export (<code>sudo crontab -l &gt; crontab.txt</code>)</li>
+      <li>Screencast link or video file</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <strong>Export your crontab before submitting:</strong> Run <code>sudo crontab -l &gt; crontab.txt</code> to save a copy. This file belongs in your submission alongside your scripts.
+    </div>
+
+    <h3>Grading Rubric</h3>
+    <table class="rubric-table" aria-label="Mini-Project 2 grading rubric">
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">What the grader looks for</th>
+          <th scope="col">Pts</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Installation &amp; initial setup</td>
+          <td>Ubuntu Server with non-root admin user; screenshot shows system info; df -h output included</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Package management script</td>
+          <td>Script installs required packages (nginx, ufw, curl + extras) using an array and loop; error handling present; script is readable</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Boot target &amp; services</td>
+          <td>System boots to multi-user.target; nginx and ssh are enabled and active; custom Nginx page served</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Automation script &amp; cron</td>
+          <td>Script performs a meaningful maintenance task (backup or health-check); scheduled via cron; tested and output documented</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>User administration</td>
+          <td>At least 2 non-root users created; webteam group exists with both users; sudo configured appropriately</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Shared directory</td>
+          <td>/srv/webteam (or equivalent) exists with setgid bit and correct group; both users can write; ls -la output shows correct permissions</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>Static IP via Netplan</td>
+          <td>Netplan YAML submitted; ip addr shows static IP; internet connectivity confirmed (ping 8.8.8.8)</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Firewall (ufw)</td>
+          <td>ufw enabled; SSH and HTTP allowed; all open ports accounted for; no unnecessary ports open</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>SSH key authentication</td>
+          <td>ed25519 key pair generated; public key in authorized_keys; key-based login demonstrated in screencast or screenshot</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>Security hardening</td>
+          <td>PermitRootLogin no confirmed with sshd -T; packages updated; port audit documented</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>README &amp; documentation</td>
+          <td>README covers all phases; commands are accurate and reproducible; decisions explained; another student could follow it</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Screencast (5–10 min)</td>
+          <td>Demonstrates all 8 required items; voice or text narration explains what is being shown; within time limit</td>
+          <td>10</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2"><strong>Total</strong></td>
+          <td><strong>100</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="font-size:0.85rem; color:#555; margin-top:6px;">Note: The rubric totals 100 points and is scaled to 80 points in Canvas.</p>
+
+    <!-- COURSE REFLECTION -->
+    <div class="reflection-callout" style="margin-top: 24px;">
+      <h3>Course Reflection <span style="font-weight:normal; font-size:0.88rem; color:#0c4a6e;">(10 pts — separate Canvas submission)</span></h3>
+      <p>Along with this project, you will submit a short Course Reflection as a separate Canvas assignment. Write 200–300 words addressing:</p>
+      <ul>
+        <li>What is the most important thing you learned in this course?</li>
+        <li>How has your understanding of Linux and system administration changed since Week 1?</li>
+        <li>What skill from this course do you think you will use most in the future, and why?</li>
+      </ul>
+      <p style="margin-top:8px;">The reflection is graded for completion and thoughtful engagement, not for a specific answer. Submit it directly to the <strong>Course Reflection</strong> assignment in Canvas — it is not part of this PDF.</p>
+    </div>
+
+    <!-- EXTRA CREDIT -->
+    <div class="ec-section" style="margin-top: 20px;">
+      <div class="ec-badge">Extra Credit — 10 Points</div>
+      <h3>Additional Network Service</h3>
+      <p>For 10 extra credit points, configure one additional network service on your server beyond what is required in the eight phases above. Choose one of the following:</p>
+      <ul>
+        <li><strong>Samba</strong> — configure a file share accessible from your host machine</li>
+        <li><strong>CUPS</strong> — configure a print server (even without a physical printer, document the setup)</li>
+        <li><strong>Postfix</strong> — configure a local mail transfer agent for sending system notifications</li>
+      </ul>
+      <p>To earn the extra credit:</p>
+      <ol>
+        <li>Install and configure the service on your server</li>
+        <li>Add a dedicated section to your README documenting the installation and configuration</li>
+        <li>Demonstrate the service working in your screencast</li>
+        <li>Note the extra credit work clearly on your Canvas submission</li>
+      </ol>
+      <div class="callout callout-tip" style="margin-top:12px;">
+        <strong>Recommendation:</strong> Samba is the most approachable of the three if you have not worked with any of them before. The configuration is relatively straightforward, and being able to access a file share from your host machine is a satisfying demonstration that the service is working.
+      </div>
+    </div>
+
+    <div class="pdf-btn-wrap">
+      <button class="btn-pdf" onclick="savePDF()">Save as PDF</button>
+      <p class="pdf-note">Saves your responses and screenshots into a printable PDF. Submit to Canvas along with your README, scripts, config files, and screencast.</p>
+    </div>
+  </section>
+
+</div><!-- end page-wrap -->
+
+<script>
+  // Screenshot preview
+  document.querySelectorAll('input[type="file"]').forEach(input => {
+    const imgId = input.id + '-img';
+    const img = document.getElementById(imgId);
+    if (!img) return;
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        img.src = e.target.result;
+        img.classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // Print / Save as PDF
+  function savePDF() {
+    // Swap textareas for print divs
+    const textareas = document.querySelectorAll('textarea');
+    const swapped = [];
+    textareas.forEach(ta => {
+      const div = document.createElement('div');
+      div.className = 'print-response';
+      div.textContent = ta.value;
+      ta.parentNode.insertBefore(div, ta);
+      ta.style.display = 'none';
+      swapped.push({ ta, div });
+    });
+
+    window.print();
+
+    // Restore textareas after print dialog closes
+    swapped.forEach(({ ta, div }) => {
+      div.remove();
+      ta.style.display = '';
+    });
+  }
+
+  // Active nav highlighting via IntersectionObserver
+  const navLinks = document.querySelectorAll('.sticky-nav a');
+  const sections = document.querySelectorAll('.content-section[id]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(sec => observer.observe(sec));
+</script>
+</body>
+</html>
