@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSC 106 Week 7: Network Configuration, Server Setup, and Security</title>
+<style>
+:root {
+  --primary: #2c3e50;
+  --accent: #2980b9;
+  --accent-light: #ebf5fb;
+  --success: #27ae60;
+  --success-light: #eafaf1;
+  --warning: #e67e22;
+  --warning-light: #fef5e7;
+  --danger: #c0392b;
+  --danger-light: #fdedec;
+  --gray-light: #f8f9fa;
+  --gray-mid: #dee2e6;
+  --gray-dark: #495057;
+  --text: #2c3e50;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.7;
+  color: var(--text);
+  background: #fff;
+  padding-top: 56px;
+}
+
+/* Sticky Nav */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--primary);
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  overflow-x: auto;
+  gap: 0.25rem;
+}
+.topnav a {
+  color: #ecf0f1;
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.topnav a:hover, .topnav a:focus { background: rgba(255,255,255,0.15); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem; }
+
+h1 { font-size: 1.9rem; margin-bottom: 0.25rem; color: var(--primary); }
+h2 { font-size: 1.5rem; margin: 2.5rem 0 0.75rem; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 0.3rem; }
+h3 { font-size: 1.2rem; margin: 1.5rem 0 0.5rem; color: var(--gray-dark); }
+
+p { margin-bottom: 1rem; }
+ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+li { margin-bottom: 0.4rem; }
+
+code {
+  background: var(--gray-light);
+  border: 1px solid var(--gray-mid);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+pre code { background: none; border: none; padding: 0; color: inherit; }
+
+.callout {
+  border-left: 4px solid var(--accent);
+  background: var(--accent-light);
+  padding: 1rem 1.25rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 1.25rem 0;
+}
+.callout.warning { border-color: var(--warning); background: var(--warning-light); }
+.callout.success { border-color: var(--success); background: var(--success-light); }
+.callout.danger { border-color: var(--danger); background: var(--danger-light); }
+.callout-title { font-weight: 700; margin-bottom: 0.3rem; }
+
+/* Collapsible deeper-dive */
+details {
+  border: 1px solid var(--gray-mid);
+  border-radius: var(--radius);
+  margin: 1rem 0;
+  padding: 0;
+}
+details summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  background: var(--gray-light);
+  border-radius: var(--radius);
+  list-style: none;
+}
+details summary::before { content: "\25B6\00a0"; font-size: 0.8em; }
+details[open] summary::before { content: "\25BC\00a0"; }
+details[open] summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--gray-mid); }
+details .detail-content { padding: 1rem 1.25rem; }
+
+/* Diagram container */
+.diagram-wrap {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+.diagram-wrap svg { max-width: 100%; height: auto; }
+
+/* Quiz styles */
+.quiz-section { margin: 2rem 0; }
+.quiz-question {
+  background: var(--gray-light);
+  border: 1px solid var(--gray-mid);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.quiz-question p.q-text { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-question label { display: block; padding: 0.4rem 0; cursor: pointer; }
+.quiz-question label:hover { color: var(--accent); }
+.quiz-feedback {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  display: none;
+  font-size: 0.95rem;
+}
+.quiz-feedback.correct { background: var(--success-light); border: 1px solid var(--success); display: block; }
+.quiz-feedback.incorrect { background: var(--danger-light); border: 1px solid var(--danger); display: block; }
+.quiz-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.quiz-btn:hover { background: #1a6fa0; }
+
+/* Simulation terminal */
+.sim-terminal {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.88rem;
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.sim-terminal .prompt { color: #a6e3a1; }
+.sim-terminal .output { color: #cdd6f4; white-space: pre-wrap; }
+.sim-terminal .error { color: #f38ba8; }
+.sim-input-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.sim-input {
+  flex: 1;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-mid);
+  border-radius: 4px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+}
+.sim-input:focus { outline: 2px solid var(--accent); }
+.sim-run-btn {
+  padding: 0.5rem 1rem;
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Case study */
+.case-study {
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  background: linear-gradient(135deg, var(--accent-light) 0%, #fff 100%);
+}
+.case-study h3 { color: var(--accent); margin-top: 0; }
+
+/* Connection callout */
+.connection-box {
+  border: 2px dashed var(--success);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 2rem 0;
+  background: var(--success-light);
+}
+.connection-box h3 { color: var(--success); margin-top: 0; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .topnav { gap: 0; }
+  .topnav a { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  pre { font-size: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Module navigation">
+  <a href="#intro">Intro</a>
+  <a href="#netplan">Netplan</a>
+  <a href="#nginx">Nginx</a>
+  <a href="#ufw">ufw</a>
+  <a href="#cron">Cron</a>
+  <a href="#ssh-keys">SSH Keys</a>
+  <a href="#together">All Together</a>
+  <a href="#sim">Simulation</a>
+  <a href="#case-study">Case Study</a>
+  <a href="#quiz">Knowledge Check</a>
+  <a href="#connection">Mini-Project 2</a>
+</nav>
+
+<div class="container">
+
+<!-- INTRO -->
+<section id="intro">
+<h1>Week 7: Network Configuration, Server Setup, and Security</h1>
+<p>This is the week where your Ubuntu Server VM stops being a sandbox and starts looking like a real server. You are going to assign it a permanent address, install a web server, lock it down with a firewall, schedule automated health checks, and set up secure passwordless login. Each of these pieces builds on skills you have been developing since Week 1.</p>
+
+<div class="callout">
+<div class="callout-title">What you need before starting</div>
+<ul>
+<li>A working Ubuntu Server VM (from Week 1, updated through Week 6)</li>
+<li>Comfort with <code>systemctl</code> (Week 3), basic scripting (Week 4), user accounts (Week 5), and file permissions (Week 6)</li>
+<li>The networking commands you practiced last week: <code>ip addr</code>, <code>ip route</code>, <code>ping</code>, <code>ss</code></li>
+</ul>
+</div>
+
+<p>Plan to start early this week. The Server Configuration assignment (45 points) is the largest single hands-on assignment in the course, and it involves multiple components that interact with each other. Spreading the work across several days gives you time to troubleshoot if (when) something does not work on the first try.</p>
+</section>
+
+<!-- SECTION 1: NETPLAN -->
+<section id="netplan">
+<h2>1. Static IP Configuration with Netplan</h2>
+
+<p>Back in Week 1, your VM got its IP address from DHCP. That was fine for getting started, but servers need a fixed, predictable address. If the IP changes after a reboot, anything pointing to that address (DNS records, firewall rules, bookmarks) breaks.</p>
+
+<h3>What is Netplan?</h3>
+<p>Netplan is Ubuntu's network configuration system. It reads YAML files from <code>/etc/netplan/</code> and translates them into instructions for the underlying network manager (usually <code>systemd-networkd</code> on Ubuntu Server). You describe what you want in YAML, and Netplan makes it happen.</p>
+
+<h3>Finding your current config</h3>
+<pre><code>cat /etc/netplan/*.yaml</code></pre>
+<p>You will likely see a file named something like <code>00-installer-config.yaml</code> or <code>50-cloud-init.yaml</code>. Right now it probably says <code>dhcp4: true</code>.</p>
+
+<h3>Writing a static IP configuration</h3>
+<p>Here is what a typical static IP Netplan file looks like:</p>
+<pre><code>network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: no
+      addresses:
+        - 192.168.1.100/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4</code></pre>
+
+<p>Key fields to understand:</p>
+<ul>
+<li><code>dhcp4: no</code> disables automatic address assignment</li>
+<li><code>addresses</code> is your chosen static IP with the subnet mask in CIDR notation</li>
+<li><code>routes</code> tells the system where to send traffic destined for the internet (your gateway)</li>
+<li><code>nameservers</code> tells the system where to look up domain names</li>
+</ul>
+
+<div class="callout warning">
+<div class="callout-title">YAML is whitespace-sensitive</div>
+<p>Indentation matters. Use exactly two spaces per level. Never use tabs. A single misplaced space will cause <code>netplan apply</code> to fail with a cryptic error. Double-check your file before applying.</p>
+</div>
+
+<div class="callout warning">
+<div class="callout-title">Check your interface name first</div>
+<p>The interface name (<code>enp0s3</code>, <code>ens3</code>, <code>enp0s1</code>, etc.) varies by hypervisor. Run <code>ip addr</code> and look for the interface that currently has an IP address. Use that exact name in your YAML. Copying an example without checking will not work.</p>
+</div>
+
+<h3>Applying and verifying</h3>
+<pre><code>sudo netplan apply
+ip addr
+ip route
+ping 8.8.8.8
+ping example.com</code></pre>
+<p>If all four verification commands produce expected output, your static IP is working. If <code>netplan apply</code> breaks connectivity, you can still access the VM through the VirtualBox or UTM console window (not SSH) to fix the YAML file.</p>
+
+<details>
+<summary>Deeper dive: What happens behind the scenes with Netplan</summary>
+<div class="detail-content">
+<p>Netplan itself does not manage the network directly. It is a configuration abstraction layer. When you run <code>sudo netplan apply</code>, Netplan reads your YAML files, generates configuration for the backend renderer (on Ubuntu Server, that is typically <code>systemd-networkd</code>), and tells the backend to apply the new settings.</p>
+<p>You can see what Netplan generates with <code>sudo netplan generate</code>, which writes backend config files without applying them. The generated files land in <code>/run/systemd/network/</code>. This is useful for debugging if you want to see exactly what Netplan is telling systemd-networkd to do.</p>
+<p>If you ever need to troubleshoot further, <code>networkctl status</code> shows the state of all interfaces as systemd-networkd sees them.</p>
+</div>
+</details>
+</section>
+
+<!-- SECTION 2: NGINX -->
+<section id="nginx">
+<h2>2. Installing and Configuring Nginx</h2>
+
+<p>Nginx (pronounced "engine-x") is one of the most widely used web servers on the internet. It is lightweight, fast, and straightforward to configure for basic use. This is your first time setting up a network-facing service from scratch.</p>
+
+<h3>Installation</h3>
+<pre><code>sudo apt update
+sudo apt install nginx</code></pre>
+
+<h3>Verify it is running</h3>
+<pre><code>systemctl status nginx</code></pre>
+<p>You should see "active (running)." If you recall Week 3's systemd work, this is the same pattern: a service managed by systemd, started automatically after installation.</p>
+
+<h3>Enable Nginx to start at boot</h3>
+<pre><code>sudo systemctl enable nginx</code></pre>
+<p>This creates a symlink so that Nginx starts automatically whenever the server boots. Remember from Week 3: <code>enable</code> means "start at boot," <code>start</code> means "start right now."</p>
+
+<h3>Create a custom web page</h3>
+<p>The default web root is <code>/var/www/html/</code>. Nginx ships with a default page, but you want to serve your own content to prove the server is working with your configuration.</p>
+<pre><code>sudo nano /var/www/html/index.html</code></pre>
+<p>Write something simple:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Server&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;CSC 106 Week 7 - Server is running!&lt;/h1&gt;
+  &lt;p&gt;Configured by [your name] on [date].&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h3>Test locally</h3>
+<pre><code>curl localhost</code></pre>
+<p>You should see your HTML content printed to the terminal. If you see the default Nginx page instead, make sure you replaced (or removed) the default file.</p>
+
+<h3>File ownership and permissions</h3>
+<p>Nginx runs as the <code>www-data</code> user. Files in <code>/var/www/html/</code> need to be readable by that user. The defaults after installation are usually correct (root:root ownership, 644 for files, 755 for directories), but verify with:</p>
+<pre><code>ls -la /var/www/html/</code></pre>
+
+<details>
+<summary>Deeper dive: Where Nginx configuration lives</summary>
+<div class="detail-content">
+<p>The main configuration file is <code>/etc/nginx/nginx.conf</code>. It sets global settings like the worker process count and includes other config files.</p>
+<p>Site-specific configurations live in <code>/etc/nginx/sites-available/</code>. Active sites are symlinked into <code>/etc/nginx/sites-enabled/</code>. The default site configuration is at <code>/etc/nginx/sites-available/default</code>.</p>
+<p>For this assignment, you do not need to modify these files. The default server block already serves from <code>/var/www/html/</code>. But knowing where to look is important for troubleshooting and for Mini-Project 2 if you want to customize further.</p>
+<p>Before reloading Nginx after any config change, always test the syntax first:</p>
+<pre><code>sudo nginx -t</code></pre>
+<p>This catches errors before they break a running server.</p>
+</div>
+</details>
+
+<!-- Diagram: request flow -->
+<div class="diagram-wrap">
+<svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing how a web request flows from client through firewall to Nginx">
+  <rect x="10" y="50" width="120" height="60" rx="8" fill="#ebf5fb" stroke="#2980b9" stroke-width="2"/>
+  <text x="70" y="85" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="600">Client</text>
+  <text x="70" y="100" text-anchor="middle" font-size="11" fill="#495057">(curl / browser)</text>
+
+  <line x1="130" y1="80" x2="200" y2="80" stroke="#2980b9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="165" y="70" text-anchor="middle" font-size="10" fill="#495057">port 80</text>
+
+  <rect x="200" y="50" width="120" height="60" rx="8" fill="#fef5e7" stroke="#e67e22" stroke-width="2"/>
+  <text x="260" y="85" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="600">ufw Firewall</text>
+  <text x="260" y="100" text-anchor="middle" font-size="11" fill="#495057">allow HTTP</text>
+
+  <line x1="320" y1="80" x2="390" y2="80" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="355" y="70" text-anchor="middle" font-size="10" fill="#495057">allowed</text>
+
+  <rect x="390" y="50" width="120" height="60" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="450" y="85" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="600">Nginx</text>
+  <text x="450" y="100" text-anchor="middle" font-size="11" fill="#495057">www-data</text>
+
+  <line x1="510" y1="80" x2="570" y2="80" stroke="#2980b9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="540" y="70" text-anchor="middle" font-size="10" fill="#495057">reads</text>
+
+  <rect x="570" y="50" width="120" height="60" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2"/>
+  <text x="630" y="80" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="600">/var/www/html/</text>
+  <text x="630" y="98" text-anchor="middle" font-size="11" fill="#495057">index.html</text>
+
+  <defs><marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2980b9"/></marker></defs>
+</svg>
+</div>
+<p style="text-align:center; font-size:0.9rem; color:var(--gray-dark);">How a web request reaches your custom page: client connects on port 80, ufw allows it, Nginx serves the file.</p>
+</section>
+
+<!-- SECTION 3: UFW -->
+<section id="ufw">
+<h2>3. Firewall Configuration with ufw</h2>
+
+<p>A server without a firewall is like a house with every door and window open. Even on a class VM behind NAT, configuring a firewall is standard practice and builds habits you will need in any professional environment.</p>
+
+<p><code>ufw</code> (Uncomplicated Firewall) is Ubuntu's friendly interface to the underlying packet filtering system. It makes firewall rules readable and manageable.</p>
+
+<h3>The configuration sequence</h3>
+<p>Order matters here. Follow these steps in this exact order:</p>
+<ol>
+<li>Set default policies (deny incoming, allow outgoing)</li>
+<li>Allow SSH (so you do not lock yourself out)</li>
+<li>Allow HTTP (for Nginx)</li>
+<li>Enable the firewall</li>
+</ol>
+
+<pre><code>sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw enable
+sudo ufw status verbose</code></pre>
+
+<div class="callout danger">
+<div class="callout-title">Always allow SSH before enabling ufw</div>
+<p>If you enable the firewall without allowing SSH and you are connected via SSH, you will be immediately disconnected with no way back in through SSH. On a VM you can recover through the console window, but this is a mistake worth avoiding. Every sysadmin has done this at least once. Learn from their pain.</p>
+</div>
+
+<p>After enabling, <code>sudo ufw status verbose</code> should show something like:</p>
+<pre><code>Status: active
+Default: deny (incoming), allow (outgoing), disabled (routed)
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere
+80/tcp                     ALLOW IN    Anywhere</code></pre>
+
+<details>
+<summary>Deeper dive: ufw application profiles</summary>
+<div class="detail-content">
+<p>Instead of port numbers, ufw can use application profiles. Run <code>sudo ufw app list</code> to see what is available. After installing Nginx, you will see profiles like "Nginx HTTP", "Nginx HTTPS", and "Nginx Full".</p>
+<p>You can use these instead of port numbers:</p>
+<pre><code>sudo ufw allow 'Nginx HTTP'
+sudo ufw allow 'OpenSSH'</code></pre>
+<p>Both approaches (port numbers and app profiles) produce the same result. Use whichever feels clearer to you.</p>
+</div>
+</details>
+</section>
+
+<!-- SECTION 4: CRON -->
+<section id="cron">
+<h2>4. Scheduled Tasks with cron</h2>
+
+<p>Your server is running Nginx, but how do you know it is still running an hour from now? A day from now? Cron lets you schedule commands to run automatically at specified intervals, which is perfect for health checks, log rotation, and routine maintenance.</p>
+
+<h3>Cron schedule syntax</h3>
+<p>A cron entry has five time fields followed by the command to run:</p>
+<pre><code>minute  hour  day-of-month  month  day-of-week  command
+  0      *         *           *        *         /path/to/script.sh</code></pre>
+<p>The example above runs at minute 0 of every hour, every day.</p>
+
+<!-- Cron field diagram -->
+<div class="diagram-wrap">
+<svg viewBox="0 0 650 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cron syntax fields diagram">
+  <rect x="10" y="10" width="90" height="50" rx="6" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="55" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Minute</text>
+  <text x="55" y="48" text-anchor="middle" font-size="10" fill="#495057">0-59</text>
+
+  <rect x="110" y="10" width="90" height="50" rx="6" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="155" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Hour</text>
+  <text x="155" y="48" text-anchor="middle" font-size="10" fill="#495057">0-23</text>
+
+  <rect x="210" y="10" width="90" height="50" rx="6" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="255" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Day (month)</text>
+  <text x="255" y="48" text-anchor="middle" font-size="10" fill="#495057">1-31</text>
+
+  <rect x="310" y="10" width="90" height="50" rx="6" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="355" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Month</text>
+  <text x="355" y="48" text-anchor="middle" font-size="10" fill="#495057">1-12</text>
+
+  <rect x="410" y="10" width="90" height="50" rx="6" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="455" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Day (week)</text>
+  <text x="455" y="48" text-anchor="middle" font-size="10" fill="#495057">0-7</text>
+
+  <rect x="520" y="10" width="120" height="50" rx="6" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="580" y="32" text-anchor="middle" font-size="11" fill="#2c3e50" font-weight="600">Command</text>
+  <text x="580" y="48" text-anchor="middle" font-size="10" fill="#495057">your script/cmd</text>
+
+  <text x="325" y="85" text-anchor="middle" font-size="11" fill="#495057">* means "every" for that field</text>
+</svg>
+</div>
+
+<h3>The assignment requirement</h3>
+<p>You need a cron job that writes the current date and Nginx status to a log file every hour. Here is one way to do it:</p>
+<pre><code>crontab -e</code></pre>
+<p>Then add a line like:</p>
+<pre><code>0 * * * * echo "$(date): $(systemctl is-active nginx)" >> /var/log/nginx-health.log</code></pre>
+
+<h3>Verifying</h3>
+<pre><code>crontab -l</code></pre>
+<p>This shows your saved crontab entries. To test without waiting an hour, temporarily change <code>0 *</code> to <code>* *</code> (every minute), wait a minute, check the log file, then change it back.</p>
+
+<div class="callout">
+<div class="callout-title">Tip: Crontab Guru</div>
+<p>If you are unsure whether your schedule expression does what you think, paste it into Crontab Guru (crontab.guru) to see a plain-English description of when it will run. It is a quick sanity check.</p>
+</div>
+
+<details>
+<summary>Deeper dive: Cron environment gotchas</summary>
+<div class="detail-content">
+<p>Commands run by cron execute in a minimal environment. Your <code>~/.bashrc</code> is not sourced, and the <code>PATH</code> is limited. This means commands that work fine in your interactive shell might fail in cron because cron cannot find them.</p>
+<p>Two solutions:</p>
+<ul>
+<li>Use full paths to commands: <code>/usr/bin/systemctl</code> instead of just <code>systemctl</code></li>
+<li>Set the PATH at the top of your crontab: <code>PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</code></li>
+</ul>
+<p>If your cron job is not producing output and you expected it to, check <code>/var/log/syslog</code> for CRON entries or run <code>journalctl -u cron</code> to see if cron attempted to execute the job.</p>
+</div>
+</details>
+</section>
+
+<!-- SECTION 5: SSH KEYS -->
+<section id="ssh-keys">
+<h2>5. SSH Key Authentication</h2>
+
+<p>Password-based SSH login works, but it has a fundamental weakness: passwords can be guessed. SSH key authentication uses cryptographic key pairs instead, which are practically impossible to brute-force. This is standard practice on every production server.</p>
+
+<h3>How it works (conceptual)</h3>
+<ul>
+<li>You generate a <strong>key pair</strong>: a private key (stays on the client, never shared) and a public key (placed on the server)</li>
+<li>When you connect, the server challenges the client to prove it holds the matching private key</li>
+<li>No password crosses the network</li>
+</ul>
+
+<!-- Key pair diagram -->
+<div class="diagram-wrap">
+<svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SSH key authentication flow diagram">
+  <rect x="20" y="30" width="160" height="120" rx="10" fill="#ebf5fb" stroke="#2980b9" stroke-width="2"/>
+  <text x="100" y="55" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="700">Client Machine</text>
+  <rect x="40" y="70" width="120" height="30" rx="4" fill="#fff" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="100" y="90" text-anchor="middle" font-size="11" fill="#c0392b">Private Key (secret)</text>
+  <rect x="40" y="110" width="120" height="30" rx="4" fill="#fff" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="100" y="130" text-anchor="middle" font-size="11" fill="#27ae60">Public Key (shared)</text>
+
+  <rect x="400" y="30" width="180" height="120" rx="10" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="490" y="55" text-anchor="middle" font-size="13" fill="#2c3e50" font-weight="700">Server</text>
+  <rect x="420" y="80" width="140" height="40" rx="4" fill="#fff" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="490" y="97" text-anchor="middle" font-size="10" fill="#2c3e50">~/.ssh/authorized_keys</text>
+  <text x="490" y="112" text-anchor="middle" font-size="10" fill="#27ae60">contains public key</text>
+
+  <line x1="180" y1="90" x2="400" y2="90" stroke="#2980b9" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="290" y="80" text-anchor="middle" font-size="11" fill="#2c3e50">Challenge/Response</text>
+  <text x="290" y="110" text-anchor="middle" font-size="10" fill="#495057">(no password sent)</text>
+</svg>
+</div>
+
+<h3>Generating a key pair</h3>
+<pre><code>ssh-keygen -t ed25519</code></pre>
+<p>Accept the default location (<code>~/.ssh/id_ed25519</code>). You can set a passphrase for extra protection or leave it empty for convenience.</p>
+
+<h3>Copying the public key to the server</h3>
+<p>If connecting from your host machine to the VM:</p>
+<pre><code>ssh-copy-id username@server-ip</code></pre>
+<p>If working entirely within the VM (simulating with a second user account), manually copy the key:</p>
+<pre><code>mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+cat /path/to/id_ed25519.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys</code></pre>
+
+<h3>Verify passwordless login</h3>
+<pre><code>ssh username@server-ip</code></pre>
+<p>It should connect without asking for a password (unless you set a key passphrase, in which case it asks for that instead).</p>
+
+<div class="callout danger">
+<div class="callout-title">Permissions are critical</div>
+<p>SSH is strict about file permissions. If they are too open, SSH silently refuses to use the key and falls back to password auth. Required permissions:</p>
+<ul>
+<li><code>~/.ssh/</code> directory: <code>700</code></li>
+<li><code>~/.ssh/authorized_keys</code>: <code>600</code></li>
+<li>Private key file: <code>600</code></li>
+</ul>
+<p>If key auth is not working, check permissions first. This is the most common cause.</p>
+</div>
+
+<details>
+<summary>Deeper dive: ed25519 vs RSA keys</summary>
+<div class="detail-content">
+<p><code>ed25519</code> is a modern elliptic-curve algorithm. Keys are shorter, faster to generate, and considered more secure than RSA at equivalent security levels. It is the recommended choice for new keys.</p>
+<p>If you encounter systems that do not support ed25519 (very old servers), RSA with 4096 bits is the fallback:</p>
+<pre><code>ssh-keygen -t rsa -b 4096</code></pre>
+<p>For this course, ed25519 is the right choice. You may see RSA keys in older tutorials and documentation.</p>
+</div>
+</details>
+</section>
+
+<!-- SECTION 6: ALL TOGETHER -->
+<section id="together">
+<h2>6. Putting It All Together: A Functional Server</h2>
+
+<p>Step back for a moment and look at what you have built. After completing the five topics above, your server:</p>
+
+<ul>
+<li>Has a <strong>predictable, static IP address</strong> (Netplan) so clients can always find it</li>
+<li>Serves a <strong>custom web page</strong> (Nginx) to anyone who connects on port 80</li>
+<li><strong>Protects itself</strong> with a firewall (ufw) that allows only SSH and HTTP</li>
+<li><strong>Monitors its own health</strong> on a schedule (cron) without human intervention</li>
+<li>Accepts <strong>secure, passwordless SSH connections</strong> (SSH keys) that cannot be brute-forced</li>
+</ul>
+
+<p>This is not a toy setup. This is genuinely how small production servers are configured. The specific services might differ (maybe Apache instead of Nginx, maybe additional ports for a database), but the pattern is the same: assign a static address, install services, restrict access with a firewall, automate monitoring, and secure remote access.</p>
+
+<div class="callout success">
+<div class="callout-title">You have come a long way</div>
+<p>In Week 1, you were installing Ubuntu and running <code>apt update</code> for the first time. Now you are configuring a multi-service server with security controls and automated health monitoring. That progression is real, and the skills you are building this week are directly transferable to professional environments.</p>
+</div>
+
+<!-- Architecture diagram -->
+<div class="diagram-wrap">
+<svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Server architecture overview showing all configured components">
+  <rect x="250" y="10" width="200" height="260" rx="12" fill="#f8f9fa" stroke="#2c3e50" stroke-width="2"/>
+  <text x="350" y="35" text-anchor="middle" font-size="14" fill="#2c3e50" font-weight="700">Your Ubuntu Server</text>
+
+  <!-- Static IP -->
+  <rect x="270" y="50" width="160" height="32" rx="5" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="350" y="71" text-anchor="middle" font-size="11" fill="#2c3e50">Static IP (Netplan)</text>
+
+  <!-- Nginx -->
+  <rect x="270" y="92" width="160" height="32" rx="5" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="350" y="113" text-anchor="middle" font-size="11" fill="#2c3e50">Nginx (port 80)</text>
+
+  <!-- ufw -->
+  <rect x="270" y="134" width="160" height="32" rx="5" fill="#fef5e7" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="350" y="155" text-anchor="middle" font-size="11" fill="#2c3e50">ufw Firewall</text>
+
+  <!-- cron -->
+  <rect x="270" y="176" width="160" height="32" rx="5" fill="#f5eef8" stroke="#8e44ad" stroke-width="1.5"/>
+  <text x="350" y="197" text-anchor="middle" font-size="11" fill="#2c3e50">Cron Health Check</text>
+
+  <!-- SSH -->
+  <rect x="270" y="218" width="160" height="32" rx="5" fill="#fdedec" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="350" y="239" text-anchor="middle" font-size="11" fill="#2c3e50">SSH Key Auth (port 22)</text>
+
+  <!-- External arrows -->
+  <line x1="130" y1="108" x2="268" y2="108" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <text x="130" y="100" font-size="10" fill="#495057">HTTP request</text>
+
+  <line x1="130" y1="234" x2="268" y2="234" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <text x="130" y="226" font-size="10" fill="#495057">SSH connection</text>
+
+  <line x1="130" y1="155" x2="268" y2="155" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="100" y="165" font-size="10" fill="#e67e22">blocked traffic</text>
+  <text x="220" y="155" font-size="16" fill="#e67e22">&#x2718;</text>
+
+  <defs><marker id="arr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#495057"/></marker></defs>
+</svg>
+</div>
+</section>
+
+<!-- SIMULATION -->
+<section id="sim">
+<h2>Command Simulation Lab</h2>
+<p>Use this safe simulated terminal to explore the commands from this week. Type a command and press Run (or Enter) to see simulated output. This is not a real server, so you cannot break anything. Try commands like <code>ip addr</code>, <code>sudo ufw status</code>, <code>curl localhost</code>, <code>crontab -l</code>, <code>ss -tlnp</code>, or <code>cat /etc/netplan/config.yaml</code>.</p>
+
+<div class="sim-terminal" id="simOutput">
+<span class="prompt">student@ubuntu-server:~$ </span><span class="output">Ready. Type a command below.</span>
+</div>
+<div class="sim-input-row">
+<input type="text" class="sim-input" id="simInput" placeholder="Type a command (e.g., ip addr)" aria-label="Command input"/>
+<button class="sim-run-btn" id="simRunBtn">Run</button>
+</div>
+</section>
+
+<!-- CASE STUDY -->
+<section id="case-study">
+<h2>Mini-Case: GreenLeaf Community Garden</h2>
+
+<div class="case-study">
+<h3>Scenario</h3>
+<p><strong>GreenLeaf Community Garden</strong> is a small nonprofit that wants to host a simple website showing their garden schedule, volunteer sign-up info, and photo gallery. They have one donated server (an old desktop running Ubuntu Server) and a volunteer sysadmin (that is you). The server will sit on their office network with a static IP of <code>10.0.1.50</code>, gateway <code>10.0.1.1</code>, and they use Google DNS (<code>8.8.8.8</code>).</p>
+
+<p>Their requirements:</p>
+<ul>
+<li>A static IP so the router's port forwarding rules always point to the right machine</li>
+<li>A web server to host their HTML pages</li>
+<li>A firewall that only allows web traffic and SSH for remote management</li>
+<li>An hourly health check that logs whether the web server is running</li>
+<li>SSH key login for the two volunteer admins (no passwords over the network)</li>
+</ul>
+
+<h3>Your task (think through these)</h3>
+<ol>
+<li>What would the Netplan YAML look like for their network? (Interface: <code>enp3s0</code>, IP: <code>10.0.1.50/24</code>, gateway: <code>10.0.1.1</code>)</li>
+<li>After installing Nginx, what file would you edit to put up their custom homepage?</li>
+<li>What ufw commands would you run, and in what order?</li>
+<li>Write a cron entry that checks Nginx status every hour and appends to <code>/var/log/greenleaf-health.log</code></li>
+<li>If volunteer admin "maria" needs SSH key access, what permissions must her <code>~/.ssh/</code> directory and <code>authorized_keys</code> file have?</li>
+</ol>
+</div>
+
+<details>
+<summary>Suggested answers for GreenLeaf scenario</summary>
+<div class="detail-content">
+<p><strong>1. Netplan YAML:</strong></p>
+<pre><code>network:
+  version: 2
+  ethernets:
+    enp3s0:
+      dhcp4: no
+      addresses:
+        - 10.0.1.50/24
+      routes:
+        - to: default
+          via: 10.0.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8</code></pre>
+
+<p><strong>2. Custom homepage:</strong> Edit <code>/var/www/html/index.html</code></p>
+
+<p><strong>3. ufw commands (in order):</strong></p>
+<pre><code>sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw enable</code></pre>
+
+<p><strong>4. Cron entry:</strong></p>
+<pre><code>0 * * * * echo "$(date): $(systemctl is-active nginx)" >> /var/log/greenleaf-health.log</code></pre>
+
+<p><strong>5. Permissions for maria:</strong></p>
+<ul>
+<li><code>/home/maria/.ssh/</code> must be <code>700</code></li>
+<li><code>/home/maria/.ssh/authorized_keys</code> must be <code>600</code></li>
+</ul>
+</div>
+</details>
+</section>
+
+<!-- KNOWLEDGE CHECK -->
+<section id="quiz">
+<h2>Knowledge Check</h2>
+<p>These questions are ungraded. They are here to help you confirm your understanding before tackling the Server Configuration assignment. Take your time and read the feedback.</p>
+
+<div class="quiz-section">
+
+<!-- Question 1 -->
+<div class="quiz-question" id="q1">
+<p class="q-text">1. You edit your Netplan YAML and run <code>sudo netplan apply</code>, but you lose all network connectivity. What is the most likely cause, and how can you recover?</p>
+<label><input type="radio" name="q1" value="a"> a) The Nginx service crashed and needs to be restarted</label>
+<label><input type="radio" name="q1" value="b"> b) A YAML syntax error or incorrect IP/gateway values; recover via the VM console window</label>
+<label><input type="radio" name="q1" value="c"> c) ufw is blocking all traffic; disable it with <code>sudo ufw disable</code></label>
+<label><input type="radio" name="q1" value="d"> d) The SSH service stopped; restart it with <code>systemctl restart sshd</code></label>
+<button class="quiz-btn" onclick="checkQ('q1','b')">Check Answer</button>
+<div class="quiz-feedback" id="q1-feedback"></div>
+</div>
+
+<!-- Question 2 -->
+<div class="quiz-question" id="q2">
+<p class="q-text">2. What is the correct order when configuring ufw on a server you are managing via SSH?</p>
+<label><input type="radio" name="q2" value="a"> a) Enable ufw, then allow SSH, then allow HTTP</label>
+<label><input type="radio" name="q2" value="b"> b) Allow HTTP, enable ufw, then allow SSH</label>
+<label><input type="radio" name="q2" value="c"> c) Set default deny, allow SSH, allow HTTP, then enable ufw</label>
+<label><input type="radio" name="q2" value="d"> d) It does not matter what order you use</label>
+<button class="quiz-btn" onclick="checkQ('q2','c')">Check Answer</button>
+<div class="quiz-feedback" id="q2-feedback"></div>
+</div>
+
+<!-- Question 3 -->
+<div class="quiz-question" id="q3">
+<p class="q-text">3. You set up SSH key authentication, but the server still asks for a password when you connect. What should you check first?</p>
+<label><input type="radio" name="q3" value="a"> a) Whether Nginx is running</label>
+<label><input type="radio" name="q3" value="b"> b) Whether the cron job is configured</label>
+<label><input type="radio" name="q3" value="c"> c) Permissions on <code>~/.ssh/</code> (should be 700) and <code>authorized_keys</code> (should be 600)</label>
+<label><input type="radio" name="q3" value="d"> d) Whether ufw is allowing port 443</label>
+<button class="quiz-btn" onclick="checkQ('q3','c')">Check Answer</button>
+<div class="quiz-feedback" id="q3-feedback"></div>
+</div>
+
+<!-- Question 4 -->
+<div class="quiz-question" id="q4">
+<p class="q-text">4. The cron expression <code>30 2 * * 1</code> means the job will run:</p>
+<label><input type="radio" name="q4" value="a"> a) Every 30 minutes on the 2nd of each month</label>
+<label><input type="radio" name="q4" value="b"> b) At 2:30 AM every Monday</label>
+<label><input type="radio" name="q4" value="c"> c) At 2:30 PM every day</label>
+<label><input type="radio" name="q4" value="d"> d) Every 30 seconds, 2 times per hour</label>
+<button class="quiz-btn" onclick="checkQ('q4','b')">Check Answer</button>
+<div class="quiz-feedback" id="q4-feedback"></div>
+</div>
+
+<!-- Question 5 -->
+<div class="quiz-question" id="q5">
+<p class="q-text">5. Why do servers use static IP addresses instead of DHCP?</p>
+<label><input type="radio" name="q5" value="a"> a) DHCP is slower than static configuration</label>
+<label><input type="radio" name="q5" value="b"> b) Servers need a predictable address so DNS records, firewall rules, and clients can reliably reach them</label>
+<label><input type="radio" name="q5" value="c"> c) DHCP does not work on Ubuntu Server</label>
+<label><input type="radio" name="q5" value="d"> d) Static IPs use less bandwidth</label>
+<button class="quiz-btn" onclick="checkQ('q5','b')">Check Answer</button>
+<div class="quiz-feedback" id="q5-feedback"></div>
+</div>
+
+</div>
+</section>
+
+<!-- CONNECTION TO MINI-PROJECT 2 -->
+<section id="connection">
+<div class="connection-box">
+<h3>Connection to Mini-Project 2 (Week 8)</h3>
+<p>Everything you configure this week is a direct rehearsal for Mini-Project 2, the capstone project. In Week 8, you will build a server from scratch on a fresh VM and document it at a professional level. The capstone requires:</p>
+<ul>
+<li>A static IP configured via Netplan (you are doing this now)</li>
+<li>At least one enabled service like Nginx (you are doing this now)</li>
+<li>ufw configured and active (you are doing this now)</li>
+<li>SSH key authentication enabled (you are doing this now)</li>
+<li>Security hardening: disabling root SSH login and disabling password authentication entirely (you set up key auth this week but do not disable passwords yet; that is the Week 8 addition)</li>
+<li>At least one automation script (your Week 4 scripting skills plus this week's cron experience)</li>
+<li>Multiple non-root users with appropriate groups and a shared directory with correct permissions (Weeks 5 and 6)</li>
+</ul>
+<p>Think of this week's Server Configuration assignment as a practice run. If you complete it thoroughly and understand each piece, you will have a working template for most of Mini-Project 2. The difference is that the capstone asks you to do it cleanly from the beginning and produce documentation that someone else could follow to reproduce your setup.</p>
+<p>Start strong this week, and Week 8 will feel like polishing and extending, not starting over.</p>
+</div>
+</section>
+
+</div><!-- end container -->
+
+<script>
+// Knowledge Check Logic
+const feedbackData = {
+  q1: {
+    correct: 'b',
+    correctMsg: 'Correct. Netplan YAML errors (wrong indentation, tabs instead of spaces, incorrect IP or gateway) are the most common cause of lost connectivity after applying changes. Since SSH is now broken, you recover by using the VM console window (VirtualBox or UTM) to log in directly and fix the YAML file. This is why it is good practice to note your current working IP before making changes.',
+    incorrectMsg: 'Not quite. Nginx and ufw are separate from Netplan. If netplan apply breaks connectivity, the issue is in the YAML configuration itself (syntax error, wrong IP, wrong gateway). Recovery happens through the VM console window, which works regardless of network state.'
+  },
+  q2: {
+    correct: 'c',
+    correctMsg: 'Correct. The safe order is: set your default policies, allow the services you need (SSH first, since you are connected via SSH), then enable the firewall. If you enable ufw before allowing SSH, you will be immediately disconnected from your SSH session. On a VM with console access this is recoverable, but it is a mistake worth avoiding.',
+    incorrectMsg: 'Not quite. Order matters with firewalls. You must allow SSH before enabling ufw if you are connected via SSH. The safe sequence is: default deny incoming, allow ssh, allow http, then enable. Enabling first and adding rules after risks locking yourself out.'
+  },
+  q3: {
+    correct: 'c',
+    correctMsg: 'Correct. The single most common reason SSH key auth fails silently is incorrect file permissions. SSH refuses to use keys if the permissions are too open (it considers this a security risk). The ~/.ssh/ directory must be 700, and authorized_keys must be 600. The second thing to check is whether you copied the public key (.pub file), not the private key.',
+    incorrectMsg: 'Not quite. SSH key authentication failures are almost always a permissions issue. SSH is very strict: ~/.ssh/ must be 700 and authorized_keys must be 600. If permissions are too open, SSH silently falls back to password authentication without any error message. Nginx, cron, and ufw are unrelated to SSH key auth.'
+  },
+  q4: {
+    correct: 'b',
+    correctMsg: 'Correct. Reading left to right: minute 30, hour 2, any day of month, any month, day of week 1 (Monday). So this job runs at 2:30 AM every Monday. Cron uses 24-hour time, and day-of-week values are 0=Sunday through 6=Saturday (with 7 also being Sunday on some systems).',
+    incorrectMsg: 'Not quite. The five cron fields are: minute, hour, day-of-month, month, day-of-week. So "30 2 * * 1" means: at minute 30 of hour 2 (2:30 AM), on any day of the month, any month, but only on day-of-week 1 (Monday). The asterisks mean "every" for that field.'
+  },
+  q5: {
+    correct: 'b',
+    correctMsg: 'Correct. Servers need addresses that do not change. DNS records map domain names to specific IPs. Firewall rules reference specific IPs. Other services and clients are configured to connect to specific addresses. If the server\'s IP changes after a reboot (as it might with DHCP), all of those references break. A static IP ensures the server is always reachable at the same address.',
+    incorrectMsg: 'Not quite. DHCP works fine on Ubuntu Server (your VM used it since Week 1). The issue is predictability. Servers need a fixed address because DNS records, firewall rules, and client configurations all depend on knowing exactly where the server is. DHCP can assign different addresses over time, which breaks those dependencies.'
+  }
+};
+
+function checkQ(qId, correctAnswer) {
+  const container = document.getElementById(qId);
+  const selected = container.querySelector('input[name="'+qId+'"]:checked');
+  const feedbackEl = document.getElementById(qId + '-feedback');
+
+  if (!selected) {
+    feedbackEl.className = 'quiz-feedback incorrect';
+    feedbackEl.textContent = 'Please select an answer before checking.';
+    feedbackEl.style.display = 'block';
+    return;
+  }
+
+  const data = feedbackData[qId];
+  if (selected.value === data.correct) {
+    feedbackEl.className = 'quiz-feedback correct';
+    feedbackEl.textContent = data.correctMsg;
+  } else {
+    feedbackEl.className = 'quiz-feedback incorrect';
+    feedbackEl.textContent = data.incorrectMsg;
+  }
+  feedbackEl.style.display = 'block';
+}
+
+// Simulation Terminal
+const simCommands = {
+  'ip addr': `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536
+    link/loopback 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500
+    link/ether 08:00:27:a1:b2:c3
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global enp0s3`,
+  'ip a': `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536
+    link/loopback 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500
+    link/ether 08:00:27:a1:b2:c3
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global enp0s3`,
+  'ip route': `default via 192.168.1.1 dev enp0s3 proto static
+192.168.1.0/24 dev enp0s3 proto kernel scope link src 192.168.1.100`,
+  'ip r': `default via 192.168.1.1 dev enp0s3 proto static
+192.168.1.0/24 dev enp0s3 proto kernel scope link src 192.168.1.100`,
+  'ping 8.8.8.8': `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.3 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=11.8 ms
+--- 8.8.8.8 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss`,
+  'ping example.com': `PING example.com (93.184.216.34) 56(84) bytes of data.
+64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=85.2 ms
+--- example.com ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss`,
+  'sudo ufw status': `Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW       Anywhere
+80/tcp                     ALLOW       Anywhere
+22/tcp (v6)                ALLOW       Anywhere (v6)
+80/tcp (v6)                ALLOW       Anywhere (v6)`,
+  'sudo ufw status verbose': `Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere
+80/tcp                     ALLOW IN    Anywhere`,
+  'systemctl status nginx': `● nginx.service - A high performance web server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)
+     Active: active (running) since Mon 2026-05-04 09:15:22 UTC; 4 days ago
+   Main PID: 1234 (nginx)
+      Tasks: 2 (limit: 2340)
+     Memory: 5.2M
+        CPU: 32ms
+     CGroup: /system.slice/nginx.service
+             ├─1234 "nginx: master process /usr/sbin/nginx"
+             └─1235 "nginx: worker process"`,
+  'curl localhost': `<!DOCTYPE html>
+<html>
+<head><title>My Server</title></head>
+<body>
+  <h1>CSC 106 Week 7 - Server is running!</h1>
+  <p>Configured by student on 2026-05-04.</p>
+</body>
+</html>`,
+  'ss -tlnp': `State   Recv-Q  Send-Q  Local Address:Port  Peer Address:Port  Process
+LISTEN  0       511     0.0.0.0:80          0.0.0.0:*          users:(("nginx",pid=1234,fd=6))
+LISTEN  0       128     0.0.0.0:22          0.0.0.0:*          users:(("sshd",pid=892,fd=3))
+LISTEN  0       511     [::]:80             [::]:*             users:(("nginx",pid=1234,fd=7))
+LISTEN  0       128     [::]:22             [::]:*             users:(("sshd",pid=892,fd=4))`,
+  'crontab -l': `# Health check: log Nginx status every hour
+0 * * * * echo "$(date): $(systemctl is-active nginx)" >> /var/log/nginx-health.log`,
+  'cat /etc/netplan/config.yaml': `network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: no
+      addresses:
+        - 192.168.1.100/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4`,
+  'cat /etc/netplan/*.yaml': `network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: no
+      addresses:
+        - 192.168.1.100/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4`,
+  'sudo netplan apply': `[No output - configuration applied successfully]`,
+  'ls -la /var/www/html/': `total 12
+drwxr-xr-x 2 root root 4096 May  4 09:20 .
+drwxr-xr-x 3 root root 4096 May  4 09:15 ..
+-rw-r--r-- 1 root root  178 May  4 09:20 index.html`,
+  'ssh-keygen -t ed25519': `Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/student/.ssh/id_ed25519): [Enter]
+Enter passphrase (empty for no passphrase): [Enter]
+Enter same passphrase again: [Enter]
+Your identification has been saved in /home/student/.ssh/id_ed25519
+Your public key has been saved in /home/student/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:xR4j8kL2mN9pQ5sT7vW1yA3bC6dE8fG0hI2jK4lM student@ubuntu-server`,
+  'ls -la ~/.ssh/': `total 16
+drwx------ 2 student student 4096 May  4 10:00 .
+drwxr-xr-x 5 student student 4096 May  4 09:00 ..
+-rw------- 1 student student  411 May  4 10:00 id_ed25519
+-rw-r--r-- 1 student student  100 May  4 10:00 id_ed25519.pub
+-rw------- 1 student student  222 May  4 10:05 authorized_keys`,
+  'cat /var/log/nginx-health.log': `Thu May  8 01:00:01 UTC 2026: active
+Thu May  8 02:00:01 UTC 2026: active
+Thu May  8 03:00:01 UTC 2026: active
+Thu May  8 04:00:01 UTC 2026: active`,
+  'sudo nginx -t': `nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful`,
+  'dig example.com': `; <<>> DiG 9.18.18 <<>> example.com
+;; ANSWER SECTION:
+example.com.        3600    IN    A    93.184.216.34
+
+;; Query time: 23 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8)`,
+  'whoami': `student`,
+  'id': `uid=1000(student) gid=1000(student) groups=1000(student),27(sudo)`,
+  'uname -a': `Linux ubuntu-server 6.8.0-31-generic #31-Ubuntu SMP x86_64 GNU/Linux`,
+  'sudo ufw app list': `Available applications:
+  Nginx Full
+  Nginx HTTP
+  Nginx HTTPS
+  OpenSSH`,
+  'help': `Available commands to try in this simulation:
+  ip addr, ip route, ping 8.8.8.8, ping example.com
+  sudo ufw status, sudo ufw status verbose, sudo ufw app list
+  systemctl status nginx, sudo nginx -t
+  curl localhost, ss -tlnp
+  crontab -l, cat /var/log/nginx-health.log
+  cat /etc/netplan/config.yaml, sudo netplan apply
+  ssh-keygen -t ed25519, ls -la ~/.ssh/
+  dig example.com, whoami, id, uname -a`
+};
+
+const simOutput = document.getElementById('simOutput');
+const simInput = document.getElementById('simInput');
+const simRunBtn = document.getElementById('simRunBtn');
+
+function runSim() {
+  const cmd = simInput.value.trim();
+  if (!cmd) return;
+
+  const promptSpan = document.createElement('div');
+  promptSpan.innerHTML = '<span class="prompt">student@ubuntu-server:~$ </span><span class="output">' + escapeHtml(cmd) + '</span>';
+  simOutput.appendChild(promptSpan);
+
+  const outputDiv = document.createElement('div');
+  if (simCommands[cmd]) {
+    outputDiv.innerHTML = '<span class="output">' + escapeHtml(simCommands[cmd]) + '</span>';
+  } else {
+    // Check partial matches
+    let found = false;
+    for (const key of Object.keys(simCommands)) {
+      if (cmd.startsWith(key) || key.startsWith(cmd)) {
+        outputDiv.innerHTML = '<span class="output">' + escapeHtml(simCommands[key]) + '</span>';
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      outputDiv.innerHTML = '<span class="error">Command not recognized in this simulation. Type "help" to see available commands.</span>';
+    }
+  }
+  simOutput.appendChild(outputDiv);
+  simOutput.scrollTop = simOutput.scrollHeight;
+  simInput.value = '';
+  simInput.focus();
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+simRunBtn.addEventListener('click', runSim);
+simInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); runSim(); }
+});
+</script>
+
+</body>
+</html>

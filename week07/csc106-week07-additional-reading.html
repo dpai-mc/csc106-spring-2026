@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 7 Additional Reading – Server Configuration and Security | CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #1a3a5c;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    :focus-visible {
+      outline: 3px solid #f6ad55;
+      outline-offset: 2px;
+    }
+
+    /* Sticky nav */
+    .lab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1a3a5c;
+      padding: 0 1rem;
+    }
+    .lab-nav-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.45rem 0;
+    }
+    .nav-label {
+      color: #bee3f8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.3rem;
+      flex-shrink: 0;
+    }
+    .lab-nav a {
+      color: #bee3f8;
+      text-decoration: none;
+      font-size: 0.83rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .lab-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lab-nav a:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Layout */
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Activity header */
+    .activity-header {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #2b6cb0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .activity-header h1 {
+      font-size: 1.45rem;
+      color: #1a3a5c;
+      margin-bottom: 0.2rem;
+    }
+    .activity-meta {
+      font-size: 0.85rem;
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+    .activity-header p {
+      font-size: 0.94rem;
+      color: #2d3748;
+      margin-bottom: 0.65rem;
+    }
+    .activity-header p:last-of-type { margin-bottom: 0; }
+
+    .how-to-use {
+      background: #ebf8ff;
+      border: 1px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      color: #2d3748;
+    }
+    .box-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2b6cb0;
+      margin-bottom: 0.4rem;
+    }
+    .how-to-use ul { padding-left: 1.25rem; margin-top: 0.35rem; }
+    .how-to-use li { margin-bottom: 0.3rem; }
+
+    /* Topic group cards */
+    .topic-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+
+    .topic-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #ebf4ff;
+    }
+    .topic-badge {
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .topic-badge-ec { background: #6b46c1; }
+
+    .topic-card h2 {
+      font-size: 1.1rem;
+      color: #1a3a5c;
+      line-height: 1.35;
+    }
+
+    /* Individual resource entries within a topic card */
+    .resource-entry {
+      padding: 0.85rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .resource-entry:last-child { border-bottom: none; padding-bottom: 0; }
+    .resource-entry:first-child { padding-top: 0; }
+
+    .resource-entry h3 {
+      font-size: 0.97rem;
+      color: #1a3a5c;
+      margin-bottom: 0.3rem;
+      line-height: 1.35;
+    }
+
+    .resource-entry p {
+      font-size: 0.91rem;
+      color: #2d3748;
+      margin-bottom: 0.55rem;
+      line-height: 1.6;
+    }
+
+    .resource-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #2b6cb0;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.34rem 0.75rem;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+    .resource-link:hover { background: #2c5282; }
+    .resource-link:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+    .resource-link-ec { background: #6b46c1; }
+    .resource-link-ec:hover { background: #553c9a; }
+    .resource-link svg { flex-shrink: 0; }
+
+    /* Connects-to blurb */
+    .connects-to {
+      margin-top: 0.6rem;
+      padding: 0.5rem 0.85rem;
+      background: #ebf8ff;
+      border-left: 3px solid #4299e1;
+      border-radius: 0 5px 5px 0;
+      font-size: 0.86rem;
+      color: #2c5282;
+    }
+    .connects-to strong { color: #1a3a5c; }
+
+    /* Note card */
+    .note-card {
+      background: #fffbeb;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #d69e2e;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .note-card .note-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #feebc8;
+    }
+    .note-badge {
+      background: #d69e2e;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .note-card h2 {
+      font-size: 1.1rem;
+      color: #744210;
+    }
+    .note-card p {
+      font-size: 0.93rem;
+      color: #744210;
+      margin-bottom: 0.65rem;
+    }
+    .note-card p:last-child { margin-bottom: 0; }
+
+    .downdetector-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #c07d10;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.83rem;
+      font-weight: 600;
+      padding: 0.38rem 0.8rem;
+      border-radius: 5px;
+      margin: 0.5rem 0 0.75rem;
+    }
+    .downdetector-link:hover { background: #975e0b; }
+    .downdetector-link:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    .ic {
+      background: #edf2f7;
+      color: #2b6cb0;
+      padding: 0.08em 0.38em;
+      border-radius: 3px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.87em;
+    }
+
+    @media (max-width: 600px) {
+      .activity-header, .topic-card, .note-card { padding: 1.1rem 1rem; }
+      .activity-header h1 { font-size: 1.2rem; }
+      .topic-card h2, .note-card h2 { font-size: 1rem; }
+      .lab-nav a { font-size: 0.78rem; padding: 0.25rem 0.42rem; }
+    }
+
+    @media print {
+      .skip-link, .lab-nav { display: none !important; }
+      body { background: #fff; font-size: 10.5pt; }
+      main { max-width: 100%; padding: 0; }
+      .activity-header, .topic-card, .note-card {
+        box-shadow: none; border-radius: 0;
+        padding: 0.75rem 0.5rem; margin-bottom: 0.75rem;
+        page-break-inside: avoid;
+      }
+      .resource-link, .downdetector-link { background: none; color: #00c; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="lab-nav" aria-label="Page section navigation">
+  <div class="lab-nav-inner">
+    <span class="nav-label" aria-hidden="true">Jump to:</span>
+    <a href="#netplan">Static IP &amp; Netplan</a>
+    <a href="#nginx">Nginx</a>
+    <a href="#ufw">ufw Firewall</a>
+    <a href="#cron">Cron</a>
+    <a href="#ssh">SSH Keys</a>
+    <a href="#ec">Extra Credit</a>
+    <a href="#note">Site Note</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Page Header ── -->
+  <header class="activity-header">
+    <h1>Week 7 Additional Reading</h1>
+    <p class="activity-meta">CSC 106 – Introduction to Linux II &nbsp;·&nbsp; Week 7 &nbsp;·&nbsp; Server Configuration and Security</p>
+
+    <p>Week 7 is the most hands-on week of the course, and it is also the week with no assigned Cisco Networking Academy chapter. That means the resources below are not supplemental — <strong>they are the primary technical references for everything you will configure this week</strong>. You will be returning to them repeatedly as you work through the Server Configuration assignment.</p>
+
+    <p>The resources are organized by topic to match the five steps of Part A and the one step of Part B in Lab 5. You do not need to read every article in full before starting. Scan each one to understand what it covers, then consult the relevant resource as you work through each step. The DigitalOcean tutorials in particular are written for beginners and are excellent starting points if official documentation feels too dense.</p>
+
+    <div class="how-to-use" role="note">
+      <span class="box-label">How to use these resources</span>
+      <ul>
+        <li><strong>Before Part A, Step 2 (Static IP):</strong> Read the Ubuntu Netplan guide and check the Netplan.io reference for YAML syntax.</li>
+        <li><strong>Before Part A, Step 3 (Nginx):</strong> Skim the Ubuntu Nginx guide to understand the installation and service layout. The Nginx Beginner's Guide explains the configuration file structure.</li>
+        <li><strong>Before Part A, Step 4 (ufw):</strong> The DigitalOcean ufw tutorial is the recommended starting point — it is beginner-friendly and walks through every command in order.</li>
+        <li><strong>Before Part A, Step 5 (Cron):</strong> Open Crontab Guru in a browser tab alongside your terminal so you can verify schedule expressions as you write them.</li>
+        <li><strong>Before Part B (SSH Keys):</strong> The DigitalOcean SSH keys tutorial covers the exact workflow Part B requires.</li>
+        <li><strong>For extra credit:</strong> The two TLS resources at the bottom of this page are the assigned reading for the Self-Signed TLS extra credit assignment.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ── Static IP and Netplan ── -->
+  <section class="topic-card" id="netplan" aria-labelledby="h-netplan">
+    <div class="topic-header">
+      <span class="topic-badge" aria-hidden="true">Topic 1</span>
+      <h2 id="h-netplan">Static IP Configuration with Netplan</h2>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Ubuntu Server Guide: Network Configuration (Netplan)</h3>
+      <p>The official Ubuntu documentation for configuring network interfaces with Netplan, including examples for static IP addresses, DHCP, and DNS server configuration. This is the authoritative reference for the YAML file you will write in Part A, Step 2.</p>
+      <a class="resource-link"
+         href="https://ubuntu.com/server/docs/network-introduction"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Ubuntu Server Guide on network configuration in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        ubuntu.com/server/docs/network-introduction
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 2 (Configure Static IP with Netplan). Refer to the "Static IP addresses" section for the exact YAML structure and the <code class="ic">netplan apply</code> workflow.
+      </div>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Netplan Reference Documentation</h3>
+      <p>The complete YAML schema reference from the Netplan project itself, documenting every supported configuration field including <code class="ic">addresses</code>, <code class="ic">routes</code>, <code class="ic">nameservers</code>, and <code class="ic">dhcp4</code>. Use this when you want to understand exactly what a field does or verify that your YAML syntax is correct.</p>
+      <a class="resource-link"
+         href="https://netplan.io/reference"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Netplan reference documentation in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        netplan.io/reference
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 2. Useful when troubleshooting a failed <code class="ic">netplan apply</code> or when you want to understand what each field in the YAML file controls.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Nginx ── -->
+  <section class="topic-card" id="nginx" aria-labelledby="h-nginx">
+    <div class="topic-header">
+      <span class="topic-badge" aria-hidden="true">Topic 2</span>
+      <h2 id="h-nginx">Installing and Configuring Nginx</h2>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Ubuntu Server Guide: How to Install Nginx</h3>
+      <p>Ubuntu's official guide to installing and running Nginx as a web server, including service management with <code class="ic">systemctl</code>, the location of the web root and configuration files, and how to create a basic server block. This document covers the same steps you will follow in Part A, Step 3 of the lab.</p>
+      <a class="resource-link"
+         href="https://ubuntu.com/server/docs/how-to-install-nginx"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Ubuntu Server Guide on installing Nginx in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        ubuntu.com/server/docs/how-to-install-nginx
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 3 (Install and Configure Nginx). Reference this guide for the <code class="ic">apt install</code> command, service status checks, and understanding where Nginx stores its configuration and content files.
+      </div>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Nginx Beginner's Guide</h3>
+      <p>A concise introduction to Nginx from the Nginx project itself, explaining how Nginx processes requests, where its main configuration file lives, and how to set up a basic HTTP server block. Helpful if you want to understand how Nginx works beneath the commands, or if you plan to customize it beyond the defaults.</p>
+      <a class="resource-link"
+         href="https://nginx.org/en/docs/beginners_guide.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Nginx Beginner's Guide in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        nginx.org/en/docs/beginners_guide.html
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 3, and the Week 7 course theme of understanding what a web server actually does. Also lays groundwork for the extra credit TLS configuration.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ufw ── -->
+  <section class="topic-card" id="ufw" aria-labelledby="h-ufw">
+    <div class="topic-header">
+      <span class="topic-badge" aria-hidden="true">Topic 3</span>
+      <h2 id="h-ufw">Firewall Configuration with ufw</h2>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Ubuntu Server Guide: Firewalls</h3>
+      <p>The official Ubuntu documentation for <code class="ic">ufw</code>, covering how to enable it, set default policies, allow and deny ports, use application profiles, and check firewall status. This is the reference that mirrors the exact commands in Part A, Step 4.</p>
+      <a class="resource-link"
+         href="https://ubuntu.com/server/docs/firewalls"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Ubuntu Server Guide on firewalls in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        ubuntu.com/server/docs/firewalls
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 4 (Configure the Firewall with ufw). The application profiles section explains how to use <code class="ic">ufw allow 'Nginx HTTP'</code> as an alternative to specifying port numbers directly.
+      </div>
+    </div>
+
+    <div class="resource-entry">
+      <h3>DigitalOcean: How To Set Up a Firewall with UFW on Ubuntu</h3>
+      <p>A step-by-step tutorial that walks through ufw from scratch in a beginner-friendly way — setting default policies, opening ports, enabling the firewall, and verifying the configuration. If the official Ubuntu docs feel too terse, start here instead.</p>
+      <a class="resource-link"
+         href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open DigitalOcean UFW tutorial in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        digitalocean.com — How To Set Up a Firewall with UFW on Ubuntu
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 4. This tutorial is especially useful for understanding the critical ordering requirement: allow SSH <em>before</em> enabling the firewall. It explains clearly what happens if you do it in the wrong order.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cron ── -->
+  <section class="topic-card" id="cron" aria-labelledby="h-cron">
+    <div class="topic-header">
+      <span class="topic-badge" aria-hidden="true">Topic 4</span>
+      <h2 id="h-cron">Scheduled Tasks with Cron</h2>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Crontab Guru — Interactive Cron Schedule Builder</h3>
+      <p>An interactive web tool where you type a cron schedule expression and instantly see in plain English when it will run. Keep this open in a browser tab while writing your cron job — it is the fastest way to verify that your schedule expression does what you intend.</p>
+      <a class="resource-link"
+         href="https://crontab.guru/"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Crontab Guru interactive cron builder in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        crontab.guru
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 5 (Set Up the Health-Monitoring Cron Job). Use it to verify <code class="ic">0 * * * *</code> means "at the top of every hour" and to experiment with other schedule expressions.
+      </div>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Ubuntu Manpage: crontab(5) — Crontab File Format</h3>
+      <p>The official manual page for the crontab file format, documenting the five time fields, special strings like <code class="ic">@hourly</code> and <code class="ic">@reboot</code>, and how environment variables are handled inside cron jobs. The authoritative reference when you need to understand exactly how cron interprets an entry.</p>
+      <a class="resource-link"
+         href="https://manpages.ubuntu.com/manpages/noble/man5/crontab.5.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Ubuntu crontab manpage in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        manpages.ubuntu.com — crontab(5)
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part A — Step 5. Particularly useful if your cron job runs but produces unexpected output, or if you want to use the <code class="ic">@hourly</code> shorthand instead of <code class="ic">0 * * * *</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SSH Keys ── -->
+  <section class="topic-card" id="ssh" aria-labelledby="h-ssh">
+    <div class="topic-header">
+      <span class="topic-badge" aria-hidden="true">Topic 5</span>
+      <h2 id="h-ssh">SSH Key Authentication</h2>
+    </div>
+
+    <div class="resource-entry">
+      <h3>DigitalOcean: How To Set Up SSH Keys on Ubuntu</h3>
+      <p>A clear, step-by-step walkthrough of generating an SSH key pair with <code class="ic">ssh-keygen</code>, copying the public key to a server using <code class="ic">ssh-copy-id</code>, and verifying that passwordless login works. This is the primary reference for Part B of Lab 5 and covers both the conceptual "why" and the practical "how."</p>
+      <a class="resource-link"
+         href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-20-04"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open DigitalOcean SSH keys tutorial in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        digitalocean.com — How To Set Up SSH Keys on Ubuntu
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part B — all three steps. Read this before generating your key pair to understand where each file goes and why the permissions on <code class="ic">~/.ssh/</code> and <code class="ic">authorized_keys</code> must be set correctly.
+      </div>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Ubuntu Server Guide: OpenSSH Server</h3>
+      <p>Ubuntu's official documentation for the OpenSSH server, covering installation, key-based authentication configuration, the <code class="ic">sshd_config</code> file, and common hardening steps like disabling password authentication. Useful as background reading for Part B and as a preview of the SSH hardening you will do in Week 8's Mini-Project 2.</p>
+      <a class="resource-link"
+         href="https://ubuntu.com/server/docs/openssh-server"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Ubuntu Server Guide on OpenSSH in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        ubuntu.com/server/docs/openssh-server
+      </a>
+      <div class="connects-to">
+        <strong>Connects to:</strong> Lab 5, Part B, and Week 8 Mini-Project 2. The <code class="ic">sshd_config</code> options covered here — particularly <code class="ic">PasswordAuthentication no</code> and <code class="ic">PermitRootLogin no</code> — are the hardening steps Week 8 will require.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Extra Credit ── -->
+  <section class="topic-card" id="ec" aria-labelledby="h-ec" style="border-left: 5px solid #9f7aea;">
+    <div class="topic-header" style="border-bottom-color: #e9d8fd;">
+      <span class="topic-badge topic-badge-ec" aria-hidden="true">Extra Credit</span>
+      <h2 id="h-ec" style="color: #44337a;">Self-Signed TLS for Nginx (5 points)</h2>
+    </div>
+
+    <p style="font-size:0.91rem; color:#44337a; margin-bottom:0.85rem;">These two resources are the assigned reading for the Week 7 extra credit assignment. To earn the 5 points, read both references, generate a self-signed TLS certificate using <code class="ic">openssl</code>, configure Nginx to serve HTTPS on port 443, update your ufw rules to allow port 443, and document the process with screenshots and explanation. Submit as an addendum to your Lab 5 document.</p>
+
+    <div class="resource-entry">
+      <h3>DigitalOcean: How To Create a Self-Signed SSL Certificate for Nginx on Ubuntu</h3>
+      <p>A step-by-step tutorial covering how to generate a self-signed TLS certificate with <code class="ic">openssl</code>, configure Nginx to use it for HTTPS, and test that the secure connection is working. This is the primary hands-on guide for the extra credit assignment.</p>
+      <a class="resource-link resource-link-ec"
+         href="https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open DigitalOcean self-signed SSL for Nginx tutorial in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        digitalocean.com — Self-Signed SSL Certificate for Nginx on Ubuntu
+      </a>
+    </div>
+
+    <div class="resource-entry">
+      <h3>Nginx Official Documentation: Configuring HTTPS Servers</h3>
+      <p>The Nginx project's own documentation on TLS/SSL configuration, covering the <code class="ic">ssl_certificate</code> and <code class="ic">ssl_certificate_key</code> directives, HTTPS server blocks, and session optimization. A more technical complement to the DigitalOcean tutorial that explains <em>why</em> each Nginx directive is needed.</p>
+      <a class="resource-link resource-link-ec"
+         href="https://nginx.org/en/docs/http/configuring_https_servers.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open Nginx HTTPS server configuration documentation in a new tab">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        nginx.org — Configuring HTTPS Servers
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Site Availability Note ── -->
+  <section class="note-card" id="note" aria-labelledby="h-note">
+    <div class="note-header">
+      <span class="note-badge" aria-hidden="true">Note</span>
+      <h2 id="h-note">What to Do If a Site Is Unreachable</h2>
+    </div>
+
+    <p>External websites occasionally go offline or become temporarily unreachable. Before assuming a link is broken, use an online availability checker to determine whether the problem is on your end or the site's end. <strong>DownDetector</strong> is a widely used tool for this — it shows real-time outage reports from users worldwide for hundreds of services and websites.</p>
+
+    <a class="downdetector-link"
+       href="https://downdetector.com/"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open DownDetector website status checker in a new tab">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      downdetector.com — Website and Service Status Checker
+    </a>
+
+    <p>If a resource on this page is temporarily unavailable, try again later. Most of the resources listed here are official documentation from Ubuntu, Nginx, and DigitalOcean — sites with high uptime. If a link appears to be permanently broken, let your instructor know through Canvas.</p>
+  </section>
+
+</main>
+
+</body>
+</html>

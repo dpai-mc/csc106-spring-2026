@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 7 Extra Credit – Self-Signed TLS for Nginx | CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #44337a;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    :focus-visible {
+      outline: 3px solid #f6ad55;
+      outline-offset: 2px;
+    }
+
+    /* Sticky nav */
+    .lab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #44337a;
+      padding: 0 1rem;
+    }
+    .lab-nav-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.45rem 0;
+    }
+    .nav-label {
+      color: #e9d8fd;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.3rem;
+      flex-shrink: 0;
+    }
+    .lab-nav a {
+      color: #e9d8fd;
+      text-decoration: none;
+      font-size: 0.83rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .lab-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lab-nav a:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Layout */
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Activity header */
+    .activity-header {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #6b46c1;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .activity-header h1 {
+      font-size: 1.45rem;
+      color: #44337a;
+      margin-bottom: 0.2rem;
+    }
+    .activity-meta {
+      font-size: 0.85rem;
+      color: #4a5568;
+      margin-bottom: 1.1rem;
+    }
+
+    .ec-badge {
+      display: inline-block;
+      background: #6b46c1;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.18rem 0.6rem;
+      border-radius: 20px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .scenario-box {
+      background: #faf5ff;
+      border: 1px solid #d6bcfa;
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .box-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b46c1;
+      margin-bottom: 0.4rem;
+    }
+    .scenario-box p + p { margin-top: 0.5rem; }
+
+    .prereq-box {
+      background: #fffbeb;
+      border: 1px solid #fbd38d;
+      border-left: 4px solid #d69e2e;
+      border-radius: 0 6px 6px 0;
+      padding: 0.85rem 1.05rem;
+      margin-bottom: 1rem;
+    }
+    .prereq-box-label {
+      display: block;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #744210;
+      margin-bottom: 0.3rem;
+    }
+    .prereq-box ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .prereq-box li { font-size: 0.9rem; color: #744210; margin-bottom: 0.25rem; }
+
+    .reading-box {
+      background: #ebf8ff;
+      border: 1px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.85rem 1.1rem;
+      margin-top: 1rem;
+    }
+    .reading-box ul { padding-left: 1.2rem; margin-top: 0.35rem; }
+    .reading-box li { font-size: 0.9rem; color: #2d3748; margin-bottom: 0.35rem; }
+    .reading-box a { color: #2b6cb0; }
+    .reading-box a:hover { color: #2c5282; }
+
+    /* Phase cards */
+    .phase-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #f3ebff;
+    }
+    .phase-badge {
+      background: #6b46c1;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .phase-card h2 {
+      font-size: 1.12rem;
+      color: #44337a;
+    }
+
+    .phase-description {
+      font-size: 0.94rem;
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    .sub-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Code blocks */
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    .sample-pre {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    .ann { color: #f6ad55; font-style: italic; }
+    .ann-g { color: #68d391; font-style: italic; }
+
+    .cmd-block { margin-bottom: 1rem; }
+    .cmd-block p { font-size: 0.85rem; color: #4a5568; margin-top: 0.4rem; }
+    .sample-block { margin-bottom: 1rem; }
+
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .ic {
+      background: #edf2f7;
+      color: #553c9a;
+      padding: 0.08em 0.38em;
+      border-radius: 3px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.87em;
+    }
+
+    /* Alert box */
+    .alert-box {
+      background: #fff5f5;
+      border: 1.5px solid #fc8181;
+      border-left: 4px solid #e53e3e;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+    }
+    .alert-box-label {
+      display: block;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #c53030;
+      margin-bottom: 0.3rem;
+    }
+    .alert-box p + p { margin-top: 0.4rem; }
+
+    /* Note box */
+    .note-box {
+      background: #fffbeb;
+      border-left: 3px solid #d69e2e;
+      border-radius: 0 4px 4px 0;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
+      font-size: 0.87rem;
+      color: #1a202c;
+    }
+    .note-box p + p { margin-top: 0.35rem; }
+
+    /* Concept box (purple tint) */
+    .concept-box {
+      background: #faf5ff;
+      border-left: 3px solid #9f7aea;
+      border-radius: 0 4px 4px 0;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.89rem;
+      color: #2d3748;
+    }
+    .concept-box p + p { margin-top: 0.4rem; }
+    .concept-box strong { color: #44337a; }
+
+    /* Hint collapsible */
+    details.hint {
+      margin-bottom: 1.1rem;
+      border: 1px solid #d69e2e;
+      border-radius: 6px;
+      background: #fffbeb;
+    }
+    details.hint summary {
+      cursor: pointer;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #744210;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    details.hint summary::-webkit-details-marker { display: none; }
+    details.hint summary::before {
+      content: "▶";
+      font-size: 0.65rem;
+      transition: transform 0.18s;
+      color: #c07d10;
+      flex-shrink: 0;
+    }
+    details.hint[open] summary::before { transform: rotate(90deg); }
+    details.hint summary:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+    .hint-body {
+      padding: 0 0.9rem 0.75rem;
+      font-size: 0.88rem;
+      color: #744210;
+    }
+    .hint-body ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .hint-body li { margin-bottom: 0.3rem; }
+    .hint-body p + p { margin-top: 0.4rem; }
+    .hint-body code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: #fef3c7;
+      padding: 0.05em 0.3em;
+      border-radius: 3px;
+    }
+
+    /* Response fields */
+    .response-group { margin-top: 1.2rem; }
+    .response-field { margin-bottom: 1rem; }
+    .response-field label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.35rem;
+    }
+    .field-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #6b46c1;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 1.35em;
+      height: 1.35em;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #1a202c;
+      background: #fff;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: 3px solid #9f7aea;
+      outline-offset: 1px;
+      border-color: #9f7aea;
+    }
+    textarea.out {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.83rem;
+      background: #f7fafc;
+      min-height: 100px;
+    }
+    textarea.exp { min-height: 80px; }
+
+    /* Submission section */
+    .submission-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #6b46c1;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .submission-section h2 {
+      font-size: 1.15rem;
+      color: #44337a;
+      margin-bottom: 0.8rem;
+    }
+    .submission-section h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 1rem 0 0.4rem;
+    }
+    .submission-section h3:first-of-type { margin-top: 0; }
+    .submission-section p, .submission-section li { font-size: 0.92rem; }
+    .submission-section ol, .submission-section ul { padding-left: 1.3rem; }
+    .submission-section li { margin-bottom: 0.3rem; }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 1rem;
+    }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+      font-size: 0.91rem;
+    }
+    .checklist li::before {
+      content: "☐";
+      font-size: 1rem;
+      color: #6b46c1;
+      flex-shrink: 0;
+    }
+
+    .pdf-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #6b46c1;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.3rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      text-decoration: none;
+    }
+    .pdf-btn:hover { background: #553c9a; }
+    .pdf-btn:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Print */
+    @media print {
+      .skip-link, .lab-nav, .pdf-btn, details.hint { display: none !important; }
+      body { background: #fff; font-size: 10.5pt; color: #000; }
+      main { max-width: 100%; padding: 0; }
+      .activity-header, .phase-card, .submission-section {
+        box-shadow: none; border-radius: 0;
+        padding: 0.9rem 0.5rem; margin-bottom: 0.6rem;
+        page-break-inside: avoid;
+      }
+      textarea { display: none !important; }
+      .print-response {
+        border: 1px solid #aaa; border-radius: 3px;
+        padding: 0.4rem 0.5rem; min-height: 2.5rem;
+        white-space: pre-wrap; word-break: break-word;
+        font-family: "Courier New", monospace;
+        font-size: 8pt; background: #fafafa; color: #000; margin-top: 0.3rem;
+      }
+      .print-response.exp-print { font-family: inherit; font-size: 9.5pt; }
+      pre, .sample-pre { font-size: 7.5pt; white-space: pre-wrap; }
+      .phase-card h2 { font-size: 11pt; }
+      .activity-header h1 { font-size: 14pt; }
+    }
+
+    @media (max-width: 600px) {
+      .activity-header, .phase-card, .submission-section { padding: 1.1rem 1rem; }
+      .activity-header h1 { font-size: 1.2rem; }
+      .phase-card h2 { font-size: 1rem; }
+      .lab-nav a { font-size: 0.78rem; padding: 0.25rem 0.42rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="lab-nav" aria-label="Page section navigation">
+  <div class="lab-nav-inner">
+    <span class="nav-label" aria-hidden="true">Jump to:</span>
+    <a href="#step1">Generate Cert</a>
+    <a href="#step2">SSL Snippets</a>
+    <a href="#step3">Nginx HTTPS Config</a>
+    <a href="#step4">Test &amp; Reload</a>
+    <a href="#step5">Open Port 443</a>
+    <a href="#step6">Verify HTTPS</a>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Activity Header ── -->
+  <header class="activity-header">
+    <h1>Self-Signed TLS for Nginx <span class="ec-badge">Extra Credit</span></h1>
+    <p class="activity-meta">CSC 106 – Introduction to Linux II &nbsp;·&nbsp; Week 7 &nbsp;·&nbsp; 5 extra credit points &nbsp;·&nbsp; CSLO 2</p>
+
+    <div class="scenario-box" role="note">
+      <span class="box-label">What This Activity Adds</span>
+      <p>In Lab 5, you configured Nginx to serve a custom web page over HTTP (port 80). Every request and response between a client and that page travels in plain text — anyone on the same network can read it. TLS (Transport Layer Security) encrypts that traffic so only the client and server can read it. HTTPS — HTTP over TLS — is the standard for every web server on the internet today.</p>
+      <p>In this extra credit activity you will add a TLS certificate to your Nginx server, configure it to accept encrypted HTTPS connections on port 443, and update your firewall rules to allow that traffic. When you are done, your VM will be reachable at both <code class="ic">http://</code> (plaintext) and <code class="ic">https://</code> (encrypted).</p>
+    </div>
+
+    <div class="prereq-box" role="note">
+      <span class="prereq-box-label">&#9888;&#65039; Prerequisites — Complete Lab 5 First</span>
+      <ul>
+        <li>Nginx is installed, running, and serving your custom <code class="ic">index.html</code> from <code class="ic">/var/www/html/</code></li>
+        <li><code class="ic">ufw</code> is active with SSH (22) and HTTP (80) allowed and default deny incoming</li>
+        <li>Your static IP address is configured and connectivity is verified</li>
+      </ul>
+    </div>
+
+    <div class="concept-box" role="note">
+      <p><strong>Self-signed vs. CA-signed certificates:</strong> A Certificate Authority (CA) is a trusted third party that vouches for your certificate's identity — this is what browsers use to show a padlock for real websites. A <em>self-signed</em> certificate is signed by you, not a recognized CA. Browsers will show a security warning ("Your connection is not private"), which is expected and normal for a learning environment. The encryption itself is identical — the only difference is who is vouching for the server's identity. For a class VM that is not publicly accessible, a self-signed certificate is the correct choice.</p>
+      <p><strong>What you are building:</strong> TLS requires two files — a <em>certificate</em> (the public identity document) and a <em>private key</em> (the cryptographic secret). You will generate both with <code class="ic">openssl</code>, then tell Nginx where to find them.</p>
+    </div>
+
+    <div class="reading-box" role="note">
+      <span class="box-label">Read Before You Start</span>
+      <ul>
+        <li>
+          <strong>DigitalOcean: How To Create a Self-Signed SSL Certificate for Nginx on Ubuntu</strong> —
+          <a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu" target="_blank" rel="noopener noreferrer">digitalocean.com — Self-Signed SSL for Nginx</a>. The primary hands-on reference for this activity. The steps below follow the same approach.
+        </li>
+        <li>
+          <strong>Nginx Documentation: Configuring HTTPS Servers</strong> —
+          <a href="https://nginx.org/en/docs/http/configuring_https_servers.html" target="_blank" rel="noopener noreferrer">nginx.org — Configuring HTTPS Servers</a>. Explains the Nginx directives you will use (<code class="ic">ssl_certificate</code>, <code class="ic">ssl_certificate_key</code>, etc.) and how they work.
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ── Step 1: Generate the Certificate ── -->
+  <section class="phase-card" id="step1" aria-labelledby="h-step1">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 1 of 6</span>
+      <h2 id="h-step1">Generate the Self-Signed TLS Certificate</h2>
+    </div>
+
+    <p class="phase-description">You will use <code class="ic">openssl</code> to generate both the private key and the certificate in a single command. The private key stays on the server and is never shared. The certificate is the public document that your server presents to clients to identify itself.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Generate the private key and certificate</span>
+      <pre><code>sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/nginx-selfsigned.key \
+  -out /etc/ssl/certs/nginx-selfsigned.crt</code></pre>
+    </div>
+
+    <div class="concept-box" role="note">
+      <p><strong>What each flag does:</strong></p>
+      <p><code class="ic">req -x509</code> — create a self-signed certificate (skip sending a request to a CA). <code class="ic">-nodes</code> — do not encrypt the private key file with a passphrase (Nginx needs to read it automatically on startup). <code class="ic">-days 365</code> — the certificate is valid for one year. <code class="ic">-newkey rsa:2048</code> — generate a new 2048-bit RSA key pair at the same time. <code class="ic">-keyout</code> — path for the private key. <code class="ic">-out</code> — path for the certificate.</p>
+    </div>
+
+    <p class="phase-description">After running the command, <code class="ic">openssl</code> will ask you a series of questions about your identity. The only field that has any technical effect for a self-signed certificate is <strong>Common Name</strong> — enter your server's IP address (the static IP you configured in Lab 5). The other fields (country, state, organization) can be left blank with a period or filled in with anything.</p>
+
+    <div class="sample-block">
+      <span class="sub-label">Interactive prompts — example entries</span>
+      <pre class="sample-pre"><code>Country Name (2 letter code) [AU]: US
+State or Province Name (full name) [Some-State]: California
+Locality Name (eg, city) []: Ukiah
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: CSC 106
+Organizational Unit Name (eg, section) []: Student Lab
+Common Name (e.g. server FQDN or YOUR name) []: 192.168.1.100  <span class="ann">&#8592; use YOUR static IP</span>
+Email Address []: </code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Verify the certificate and key files were created</span>
+      <pre><code>sudo ls -la /etc/ssl/private/nginx-selfsigned.key
+sudo ls -la /etc/ssl/certs/nginx-selfsigned.crt</code></pre>
+      <p>The private key should be readable only by root (<code class="ic">-rw------- root root</code>). The certificate can be world-readable (<code class="ic">-rw-r--r-- root root</code>) since it is a public document.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Optional: Generate Diffie-Hellman parameters for stronger key exchange</summary>
+      <div class="hint-body">
+        <p>The DigitalOcean tutorial includes this step for stronger security. DH parameters are used during the TLS handshake to negotiate a shared secret. The default parameters built into OpenSSL are fine for a learning environment, but generating a dedicated DH parameter file is considered best practice:</p>
+        <pre style="background:#2d3748;color:#e2e8f0;font-size:0.83rem;padding:0.6rem 0.85rem;border-radius:5px;margin:0.4rem 0;">sudo openssl dhparam -out /etc/nginx/dhparam.pem 2048</pre>
+        <p>This takes 30 seconds to 2 minutes to complete (it is computationally intensive). If you generate the DH parameter file, you will reference it in <code>ssl-params.conf</code> in the next step with: <code>ssl_dhparam /etc/nginx/dhparam.pem;</code></p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step 1 responses">
+      <div class="response-field">
+        <label for="s1-ls">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">ls -la</code> showing both the certificate and key files were created in the correct locations
+        </label>
+        <textarea id="s1-ls" class="out" rows="6" placeholder="Paste ls -la output for both the .key and .crt files here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step 2: Create Nginx SSL Config Snippets ── -->
+  <section class="phase-card" id="step2" aria-labelledby="h-step2">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 2 of 6</span>
+      <h2 id="h-step2">Create Nginx SSL Configuration Snippets</h2>
+    </div>
+
+    <p class="phase-description">Rather than repeating SSL configuration in every Nginx server block, you will create two reusable configuration snippets in <code class="ic">/etc/nginx/snippets/</code>. One points to your certificate files; the other defines SSL security settings. Server blocks can then include these snippets with a single line each, keeping configuration clean and maintainable.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Create the certificate paths snippet</span>
+      <pre><code>sudo nano /etc/nginx/snippets/self-signed.conf</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Contents of <code>/etc/nginx/snippets/self-signed.conf</code></span>
+      <pre class="sample-pre"><code>ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;      <span class="ann">&#8592; path to your certificate</span>
+ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key; <span class="ann">&#8592; path to your private key</span></code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Create the SSL parameters snippet</span>
+      <pre><code>sudo nano /etc/nginx/snippets/ssl-params.conf</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Contents of <code>/etc/nginx/snippets/ssl-params.conf</code></span>
+      <pre class="sample-pre"><code>ssl_protocols TLSv1.2 TLSv1.3;         <span class="ann">&#8592; only modern, secure protocol versions</span>
+ssl_prefer_server_ciphers on;           <span class="ann">&#8592; server chooses the cipher suite</span>
+ssl_session_cache shared:SSL:10m;       <span class="ann">&#8592; cache negotiated sessions for 10 min</span>
+ssl_session_timeout 10m;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+add_header Strict-Transport-Security "max-age=63072000" always;  <span class="ann">&#8592; HSTS: tell browsers to always use HTTPS</span></code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>What ssl_protocols does:</strong> TLSv1.2 and TLSv1.3 are the current secure versions of TLS. Older versions (TLSv1.0, TLSv1.1) have known vulnerabilities and should not be offered. Restricting to 1.2 and 1.3 is standard practice on production servers.</p>
+      <p><strong>What HSTS does:</strong> The <code class="ic">Strict-Transport-Security</code> header tells browsers that this server should only ever be accessed over HTTPS. After a browser sees this header once, it will refuse to make HTTP connections to the same host for the period specified (<code class="ic">max-age=63072000</code> is two years). For a class VM, this is mostly informational — a real server would not add HSTS without first ensuring HTTPS is permanently configured.</p>
+    </div>
+
+    <details class="hint">
+      <summary>If you generated DH parameters in Step 1 — add this line to ssl-params.conf</summary>
+      <div class="hint-body">
+        <p>Add the following line anywhere in <code>ssl-params.conf</code>:</p>
+        <pre style="background:#2d3748;color:#e2e8f0;font-size:0.83rem;padding:0.6rem 0.85rem;border-radius:5px;margin:0.4rem 0;">ssl_dhparam /etc/nginx/dhparam.pem;</pre>
+        <p>This tells Nginx to use your custom DH parameters during key exchange rather than the defaults. It is not required but is considered best practice for production servers.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step 2 responses">
+      <div class="response-field">
+        <label for="s2-selfconf">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the contents of <code class="ic">/etc/nginx/snippets/self-signed.conf</code>
+        </label>
+        <textarea id="s2-selfconf" class="out" rows="4" placeholder="Paste self-signed.conf contents here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="s2-sslparams">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the contents of <code class="ic">/etc/nginx/snippets/ssl-params.conf</code>
+        </label>
+        <textarea id="s2-sslparams" class="out" rows="8" placeholder="Paste ssl-params.conf contents here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step 3: Configure the Nginx HTTPS Server Block ── -->
+  <section class="phase-card" id="step3" aria-labelledby="h-step3">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 3 of 6</span>
+      <h2 id="h-step3">Configure Nginx to Serve HTTPS</h2>
+    </div>
+
+    <p class="phase-description">Nginx uses <em>server blocks</em> to define how it handles requests. Your current Lab 5 configuration has one server block listening on port 80 (HTTP). You will add a second server block that listens on port 443 (HTTPS) and includes the SSL snippets you just created. Both server blocks will serve the same <code class="ic">/var/www/html/</code> content.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Open the default Nginx site configuration for editing</span>
+      <pre><code>sudo nano /etc/nginx/sites-available/default</code></pre>
+    </div>
+
+    <p class="phase-description">Add the HTTPS server block below the existing HTTP server block. You can leave the original HTTP block unchanged — you are adding a second block, not replacing the first. Your file should contain both blocks when you are done.</p>
+
+    <div class="sample-block">
+      <span class="sub-label">Add this HTTPS server block to the end of the file</span>
+      <pre class="sample-pre"><code>server {
+    listen 443 ssl;                    <span class="ann">&#8592; listen on port 443 with SSL enabled</span>
+    listen [::]:443 ssl;               <span class="ann">&#8592; same for IPv6</span>
+    server_name 192.168.1.100;         <span class="ann">&#8592; replace with YOUR static IP address</span>
+
+    include snippets/self-signed.conf; <span class="ann">&#8592; loads certificate and key paths</span>
+    include snippets/ssl-params.conf;  <span class="ann">&#8592; loads SSL security settings</span>
+
+    root /var/www/html;                <span class="ann">&#8592; same web root as your HTTP server</span>
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}</code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>Your final <code class="ic">/etc/nginx/sites-available/default</code> should have two server blocks</strong> — the original one listening on port 80 (from your Lab 5 setup) and the new one above listening on port 443. Both serve the same content. You are not replacing the HTTP server; you are adding HTTPS alongside it.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Optional: Add an HTTP-to-HTTPS redirect</summary>
+      <div class="hint-body">
+        <p>A common production configuration redirects all HTTP traffic to HTTPS automatically. To do this, replace the contents of your port 80 server block with a redirect instead of serving content directly:</p>
+        <pre style="background:#2d3748;color:#e2e8f0;font-size:0.83rem;padding:0.6rem 0.85rem;border-radius:5px;margin:0.4rem 0;">server {
+    listen 80;
+    listen [::]:80;
+    server_name 192.168.1.100;
+    return 301 https://$host$request_uri;
+}</pre>
+        <p>With this in place, any request to <code>http://your-ip/</code> will automatically redirect to <code>https://your-ip/</code>. This is not required for the extra credit assignment but is worth understanding as standard practice.</p>
+        <p>If you add the redirect, note that <code>curl localhost</code> from Lab 5 will now return a 301 response instead of your HTML. Use <code>curl -k https://localhost</code> or <code>curl -kL http://localhost</code> (follow redirects) to verify your page still loads.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step 3 responses">
+      <div class="response-field">
+        <label for="s3-nginxconf">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the complete contents of <code class="ic">/etc/nginx/sites-available/default</code> after your edits (key deliverable)
+        </label>
+        <textarea id="s3-nginxconf" class="out" rows="18" placeholder="Paste your full Nginx default site configuration here — should show both the port 80 and port 443 server blocks…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step 4: Test and Reload Nginx ── -->
+  <section class="phase-card" id="step4" aria-labelledby="h-step4">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 4 of 6</span>
+      <h2 id="h-step4">Test the Configuration and Reload Nginx</h2>
+    </div>
+
+    <p class="phase-description">Always test the Nginx configuration for syntax errors before reloading. A syntax error in a live configuration can bring down your web server entirely. The <code class="ic">nginx -t</code> command checks the configuration without actually applying it — if it reports success, the reload is safe to run.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Test for configuration errors</span>
+      <pre><code>sudo nginx -t</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected output if configuration is valid</span>
+      <pre class="sample-pre"><code>nginx: the configuration file /etc/nginx/nginx.conf syntax is ok  <span class="ann-g">&#8592; no syntax errors</span>
+nginx: configuration file /etc/nginx/nginx.conf test is successful  <span class="ann-g">&#8592; safe to reload</span></code></pre>
+    </div>
+
+    <div class="alert-box" role="alert">
+      <span class="alert-box-label">If nginx -t Reports an Error — Do Not Reload</span>
+      <p>Read the error message carefully — it will include the filename and line number where the problem was found. Common causes:</p>
+      <p>The <code class="ic">include snippets/self-signed.conf;</code> or <code class="ic">include snippets/ssl-params.conf;</code> lines cannot find the files — verify the snippet files exist with <code class="ic">ls /etc/nginx/snippets/</code> and that their names match exactly. A missing semicolon at the end of any directive line. A missing closing brace <code class="ic">}</code> for a server block. Fix the error, save the file, and run <code class="ic">nginx -t</code> again before reloading.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Reload Nginx to apply the new configuration</span>
+      <pre><code>sudo systemctl reload nginx</code></pre>
+      <p><code class="ic">reload</code> applies the new configuration without interrupting active connections. It is safer than <code class="ic">restart</code>, which would terminate all active connections. Either works for a class VM.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — Confirm Nginx is now listening on port 443</span>
+      <pre><code>ss -tlnp | grep nginx</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected output — nginx now listening on both port 80 and 443</span>
+      <pre class="sample-pre"><code>LISTEN 0  511  0.0.0.0:80   0.0.0.0:*  users:(("nginx",pid=1257,fd=6))  <span class="ann">&#8592; HTTP still running</span>
+LISTEN 0  511  0.0.0.0:443  0.0.0.0:*  users:(("nginx",pid=1257,fd=7))  <span class="ann">&#8592; HTTPS now listening</span>
+LISTEN 0  511  [::]:80      [::]:*     users:(("nginx",pid=1257,fd=8))
+LISTEN 0  511  [::]:443     [::]:*     users:(("nginx",pid=1257,fd=9))</code></pre>
+    </div>
+
+    <div class="response-group" role="group" aria-label="Step 4 responses">
+      <div class="response-field">
+        <label for="s4-nginxt">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">sudo nginx -t</code> confirming the configuration is valid (key deliverable)
+        </label>
+        <textarea id="s4-nginxt" class="out" rows="5" placeholder="Paste sudo nginx -t output here — should show syntax ok and test successful…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="s4-ss">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the output of <code class="ic">ss -tlnp | grep nginx</code> showing Nginx listening on port 443
+        </label>
+        <textarea id="s4-ss" class="out" rows="6" placeholder="Paste ss -tlnp output here — should show nginx on both port 80 and 443…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step 5: Open Port 443 in ufw ── -->
+  <section class="phase-card" id="step5" aria-labelledby="h-step5">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 5 of 6</span>
+      <h2 id="h-step5">Open Port 443 in the Firewall</h2>
+    </div>
+
+    <p class="phase-description">Nginx is now listening on port 443, but your Lab 5 firewall configuration only allows ports 22 (SSH) and 80 (HTTP). HTTPS traffic on port 443 is currently blocked by ufw. You need to explicitly allow it — the same way you allowed SSH and HTTP in Lab 5.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Allow HTTPS through the firewall</span>
+      <pre><code>sudo ufw allow https</code></pre>
+      <p>This is equivalent to <code class="ic">sudo ufw allow 443/tcp</code>. You can also use the Nginx application profile: <code class="ic">sudo ufw allow 'Nginx Full'</code>, which opens both port 80 and port 443 at once.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Verify the updated firewall rules</span>
+      <pre><code>sudo ufw status verbose</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected output — three ports now allowed</span>
+      <pre class="sample-pre"><code>Status: active
+Default: deny (incoming), allow (outgoing), disabled (routed)
+
+To                  Action      From
+--                  ------      ----
+22/tcp              ALLOW IN    Anywhere          <span class="ann">&#8592; SSH (from Lab 5)</span>
+80/tcp              ALLOW IN    Anywhere          <span class="ann">&#8592; HTTP (from Lab 5)</span>
+443/tcp             ALLOW IN    Anywhere          <span class="ann">&#8592; HTTPS (newly added)</span>
+22/tcp (v6)         ALLOW IN    Anywhere (v6)
+80/tcp (v6)         ALLOW IN    Anywhere (v6)
+443/tcp (v6)        ALLOW IN    Anywhere (v6)</code></pre>
+    </div>
+
+    <div class="response-group" role="group" aria-label="Step 5 responses">
+      <div class="response-field">
+        <label for="s5-ufw">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">sudo ufw status verbose</code> showing port 443 allowed (key deliverable)
+        </label>
+        <textarea id="s5-ufw" class="out" rows="12" placeholder="Paste sudo ufw status verbose output here — should now show SSH, HTTP, and HTTPS allowed…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step 6: Test and Verify HTTPS ── -->
+  <section class="phase-card" id="step6" aria-labelledby="h-step6">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Step 6 of 6</span>
+      <h2 id="h-step6">Test and Verify the HTTPS Connection</h2>
+    </div>
+
+    <p class="phase-description">With Nginx configured and the firewall updated, test that your server is actually serving encrypted HTTPS responses. You will use <code class="ic">curl</code> with special flags to verify the connection, since a self-signed certificate will cause standard verification to fail.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Test HTTPS from the command line — basic test</span>
+      <pre><code>curl -k https://localhost</code></pre>
+      <p>The <code class="ic">-k</code> flag (or <code class="ic">--insecure</code>) tells curl to skip certificate verification. This is expected and correct for a self-signed certificate — curl would otherwise refuse to connect because the certificate is not signed by a recognized CA. The output should be your custom <code class="ic">index.html</code> content.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Test HTTPS with certificate details — verbose test</span>
+      <pre><code>curl -kv https://localhost 2&gt;&amp;1 | head -40</code></pre>
+      <p>The <code class="ic">-v</code> flag enables verbose output, which shows the TLS handshake details — the certificate presented, the cipher suite negotiated, and the protocol version used. This output confirms encryption is actually taking place, not just that the server responded.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected verbose output (abbreviated)</span>
+      <pre class="sample-pre"><code>* Connected to localhost (127.0.0.1) port 443
+* ALPN: curl offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):   <span class="ann">&#8592; TLS handshake begins</span>
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):    <span class="ann">&#8592; server presents certificate</span>
+* Server certificate:
+*  subject: CN=192.168.1.100                         <span class="ann">&#8592; Common Name you entered in Step 1</span>
+*  issuer: CN=192.168.1.100                          <span class="ann">&#8592; same as subject: self-signed</span>
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384  <span class="ann">&#8592; cipher negotiated</span>
+* Server auth using Basic with user ''
+&gt; GET / HTTP/2
+&gt; Host: localhost
+&lt; HTTP/2 200
+&lt; content-type: text/html
+...
+&lt;!DOCTYPE html&gt;                                      <span class="ann">&#8592; your index.html content</span></code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>Browser warning is expected:</strong> If you try to visit <code class="ic">https://your-server-ip</code> from a browser (for example, from your host machine if port forwarding is configured), the browser will show a "Your connection is not private" or "Certificate not secure" warning. This is correct behavior — the certificate is not trusted by any browser CA. You can click through the warning (usually "Advanced" → "Proceed anyway") to reach your page. The encryption is still working; the browser is just warning you that it cannot verify who issued the certificate.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Inspect the certificate itself with openssl</summary>
+      <div class="hint-body">
+        <p>To view the full details of the certificate you generated — including the subject, issuer, validity dates, and the public key — run:</p>
+        <pre style="background:#2d3748;color:#e2e8f0;font-size:0.83rem;padding:0.6rem 0.85rem;border-radius:5px;margin:0.4rem 0;">sudo openssl x509 -in /etc/ssl/certs/nginx-selfsigned.crt -text -noout</pre>
+        <p>The output will show the certificate in human-readable form. Look for:</p>
+        <ul>
+          <li><code>Subject: CN = your-ip</code> — the Common Name you entered during generation</li>
+          <li><code>Issuer: CN = your-ip</code> — same as subject, confirming it is self-signed</li>
+          <li><code>Validity: Not After :</code> — the expiration date (one year from generation)</li>
+          <li><code>Public Key Algorithm: rsaEncryption</code> and <code>RSA Public-Key: (2048 bit)</code></li>
+        </ul>
+        <p>Understanding this output is a good foundation for reading any TLS certificate — the same fields appear in CA-signed certificates from real CAs like Let's Encrypt or DigiCert.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step 6 responses">
+      <div class="response-field">
+        <label for="s6-curl">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">curl -k https://localhost</code> confirming HTTPS serves your custom page (key deliverable)
+        </label>
+        <textarea id="s6-curl" class="out" rows="10" placeholder="Paste curl -k https://localhost output here — should show your custom index.html content…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="s6-verbose">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the relevant portion of <code class="ic">curl -kv https://localhost</code> output showing the TLS handshake and cipher suite (key deliverable)
+        </label>
+        <textarea id="s6-verbose" class="out" rows="12" placeholder="Paste curl -kv verbose output here — focus on the TLS handshake lines, the Server certificate section, and the SSL connection line…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="s6-explain">
+          <span class="field-num" aria-hidden="true">3</span>
+          In 3–4 sentences: explain what TLS provides that plain HTTP does not, and why a browser shows a warning for a self-signed certificate even though the encryption is working correctly.
+        </label>
+        <textarea id="s6-explain" class="exp" rows="5" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="submission-section" id="submission" aria-labelledby="h-submission">
+    <h2 id="h-submission">Deliverables and Submission</h2>
+
+    <h3>What to submit</h3>
+    <p>Submit your extra credit documentation as an addendum to your Lab 5 document, or as a separate document clearly labeled "Week 7 Extra Credit — Self-Signed TLS for Nginx." Your submission must include all of the following:</p>
+
+    <ul class="checklist" aria-label="Submission checklist">
+      <li>Output of <code class="ic">ls -la</code> confirming the <code class="ic">.crt</code> and <code class="ic">.key</code> files exist in the correct locations</li>
+      <li>Contents of <code class="ic">/etc/nginx/snippets/self-signed.conf</code></li>
+      <li>Contents of <code class="ic">/etc/nginx/snippets/ssl-params.conf</code></li>
+      <li>Complete contents of <code class="ic">/etc/nginx/sites-available/default</code> showing both server blocks</li>
+      <li>Output of <code class="ic">sudo nginx -t</code> confirming configuration validity</li>
+      <li>Output of <code class="ic">sudo ufw status verbose</code> showing port 443 allowed</li>
+      <li>Output of <code class="ic">curl -k https://localhost</code> showing your page served over HTTPS</li>
+      <li>Relevant output of <code class="ic">curl -kv https://localhost</code> showing the TLS handshake details</li>
+      <li>Your written explanation of what TLS provides and why the browser warning appears</li>
+      <li>Screenshots of key steps (especially the browser warning if tested from a browser, or the curl verbose output)</li>
+    </ul>
+
+    <h3>How to prepare your submission</h3>
+    <p>Fill in all the response fields above, then click the button below to save this page as a PDF using your browser's print-to-PDF feature. Alternatively, compile the deliverables into a Word document or Google Doc with clear section headings. Either format is acceptable.</p>
+
+    <button class="pdf-btn" onclick="saveAsPDF()" type="button" aria-label="Save all response fields as PDF">
+      &#128438;&nbsp; Save Page as PDF
+    </button>
+
+    <h3>Grading</h3>
+    <p>This activity is worth <strong>5 extra credit points</strong> and assesses <strong>CSLO 2</strong> (Configure a Linux operating system as a platform for web-based and other applications). Extra credit points are added on top of your base total before your final grade percentage is calculated.</p>
+
+    <p>You will earn full credit if your submission demonstrates that:</p>
+    <ul>
+      <li>A self-signed certificate and private key were generated with <code class="ic">openssl</code></li>
+      <li>Nginx was correctly configured to serve HTTPS using the certificate</li>
+      <li>The firewall was updated to allow port 443</li>
+      <li>HTTPS is verifiably working (curl or browser evidence)</li>
+      <li>You can explain in your own words what TLS accomplishes and what a self-signed certificate's limitation is</li>
+    </ul>
+
+    <h3>Looking ahead to Week 8</h3>
+    <p>In Mini-Project 2 (Week 8), students who choose to include HTTPS can build directly on what you configured here. The capstone does not require HTTPS, but it is a strong addition to a professional-quality server documentation project. If you attempt the extra credit now, keep your configuration notes — you will not need to start from scratch.</p>
+  </section>
+
+</main>
+
+<script>
+  function saveAsPDF() {
+    var textareas = document.querySelectorAll('textarea');
+    var swapped = [];
+
+    textareas.forEach(function(ta) {
+      var div = document.createElement('div');
+      div.className = ta.classList.contains('exp') ? 'print-response exp-print' : 'print-response';
+      div.textContent = ta.value.trim() !== '' ? ta.value : '(no response entered)';
+      ta.parentNode.insertBefore(div, ta.nextSibling);
+      swapped.push({ ta: ta, div: div });
+    });
+
+    function restore() {
+      swapped.forEach(function(item) {
+        item.ta.style.display = '';
+        item.div.remove();
+      });
+      window.removeEventListener('afterprint', restore);
+    }
+
+    window.addEventListener('afterprint', restore);
+    swapped.forEach(function(item) { item.ta.style.display = 'none'; });
+    window.print();
+  }
+</script>
+
+</body>
+</html>

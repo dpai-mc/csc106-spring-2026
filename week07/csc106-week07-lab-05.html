@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 7 Lab 5 – Server Configuration: Networking, Web, and SSH | CSC 106</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: #1a3a5c;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      text-decoration: none;
+      border-radius: 0 0 4px 0;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus { top: 0; }
+
+    :focus-visible {
+      outline: 3px solid #f6ad55;
+      outline-offset: 2px;
+    }
+
+    /* Sticky nav */
+    .lab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1a3a5c;
+      padding: 0 1rem;
+    }
+    .lab-nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.45rem 0;
+    }
+    .nav-label {
+      color: #bee3f8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.3rem;
+      flex-shrink: 0;
+    }
+    .nav-sep {
+      color: #4a90b8;
+      font-size: 0.78rem;
+      padding: 0 0.15rem;
+      flex-shrink: 0;
+    }
+    .lab-nav a {
+      color: #bee3f8;
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 0.26rem 0.52rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .lab-nav a:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lab-nav a:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    /* Layout */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Activity header card */
+    .activity-header {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #2b6cb0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .activity-header h1 {
+      font-size: 1.45rem;
+      color: #1a3a5c;
+      margin-bottom: 0.2rem;
+    }
+    .activity-meta {
+      font-size: 0.85rem;
+      color: #4a5568;
+      margin-bottom: 1.1rem;
+    }
+
+    .scenario-box {
+      background: #ebf8ff;
+      border: 1px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .box-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2b6cb0;
+      margin-bottom: 0.4rem;
+    }
+    .scenario-box p + p { margin-top: 0.5rem; }
+
+    .objectives-box { margin-top: 1rem; }
+    .objectives-box > strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #1a3a5c;
+      margin-bottom: 0.45rem;
+    }
+    .objectives-box ul { padding-left: 1.3rem; }
+    .objectives-box li { margin-bottom: 0.3rem; font-size: 0.93rem; }
+
+    /* Video callout */
+    .video-callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      background: #f0fff4;
+      border: 1px solid #9ae6b4;
+      border-radius: 6px;
+      padding: 0.85rem 1.05rem;
+      margin-top: 1.1rem;
+    }
+    .video-callout-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+    .video-callout-body { flex: 1; }
+    .video-callout-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #276749;
+      margin-bottom: 0.2rem;
+    }
+    .video-callout-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 0.2rem;
+    }
+    .video-callout-desc {
+      font-size: 0.86rem;
+      color: #2d3748;
+    }
+
+    /* Part section headers */
+    .part-header {
+      background: #1a3a5c;
+      color: #fff;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.2rem;
+      scroll-margin-top: 68px;
+    }
+    .part-header h2 {
+      font-size: 1.15rem;
+      margin-bottom: 0.2rem;
+    }
+    .part-header p {
+      font-size: 0.88rem;
+      color: #bee3f8;
+    }
+
+    /* Phase cards */
+    .phase-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 2px solid #ebf4ff;
+    }
+    .phase-badge {
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .phase-badge-b { background: #6b46c1; }
+    .phase-card h2 {
+      font-size: 1.12rem;
+      color: #1a3a5c;
+    }
+
+    .phase-description {
+      font-size: 0.94rem;
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+    .phase-description + .phase-description { margin-top: -0.5rem; }
+
+    /* Sub-labels */
+    .sub-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Code / command blocks */
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    .sample-pre {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre;
+    }
+    .ann { color: #f6ad55; font-style: italic; }
+
+    .cmd-block { margin-bottom: 1rem; }
+    .cmd-block p { font-size: 0.85rem; color: #4a5568; margin-top: 0.4rem; }
+    .sample-block { margin-bottom: 1rem; }
+    .sample-block + .sample-block { margin-top: -0.4rem; }
+
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .ic {
+      background: #edf2f7;
+      color: #2b6cb0;
+      padding: 0.08em 0.38em;
+      border-radius: 3px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.87em;
+    }
+
+    /* Alert / warning box */
+    .alert-box {
+      background: #fff5f5;
+      border: 1.5px solid #fc8181;
+      border-left: 4px solid #e53e3e;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+    }
+    .alert-box-label {
+      display: block;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #c53030;
+      margin-bottom: 0.3rem;
+    }
+    .alert-box p + p { margin-top: 0.4rem; }
+    .alert-box ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .alert-box li { margin-bottom: 0.25rem; }
+
+    /* Info / note box */
+    .note-box {
+      background: #fffbeb;
+      border-left: 3px solid #d69e2e;
+      border-radius: 0 4px 4px 0;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
+      font-size: 0.87rem;
+      color: #1a202c;
+    }
+    .note-box p + p { margin-top: 0.35rem; }
+    .note-box ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .note-box li { margin-bottom: 0.2rem; }
+
+    /* Options panel for SSH key choices */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 620px) { .options-grid { grid-template-columns: 1fr; } }
+    .option-card {
+      border: 1.5px solid #bee3f8;
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      background: #f7fafc;
+    }
+    .option-card-label {
+      display: block;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #2b6cb0;
+      margin-bottom: 0.3rem;
+    }
+    .option-card strong {
+      display: block;
+      font-size: 0.93rem;
+      color: #1a3a5c;
+      margin-bottom: 0.3rem;
+    }
+    .option-card p { font-size: 0.85rem; color: #2d3748; }
+
+    /* Checklist steps (numbered steps within a card) */
+    .step-list {
+      counter-reset: step-counter;
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1rem;
+    }
+    .step-list li {
+      counter-increment: step-counter;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      margin-bottom: 0.7rem;
+      font-size: 0.92rem;
+    }
+    .step-list li::before {
+      content: counter(step-counter);
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 50%;
+      min-width: 1.4em;
+      height: 1.4em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.18em;
+    }
+
+    /* Hint (collapsible) */
+    details.hint {
+      margin-bottom: 1.1rem;
+      border: 1px solid #d69e2e;
+      border-radius: 6px;
+      background: #fffbeb;
+    }
+    details.hint summary {
+      cursor: pointer;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #744210;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    details.hint summary::-webkit-details-marker { display: none; }
+    details.hint summary::before {
+      content: "▶";
+      font-size: 0.65rem;
+      transition: transform 0.18s;
+      color: #c07d10;
+      flex-shrink: 0;
+    }
+    details.hint[open] summary::before { transform: rotate(90deg); }
+    details.hint summary:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+    .hint-body {
+      padding: 0 0.9rem 0.75rem;
+      font-size: 0.88rem;
+      color: #744210;
+    }
+    .hint-body ul { padding-left: 1.2rem; margin-top: 0.25rem; }
+    .hint-body li { margin-bottom: 0.3rem; }
+    .hint-body p + p { margin-top: 0.4rem; }
+    .hint-body code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: #fef3c7;
+      padding: 0.05em 0.3em;
+      border-radius: 3px;
+    }
+
+    /* Response fields */
+    .response-group { margin-top: 1.2rem; }
+    .response-field { margin-bottom: 1rem; }
+    .response-field label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.35rem;
+    }
+    .field-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 1.35em;
+      height: 1.35em;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #1a202c;
+      background: #fff;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: 3px solid #4299e1;
+      outline-offset: 1px;
+      border-color: #4299e1;
+    }
+    textarea.out {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.83rem;
+      background: #f7fafc;
+      min-height: 100px;
+    }
+    textarea.exp { min-height: 80px; }
+
+    /* Submission section */
+    .submission-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #38a169;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      scroll-margin-top: 68px;
+    }
+    .submission-section h2 {
+      font-size: 1.15rem;
+      color: #1a6644;
+      margin-bottom: 0.8rem;
+    }
+    .submission-section h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 1rem 0 0.4rem;
+    }
+    .submission-section h3:first-of-type { margin-top: 0; }
+    .submission-section p, .submission-section li { font-size: 0.92rem; }
+    .submission-section ol, .submission-section ul { padding-left: 1.3rem; }
+    .submission-section li { margin-bottom: 0.3rem; }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 1rem;
+    }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+      font-size: 0.91rem;
+    }
+    .checklist li::before {
+      content: "☐";
+      font-size: 1rem;
+      color: #38a169;
+      flex-shrink: 0;
+    }
+
+    .points-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 0.5rem 0 1rem;
+    }
+    .points-table th {
+      background: #f7fafc;
+      text-align: left;
+      padding: 0.45rem 0.7rem;
+      border-bottom: 2px solid #e2e8f0;
+      color: #4a5568;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .points-table td {
+      padding: 0.4rem 0.7rem;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .points-table tr:last-child td { border-bottom: none; }
+    .points-table .pts {
+      font-weight: 700;
+      color: #2b6cb0;
+      white-space: nowrap;
+    }
+    .points-total td {
+      font-weight: 700;
+      border-top: 2px solid #e2e8f0;
+      background: #f7fafc;
+    }
+
+    .pdf-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #38a169;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.3rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      text-decoration: none;
+    }
+    .pdf-btn:hover { background: #2f855a; }
+    .pdf-btn:focus-visible { outline: 3px solid #f6ad55; outline-offset: 2px; }
+
+    .ec-box {
+      background: #faf5ff;
+      border: 1px solid #d6bcfa;
+      border-radius: 6px;
+      padding: 0.85rem 1.05rem;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+    }
+    .ec-box-label {
+      display: block;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #6b46c1;
+      margin-bottom: 0.25rem;
+    }
+    .ec-box p + p { margin-top: 0.35rem; }
+
+    /* Print styles */
+    @media print {
+      .skip-link, .lab-nav, .pdf-btn, details.hint, .video-callout { display: none !important; }
+
+      body { background: #fff; font-size: 10.5pt; color: #000; }
+      main { max-width: 100%; padding: 0; }
+
+      .activity-header, .phase-card, .submission-section {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0.9rem 0.5rem;
+        margin-bottom: 0.6rem;
+        page-break-inside: avoid;
+      }
+      .part-header {
+        background: #1a3a5c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border-radius: 0;
+        margin-bottom: 0.5rem;
+      }
+      textarea { display: none !important; }
+
+      .print-response {
+        border: 1px solid #aaa;
+        border-radius: 3px;
+        padding: 0.4rem 0.5rem;
+        min-height: 2.5rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "Courier New", monospace;
+        font-size: 8pt;
+        background: #fafafa;
+        color: #000;
+        margin-top: 0.3rem;
+      }
+      .print-response.exp-print {
+        font-family: inherit;
+        font-size: 9.5pt;
+      }
+      pre, .sample-pre { font-size: 7.5pt; white-space: pre-wrap; }
+      .phase-card h2 { font-size: 11pt; }
+      .activity-header h1 { font-size: 14pt; }
+      .alert-box { border: 1px solid #e53e3e; }
+      .options-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .activity-header, .phase-card, .submission-section { padding: 1.1rem 1rem; }
+      .activity-header h1 { font-size: 1.2rem; }
+      .phase-card h2 { font-size: 1rem; }
+      .lab-nav a { font-size: 0.77rem; padding: 0.23rem 0.4rem; }
+      .part-header { padding: 0.85rem 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="lab-nav" aria-label="Lab section navigation">
+  <div class="lab-nav-inner">
+    <span class="nav-label" aria-hidden="true">Jump to:</span>
+    <span class="nav-sep" aria-hidden="true">Part A —</span>
+    <a href="#step-a1">Network Inspect</a>
+    <a href="#step-a2">Static IP</a>
+    <a href="#step-a3">Nginx</a>
+    <a href="#step-a4">ufw</a>
+    <a href="#step-a5">Cron Job</a>
+    <span class="nav-sep" aria-hidden="true">|</span>
+    <span class="nav-sep" aria-hidden="true">Part B —</span>
+    <a href="#step-b1">Generate Keys</a>
+    <a href="#step-b2">Auth Setup</a>
+    <a href="#step-b3">Verify Login</a>
+    <span class="nav-sep" aria-hidden="true">|</span>
+    <a href="#submission">Submit</a>
+  </div>
+</nav>
+
+<main id="main-content">
+
+  <!-- ── Activity Header ── -->
+  <header class="activity-header">
+    <h1>Server Configuration: Networking, Web, and SSH</h1>
+    <p class="activity-meta">CSC 106 – Introduction to Linux II &nbsp;·&nbsp; Week 7, Lab 5 &nbsp;·&nbsp; 45 points &nbsp;·&nbsp; CSLO 2, CSLO 3</p>
+
+    <div class="scenario-box" role="note">
+      <span class="box-label">Scenario</span>
+      <p>You are a junior systems administrator preparing your organization's Ubuntu Server for its first deployment. The server needs a stable, predictable IP address (so clients can always find it), a web server to serve content, a firewall to block unauthorized access, a scheduled health-monitoring task, and secure SSH access using key-based authentication instead of passwords.</p>
+      <p>This is the configuration that every real server goes through before it goes into production. By the end of this two-part assignment, your VM will look and behave like a real server — one you built and secured yourself, from scratch.</p>
+    </div>
+
+    <div class="objectives-box">
+      <strong>By completing this assignment you will demonstrate that you can:</strong>
+      <ul>
+        <li>Inspect the current network configuration using <code class="ic">ip addr</code>, <code class="ic">ip route</code>, and Netplan YAML files.</li>
+        <li>Configure a static IP address on Ubuntu Server using Netplan.</li>
+        <li>Install Nginx, create a custom web page, and verify it serves correctly with <code class="ic">curl</code>.</li>
+        <li>Configure <code class="ic">ufw</code> to enforce a default-deny firewall that allows only SSH and HTTP.</li>
+        <li>Create a cron job that logs Nginx service health on a schedule.</li>
+        <li>Generate an SSH key pair and configure passwordless key-based authentication.</li>
+        <li>Explain why each of these configurations contributes to a secure, functional server.</li>
+      </ul>
+    </div>
+
+    <div class="video-callout" role="note" aria-label="Instructor demo video for Part A">
+      <span class="video-callout-icon" aria-hidden="true">&#9654;&#65039;</span>
+      <div class="video-callout-body">
+        <span class="video-callout-label">Instructor Demo — Watch Before Starting Part A</span>
+        <p class="video-callout-title">Video 1: Static IP, Nginx, and ufw: Configuring Your Server (Part A Walkthrough)</p>
+        <p class="video-callout-desc">Approximately 15–18 minutes. Covers the full Part A workflow — examining Netplan config, writing a static IP YAML, installing Nginx, setting up ufw, and creating the cron job. Includes live troubleshooting of common mistakes. Available in the Week 7 module in Canvas.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       PART A
+  ═══════════════════════════════════════════ -->
+  <div class="part-header" id="partA">
+    <h2>Part A — Static IP, Web Server, Firewall, and Cron</h2>
+    <p>Configure your Ubuntu Server VM with a static IP address, a working web server, a firewall, and an automated health check. All five steps build on each other — complete them in order.</p>
+  </div>
+
+  <!-- ── Step A1: Inspect Current Network Configuration ── -->
+  <section class="phase-card" id="step-a1" aria-labelledby="h-a1">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Part A &middot; Step 1 of 5</span>
+      <h2 id="h-a1">Inspect Your Current Network Configuration</h2>
+    </div>
+
+    <p class="phase-description">Before you change any network settings, capture a snapshot of your current configuration. You need three pieces of information to write your Netplan file correctly: your <strong>interface name</strong>, your <strong>current IP and subnet</strong>, and your <strong>default gateway</strong>. Do not skip this step — copying an example with the wrong interface name or gateway is one of the most common mistakes in this assignment.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Find your interface name and current IP address</span>
+      <pre><code>ip addr</code></pre>
+      <p>Look for the interface that is <strong>not</strong> <code class="ic">lo</code>. Its name — commonly <code class="ic">enp0s3</code>, <code class="ic">ens3</code>, or <code class="ic">enp0s1</code> depending on your hypervisor — is what you must use in your Netplan YAML. Find the <code class="ic">inet</code> line under that interface and note the IP address and prefix (e.g., <code class="ic">192.168.1.47/24</code>).</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 state UP
+    link/ether 08:00:27:a5:b3:c1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.47/24 brd 192.168.1.255 scope global dynamic enp0s3  <span class="ann">&#8592; dynamic = DHCP, this will change</span>
+    valid_lft 86342sec preferred_lft 86342sec</code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Find your default gateway</span>
+      <pre><code>ip route</code></pre>
+      <p>Look for the line that starts with <code class="ic">default via</code>. The IP address immediately after <code class="ic">via</code> is your gateway — you will need this in the <code class="ic">routes</code> section of your Netplan file.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — yours will differ</span>
+      <pre class="sample-pre"><code>default via 192.168.1.1 dev enp0s3 proto dhcp src 192.168.1.47 metric 100  <span class="ann">&#8592; 192.168.1.1 is the gateway</span>
+192.168.1.0/24 dev enp0s3 proto kernel scope link src 192.168.1.47 metric 100</code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — View the current Netplan configuration</span>
+      <pre><code>cat /etc/netplan/*.yaml</code></pre>
+      <p>Note the filename shown when you run <code class="ic">ls /etc/netplan/</code> — you will edit this file in the next step. Common names are <code class="ic">00-installer-config.yaml</code> and <code class="ic">50-cloud-init.yaml</code>.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Sample output — current DHCP config (what you'll replace)</span>
+      <pre class="sample-pre"><code>network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: true   <span class="ann">&#8592; this is what we're changing to a static IP</span></code></pre>
+    </div>
+
+    <div class="response-group" role="group" aria-label="Step A1 responses">
+      <div class="response-field">
+        <label for="a1-ipaddr">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">ip addr</code>
+        </label>
+        <textarea id="a1-ipaddr" class="out" rows="9" placeholder="Paste the full output of  ip addr  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a1-iproute">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the output of <code class="ic">ip route</code>
+        </label>
+        <textarea id="a1-iproute" class="out" rows="5" placeholder="Paste the full output of  ip route  here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a1-netplan">
+          <span class="field-num" aria-hidden="true">3</span>
+          Paste your current Netplan YAML content (from <code class="ic">cat /etc/netplan/*.yaml</code>)
+        </label>
+        <textarea id="a1-netplan" class="out" rows="7" placeholder="Paste your current Netplan YAML here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a1-notes">
+          <span class="field-num" aria-hidden="true">4</span>
+          Record the three values you'll need for the next step: your interface name, your subnet (e.g., /24), and your default gateway IP.
+        </label>
+        <textarea id="a1-notes" class="exp" rows="3" placeholder="Interface name: &#10;Current subnet (e.g. /24): &#10;Default gateway IP:"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step A2: Configure Static IP with Netplan ── -->
+  <section class="phase-card" id="step-a2" aria-labelledby="h-a2">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Part A &middot; Step 2 of 5</span>
+      <h2 id="h-a2">Configure a Static IP Address with Netplan</h2>
+    </div>
+
+    <p class="phase-description">Servers need a fixed, predictable IP address. DNS records, firewall rules, and every client that connects to your server depends on that address staying the same across reboots. You will disable DHCP and assign a static IP by editing your Netplan YAML file.</p>
+
+    <div class="alert-box" role="alert">
+      <span class="alert-box-label">&#9888;&#65039; YAML Is Whitespace-Sensitive — Use Spaces, Not Tabs</span>
+      <p>YAML requires <strong>spaces</strong> for indentation — tab characters cause a parse error. Use <strong>exactly two spaces</strong> per indentation level. If <code class="ic">netplan apply</code> reports "expected mapping," a tab is almost certainly the cause. In <code class="ic">nano</code>, you can check: if your cursor jumps by 8 positions when you press Tab, you used a tab. Delete it and type two spaces.</p>
+      <p>Also: your interface name must match what you found in Step 1. Do not copy the example's <code class="ic">enp0s3</code> if yours is different.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Edit your Netplan configuration file</span>
+      <pre><code>sudo nano /etc/netplan/00-installer-config.yaml</code></pre>
+      <p>Replace the filename with your actual Netplan file name from Step 1. Replace the entire contents with a static IP configuration using the values you recorded in Step 1. Use the template below as your starting point.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Static IP template — replace ALL values with your own</span>
+      <pre class="sample-pre"><code>network:
+  version: 2
+  ethernets:
+    enp0s3:           <span class="ann">&#8592; replace with YOUR interface name from Step 1</span>
+      dhcp4: no       <span class="ann">&#8592; disables DHCP; we take control of the address</span>
+      addresses:
+        - 192.168.1.100/24   <span class="ann">&#8592; pick an unused IP on your subnet, same prefix</span>
+      routes:
+        - to: default
+          via: 192.168.1.1   <span class="ann">&#8592; your gateway from Step 1</span>
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4</code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>Choosing your static IP:</strong> Pick an address on the same subnet as your current DHCP address but with a different last octet (e.g., if your DHCP address is <code class="ic">192.168.1.47</code>, choose something like <code class="ic">192.168.1.100</code>). Avoid addresses that look like they might be assigned by DHCP to other machines. The subnet prefix (e.g., <code class="ic">/24</code>) should match your current prefix exactly.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Apply the configuration</span>
+      <pre><code>sudo netplan apply</code></pre>
+      <p>No output means success. If you see an error, go back to your YAML file and check indentation. A common error message for a tab character: <code class="ic">Error in network definition: expected mapping</code>.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — Verify your static IP is active</span>
+      <pre><code>ip addr show</code></pre>
+      <p>Find your interface in the output. The <code class="ic">inet</code> line should now show your chosen static IP. It should no longer say <code class="ic">dynamic</code>, and it should show <code class="ic">valid_lft forever</code>.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 4 — Verify connectivity still works</span>
+      <pre><code>ping -c 3 8.8.8.8
+ping -c 3 example.com</code></pre>
+      <p>The first ping tests that you can reach the internet. The second tests that DNS resolution works. If the first succeeds but the second fails, check your <code class="ic">nameservers</code> section. If both fail, verify your <code class="ic">via</code> (gateway) address.</p>
+    </div>
+
+    <details class="hint">
+      <summary>Recovery: what to do if network connectivity breaks</summary>
+      <div class="hint-body">
+        <p>If <code>netplan apply</code> kills your network connection and you are connected via SSH, do not panic — you still have access to your VM through the VirtualBox or UTM console window. Open that window, log in directly, and fix the YAML file. The most common causes of a broken configuration are:</p>
+        <ul>
+          <li>Wrong interface name (copy-pasted from the example instead of using yours)</li>
+          <li>Wrong gateway address (double-check against Step 1's <code>ip route</code> output)</li>
+          <li>Tab characters instead of spaces in the YAML</li>
+          <li>A static IP that conflicts with another device on the network</li>
+        </ul>
+        <p>To revert to DHCP temporarily, change <code>dhcp4: no</code> back to <code>dhcp4: true</code>, remove the <code>addresses</code>, <code>routes</code>, and <code>nameservers</code> blocks, and run <code>sudo netplan apply</code> again.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step A2 responses">
+      <div class="response-field">
+        <label for="a2-yaml">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your final Netplan YAML file contents (key deliverable — this is required in your submission document)
+        </label>
+        <textarea id="a2-yaml" class="out" rows="14" placeholder="Paste your complete Netplan YAML here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a2-ipaddr">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the output of <code class="ic">ip addr</code> after applying the static IP configuration
+        </label>
+        <textarea id="a2-ipaddr" class="out" rows="9" placeholder="Paste ip addr output here — confirm the static address appears with valid_lft forever…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a2-ping">
+          <span class="field-num" aria-hidden="true">3</span>
+          Paste the output of both ping tests confirming internet and DNS connectivity
+        </label>
+        <textarea id="a2-ping" class="out" rows="10" placeholder="Paste ping -c 3 8.8.8.8 and ping -c 3 example.com output here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step A3: Install and Configure Nginx ── -->
+  <section class="phase-card" id="step-a3" aria-labelledby="h-a3">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Part A &middot; Step 3 of 5</span>
+      <h2 id="h-a3">Install Nginx and Create a Custom Web Page</h2>
+    </div>
+
+    <p class="phase-description">Nginx is a high-performance web server. You will install it, verify it is running as a system service, and replace the default welcome page with a custom page that identifies your server. This is the first time your Ubuntu Server will serve actual web content to clients.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Update the package index and install Nginx</span>
+      <pre><code>sudo apt update &amp;&amp; sudo apt install nginx -y</code></pre>
+      <p>Always run <code class="ic">apt update</code> before installing packages to refresh the package index. The <code class="ic">-y</code> flag answers yes to all prompts automatically.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Verify Nginx is running and enabled</span>
+      <pre><code>systemctl status nginx</code></pre>
+      <p>Look for <code class="ic">Active: active (running)</code> and <code class="ic">enabled</code> in the output. "Enabled" means Nginx will start automatically after a reboot (Ubuntu's Nginx package sets this by default). If it is not enabled, run <code class="ic">sudo systemctl enable nginx</code>.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — Confirm Nginx is listening on port 80</span>
+      <pre><code>ss -tlnp | grep :80</code></pre>
+      <p>You should see a line showing Nginx listening on <code class="ic">0.0.0.0:80</code>. If you ran <code class="ic">ss -tlnp</code> in Week 6 and only saw SSH on port 22, this is the new entry that Nginx adds.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 4 — Create your custom index page</span>
+      <pre><code>sudo nano /var/www/html/index.html</code></pre>
+      <p>Write a simple HTML page that clearly identifies this as your server. It does not need to be elaborate — the goal is to prove the server is serving your content, not the Nginx default page. Include your name and something specific to this assignment.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Minimal example — customize with your own content</span>
+      <pre class="sample-pre"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;CSC 106 Server&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Week 7 Server — Your Name Here&lt;/h1&gt;
+  &lt;p&gt;Configured with static IP, Nginx, ufw, and SSH key authentication.&lt;/p&gt;
+  &lt;p&gt;Server hostname: your-hostname-here&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 5 — Verify Nginx is serving your custom page</span>
+      <pre><code>curl localhost</code></pre>
+      <p>The output should be your custom HTML — not the Nginx default page. If you still see the default page, make sure you saved the file as <code class="ic">index.html</code> (not <code class="ic">index.html.txt</code> or similar).</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 6 — Check web content ownership and permissions</span>
+      <pre><code>ls -la /var/www/html/</code></pre>
+      <p>Your <code class="ic">index.html</code> should be owned by <code class="ic">root</code> with permissions <code class="ic">644</code> (readable by everyone, including the <code class="ic">www-data</code> user that Nginx runs as). This is the default after creating the file with <code class="ic">sudo nano</code> and is usually fine without further changes.</p>
+    </div>
+
+    <details class="hint">
+      <summary>What to do if curl shows the default Nginx page instead of yours</summary>
+      <div class="hint-body">
+        <ul>
+          <li>Run <code>ls /var/www/html/</code> and verify your file is named exactly <code>index.html</code></li>
+          <li>Open the file with <code>cat /var/www/html/index.html</code> to confirm it has your content</li>
+          <li>If there is both an <code>index.html</code> and an <code>index.nginx-debian.html</code>, Nginx prioritizes <code>index.html</code> — so your file should take effect</li>
+          <li>Try <code>sudo nginx -t</code> to check the Nginx configuration for syntax errors before reloading</li>
+          <li>If you made changes after Nginx was already serving, run <code>sudo systemctl reload nginx</code> to pick up the changes</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step A3 responses">
+      <div class="response-field">
+        <label for="a3-html">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the contents of your custom <code class="ic">index.html</code> file (key deliverable)
+        </label>
+        <textarea id="a3-html" class="out" rows="12" placeholder="Paste your index.html file contents here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a3-curl">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the output of <code class="ic">curl localhost</code> confirming Nginx is serving your page (key deliverable)
+        </label>
+        <textarea id="a3-curl" class="out" rows="10" placeholder="Paste curl localhost output here — should show your custom HTML…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step A4: Configure ufw ── -->
+  <section class="phase-card" id="step-a4" aria-labelledby="h-a4">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Part A &middot; Step 4 of 5</span>
+      <h2 id="h-a4">Configure the Firewall with ufw</h2>
+    </div>
+
+    <p class="phase-description">A server exposed to a network needs a firewall. <code class="ic">ufw</code> (Uncomplicated Firewall) provides a simple interface to the underlying Linux firewall. You will set a default-deny policy for incoming traffic, then explicitly open only the two ports your server needs: SSH (port 22) and HTTP (port 80).</p>
+
+    <div class="alert-box" role="alert">
+      <span class="alert-box-label">&#9888;&#65039; Critical Order: Allow SSH BEFORE You Enable the Firewall</span>
+      <p>If you enable <code class="ic">ufw</code> with a default-deny policy before allowing SSH, and you are connected via SSH, you will immediately lose your connection and be locked out. The VM console (VirtualBox or UTM window) always provides a way back in — but you want to avoid that disruption.</p>
+      <p><strong>Always follow this sequence: set defaults → allow SSH → allow HTTP → then and only then enable.</strong></p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Check the current firewall status</span>
+      <pre><code>sudo ufw status</code></pre>
+      <p>This will likely show <code class="ic">Status: inactive</code>. Good — we will configure rules before activating.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Set default policies</span>
+      <pre><code>sudo ufw default deny incoming
+sudo ufw default allow outgoing</code></pre>
+      <p>These two commands establish the base policy: block all incoming traffic by default, but allow the server to initiate outgoing connections (needed for apt updates, DNS queries, etc.).</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — Allow SSH (do this before enabling the firewall)</span>
+      <pre><code>sudo ufw allow ssh</code></pre>
+      <p>This allows TCP traffic on port 22. It is equivalent to <code class="ic">sudo ufw allow 22/tcp</code>. The firewall is still not active yet — you are just preparing the rule set.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 4 — Allow HTTP for Nginx</span>
+      <pre><code>sudo ufw allow http</code></pre>
+      <p>This allows TCP traffic on port 80. Equivalent to <code class="ic">sudo ufw allow 80/tcp</code>. You can also use the application profile name: <code class="ic">sudo ufw allow 'Nginx HTTP'</code>.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 5 — Enable the firewall</span>
+      <pre><code>sudo ufw enable</code></pre>
+      <p>The system will warn you that this may disrupt existing SSH connections. Because you allowed SSH in Step 3, it is safe to type <code class="ic">y</code> and proceed. The firewall will also be enabled automatically at every reboot.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 6 — Verify the final firewall state</span>
+      <pre><code>sudo ufw status verbose</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected output</span>
+      <pre class="sample-pre"><code>Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                  Action      From
+--                  ------      ----
+22/tcp              ALLOW IN    Anywhere          <span class="ann">&#8592; SSH open</span>
+80/tcp              ALLOW IN    Anywhere          <span class="ann">&#8592; HTTP open</span>
+22/tcp (v6)         ALLOW IN    Anywhere (v6)
+80/tcp (v6)         ALLOW IN    Anywhere (v6)</code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 7 — Confirm Nginx still works through the firewall</span>
+      <pre><code>curl localhost</code></pre>
+      <p>Traffic from <code class="ic">localhost</code> (the machine itself) is not filtered by ufw by default, so this should still return your custom HTML. The firewall controls external traffic coming from other machines.</p>
+    </div>
+
+    <details class="hint">
+      <summary>If you accidentally lock yourself out of SSH</summary>
+      <div class="hint-body">
+        <p>Open the VirtualBox or UTM window for your VM and log in directly through the console — this always works even when the network firewall blocks SSH from outside. Then run:</p>
+        <ul>
+          <li><code>sudo ufw allow ssh</code> — to add the SSH rule</li>
+          <li><code>sudo ufw status verbose</code> — to confirm the rule was added</li>
+        </ul>
+        <p>SSH connections should resume within a few seconds. Remember: when configuring firewalls on remote servers where you have no console access, getting locked out can be catastrophic. On a VM with console access, it is recoverable — but treat it as a learning moment about why order matters.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step A4 responses">
+      <div class="response-field">
+        <label for="a4-ufw">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">sudo ufw status verbose</code> (key deliverable)
+        </label>
+        <textarea id="a4-ufw" class="out" rows="12" placeholder="Paste sudo ufw status verbose output here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step A5: Cron Job ── -->
+  <section class="phase-card" id="step-a5" aria-labelledby="h-a5">
+    <div class="phase-header">
+      <span class="phase-badge" aria-hidden="true">Part A &middot; Step 5 of 5</span>
+      <h2 id="h-a5">Set Up the Health-Monitoring Cron Job</h2>
+    </div>
+
+    <p class="phase-description">The final piece of Part A is a scheduled task. You will create a cron job that runs every hour and writes a timestamped Nginx health check to a log file. This is a simple but real form of server monitoring — you build up a history of whether your web server was running at each check interval.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 1 — Open your personal crontab for editing</span>
+      <pre><code>crontab -e</code></pre>
+      <p>If this is your first time, it will ask which editor to use. Choose <code class="ic">1</code> for <code class="ic">nano</code> unless you prefer another editor. Add the cron entry below on its own line at the bottom of the file, then save and exit.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Cron entry — add this line (choose one format)</span>
+      <pre class="sample-pre"><code># Option A — compact one-liner (logs just "active" or "inactive"):
+0 * * * * echo "$(date): $(systemctl is-active nginx)" >> ~/nginx-health.log
+
+# Option B — more detailed (logs date and full Nginx status):
+0 * * * * date >> ~/nginx-health.log &amp;&amp; systemctl status nginx --no-pager >> ~/nginx-health.log 2&gt;&amp;1</code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>Understanding the schedule: <code class="ic">0 * * * *</code></strong></p>
+      <p>Cron uses five time fields before the command: <code class="ic">minute hour day-of-month month day-of-week</code>. The value <code class="ic">0 * * * *</code> means "at minute 0 of every hour, every day." A <code class="ic">*</code> means "any value."</p>
+      <p>Use <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">Crontab Guru</a> to build and verify schedule expressions in plain English.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 2 — Verify the cron entry was saved</span>
+      <pre><code>crontab -l</code></pre>
+      <p>You should see your new entry listed. If the file appears empty or the entry is missing, run <code class="ic">crontab -e</code> again.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Step 3 — Test the command manually (do not wait an hour)</span>
+      <pre><code>echo "$(date): $(systemctl is-active nginx)" >> ~/nginx-health.log
+cat ~/nginx-health.log</code></pre>
+      <p>Run the cron command directly in the terminal to verify it produces correct output. The log file should appear in your home directory with a timestamped entry.</p>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected log entry</span>
+      <pre class="sample-pre"><code>Wed May 07 14:00:01 UTC 2026: active   <span class="ann">&#8592; date and "active" (or "inactive" if Nginx were down)</span></code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>Testing with a per-minute schedule and checking cron logs</summary>
+      <div class="hint-body">
+        <p>To verify cron actually fires the job (not just that the command works manually), you can temporarily change the schedule to every minute by replacing <code>0 * * * *</code> with <code>* * * * *</code>. Wait 1–2 minutes, then check your log file. Restore the schedule to <code>0 * * * *</code> before submitting.</p>
+        <p>To see what cron is doing behind the scenes:</p>
+        <ul>
+          <li><code>grep CRON /var/log/syslog</code> — shows cron execution records in the system log</li>
+          <li><code>journalctl -u cron</code> — shows the cron service journal (newer systems)</li>
+        </ul>
+        <p>If the log file is not being created, verify that the log path is writable by your user. Using <code>~/nginx-health.log</code> (your home directory) is the safest choice when running from your personal crontab (without <code>sudo</code>). If you use <code>sudo crontab -e</code> (root's crontab), the path <code>/var/log/nginx-health.log</code> also works.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step A5 responses">
+      <div class="response-field">
+        <label for="a5-crontab">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">crontab -l</code> showing your cron entry (key deliverable)
+        </label>
+        <textarea id="a5-crontab" class="out" rows="5" placeholder="Paste crontab -l output here…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="a5-log">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste a sample log entry from <code class="ic">cat ~/nginx-health.log</code> after running the command manually
+        </label>
+        <textarea id="a5-log" class="out" rows="4" placeholder="Paste your log file output here — should show the date and nginx status…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       PART B
+  ═══════════════════════════════════════════ -->
+  <div class="part-header" id="partB" style="background: #3b2070;">
+    <h2>Part B — SSH Key Authentication</h2>
+    <p>Replace password-based SSH login with cryptographic key authentication. You will generate a key pair, install the public key on the server (or a second user account), and verify that you can connect without entering a password.</p>
+  </div>
+
+  <div class="phase-card" style="background: #faf5ff; border-left: 4px solid #9f7aea; box-shadow: none; padding: 1.1rem 1.5rem; margin-bottom: 1.2rem;">
+    <div class="video-callout" role="note" aria-label="Instructor demo video for Part B">
+      <span class="video-callout-icon" aria-hidden="true">&#9654;&#65039;</span>
+      <div class="video-callout-body">
+        <span class="video-callout-label">Instructor Demo — Watch Before Starting Part B</span>
+        <p class="video-callout-title">Video 2: SSH Keys Explained and Configured (Part B Walkthrough)</p>
+        <p class="video-callout-desc">Approximately 10–12 minutes. Explains how SSH key authentication works conceptually (the padlock analogy), then demonstrates generating a key pair, configuring <code class="ic">authorized_keys</code>, verifying passwordless login, and diagnosing the most common problem (wrong file permissions). Available in the Week 7 module in Canvas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Step B1: Generate SSH Key Pair ── -->
+  <section class="phase-card" id="step-b1" aria-labelledby="h-b1">
+    <div class="phase-header">
+      <span class="phase-badge phase-badge-b" aria-hidden="true">Part B &middot; Step 1 of 3</span>
+      <h2 id="h-b1">Generate an SSH Key Pair</h2>
+    </div>
+
+    <p class="phase-description">SSH key authentication uses a mathematically linked pair of keys. The <strong>private key</strong> stays on the machine you connect <em>from</em> — never share it with anyone. The <strong>public key</strong> goes on the server in the target user's <code class="ic">~/.ssh/authorized_keys</code> file. When you connect, the server challenges your SSH client to prove it holds the private key that matches the stored public key. No password is ever sent over the network.</p>
+
+    <p class="phase-description">For this assignment, you have two options for where to generate and use your keys. Choose the one that fits your setup:</p>
+
+    <div class="options-grid" role="group" aria-label="Key setup options">
+      <div class="option-card">
+        <span class="option-card-label">Option 1 — Host to VM (recommended if SSH is set up)</span>
+        <strong>Generate on your host machine (Mac or Windows), copy to VM</strong>
+        <p>Simulates the real-world setup. Generate the key on your laptop, then copy the public key to the VM using <code class="ic">ssh-copy-id</code>. Requires that SSH from your host to the VM is already working.</p>
+      </div>
+      <div class="option-card">
+        <span class="option-card-label">Option 2 — Same VM, two users (simpler)</span>
+        <strong>Generate on the VM as one user, copy to a second user account</strong>
+        <p>Generate the key as your primary user, then manually copy the public key to a second account (like one you created in Week 5). Does not require host-to-VM SSH. Demonstrates the same concepts.</p>
+      </div>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Generate the key pair</span>
+      <pre><code>ssh-keygen -t ed25519 -C "yourname@csc106"</code></pre>
+      <p><code class="ic">-t ed25519</code> specifies the Ed25519 algorithm (modern, fast, and secure). The <code class="ic">-C</code> flag adds a comment label to identify the key — replace the value in quotes with your own name or label. Accept the default file location when prompted (press Enter). For the passphrase, an empty passphrase is fine for this assignment; a passphrase adds extra protection if your private key file is ever stolen.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Verify the key files were created</span>
+      <pre><code>ls -la ~/.ssh/</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Expected output</span>
+      <pre class="sample-pre"><code>drwx------ 2 student student 4096 May 7 14:10 .          <span class="ann">&#8592; .ssh dir must be 700 (drwx------)</span>
+drwxr-x--- 5 student student 4096 May 7 14:10 ..
+-rw------- 1 student student  411 May 7 14:10 id_ed25519      <span class="ann">&#8592; private key: 600 (-rw-------)</span>
+-rw-r--r-- 1 student student  103 May 7 14:10 id_ed25519.pub  <span class="ann">&#8592; public key: 644 (shareable)</span></code></pre>
+    </div>
+
+    <div class="note-box" role="note">
+      <p><strong>Private key vs. public key:</strong> The file ending in <code class="ic">.pub</code> is your public key — this is the one you copy to the server. The file without <code class="ic">.pub</code> is your private key — never share this file, never paste it anywhere, never copy it to the server.</p>
+    </div>
+
+    <div class="response-group" role="group" aria-label="Step B1 responses">
+      <div class="response-field">
+        <label for="b1-ls">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste the output of <code class="ic">ls -la ~/.ssh/</code> showing your generated key files
+        </label>
+        <textarea id="b1-ls" class="out" rows="7" placeholder="Paste ls -la ~/.ssh/ output here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step B2: Set Up Authorized Keys ── -->
+  <section class="phase-card" id="step-b2" aria-labelledby="h-b2">
+    <div class="phase-header">
+      <span class="phase-badge phase-badge-b" aria-hidden="true">Part B &middot; Step 2 of 3</span>
+      <h2 id="h-b2">Configure Key-Based Authentication</h2>
+    </div>
+
+    <p class="phase-description">You need to place your public key in the target account's <code class="ic">~/.ssh/authorized_keys</code> file. SSH checks this file when a connection is made — if the public key matches the private key the connecting client presents, authentication succeeds without a password.</p>
+
+    <p class="phase-description">File and directory <strong>permissions are not optional</strong>. SSH silently ignores <code class="ic">authorized_keys</code> if the permissions are too permissive — it will fall back to password authentication without giving you a useful error message. Setting correct permissions is a required part of this step.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Option 1: Using ssh-copy-id (from host machine to VM)</span>
+      <pre><code>ssh-copy-id yourusername@your-vm-ip-address</code></pre>
+      <p><code class="ic">ssh-copy-id</code> copies your public key, creates the <code class="ic">~/.ssh/</code> directory if needed, and sets correct permissions automatically. It is the simplest approach when connecting from your host machine to the VM. After running it, proceed to Step B3 to verify.</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Option 2: Manual setup (same VM, two users — run as your primary user with sudo)</span>
+      <pre><code># 1. Create the .ssh directory for the target user
+sudo mkdir -p /home/targetuser/.ssh
+
+# 2. Copy your public key into their authorized_keys file
+sudo cp ~/.ssh/id_ed25519.pub /home/targetuser/.ssh/authorized_keys
+
+# 3. Fix ownership — the files must be owned by the target user
+sudo chown -R targetuser:targetuser /home/targetuser/.ssh
+
+# 4. Set required permissions
+sudo chmod 700 /home/targetuser/.ssh
+sudo chmod 600 /home/targetuser/.ssh/authorized_keys</code></pre>
+      <p>Replace <code class="ic">targetuser</code> with the actual username of the second account on your VM (such as a user you created in Week 5).</p>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Verify permissions on the target .ssh directory</span>
+      <pre><code>sudo ls -la /home/targetuser/.ssh/</code></pre>
+    </div>
+
+    <div class="sample-block">
+      <span class="sub-label">Required permissions — must match exactly</span>
+      <pre class="sample-pre"><code>drwx------ 2 targetuser targetuser 4096 May 7 14:15 .            <span class="ann">&#8592; 700, owner = targetuser</span>
+drwxr-x--- 4 targetuser targetuser 4096 May 7 14:15 ..
+-rw------- 1 targetuser targetuser  103 May 7 14:15 authorized_keys  <span class="ann">&#8592; 600, owner = targetuser</span></code></pre>
+    </div>
+
+    <details class="hint">
+      <summary>What ssh-copy-id does under the hood</summary>
+      <div class="hint-body">
+        <p>When you run <code>ssh-copy-id user@server</code>, it is doing exactly what the manual Option 2 steps do — it reads your <code>~/.ssh/id_ed25519.pub</code> file and appends its contents to <code>~/.ssh/authorized_keys</code> on the remote system, creating the file and directory with correct permissions if they do not exist. Understanding the manual steps means you can set up key auth on any system, even ones where <code>ssh-copy-id</code> is not available.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step B2 responses">
+      <div class="response-field">
+        <label for="b2-option">
+          <span class="field-num" aria-hidden="true">1</span>
+          Which option did you use (Option 1 — host to VM via ssh-copy-id, or Option 2 — same VM, two users)? Briefly describe your setup.
+        </label>
+        <textarea id="b2-option" class="exp" rows="3" placeholder="e.g. I used Option 2. My primary user is 'student' and I copied the key to 'devuser' on the same VM…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="b2-ls">
+          <span class="field-num" aria-hidden="true">2</span>
+          Paste the output of <code class="ic">ls -la</code> on the target account's <code class="ic">.ssh/</code> directory showing correct ownership and permissions
+        </label>
+        <textarea id="b2-ls" class="out" rows="7" placeholder="Paste ls -la /home/targetuser/.ssh/ output here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Step B3: Verify Passwordless Login ── -->
+  <section class="phase-card" id="step-b3" aria-labelledby="h-b3">
+    <div class="phase-header">
+      <span class="phase-badge phase-badge-b" aria-hidden="true">Part B &middot; Step 3 of 3</span>
+      <h2 id="h-b3">Verify Passwordless Login</h2>
+    </div>
+
+    <p class="phase-description">Test that SSH key authentication is working by connecting to the target account. A successful connection skips the password prompt entirely (or asks only for your key's passphrase if you set one) and drops you directly into a shell.</p>
+
+    <div class="cmd-block">
+      <span class="sub-label">Test the connection — Option 1 (host to VM)</span>
+      <pre><code>ssh yourusername@your-vm-ip-address</code></pre>
+    </div>
+
+    <div class="cmd-block">
+      <span class="sub-label">Test the connection — Option 2 (same VM, two users)</span>
+      <pre><code>ssh targetuser@localhost</code></pre>
+    </div>
+
+    <p class="phase-description">You should be logged in without a password prompt. Verify with <code class="ic">whoami</code> to confirm you are in the target account, then <code class="ic">exit</code> to return.</p>
+
+    <div class="alert-box" role="alert">
+      <span class="alert-box-label">&#128270; If SSH Is Still Asking for a Password — Troubleshoot Here</span>
+      <p>SSH silently falls back to password auth when key auth fails. Use verbose mode to see what is happening:</p>
+      <pre style="background:#2d3748; color:#e2e8f0; font-size:0.85rem; padding:0.6rem 0.9rem; border-radius:5px; margin:0.5rem 0;">ssh -v targetuser@localhost</pre>
+      <p>Look for lines like <code>Offering public key</code> and <code>Authentications that can continue</code>. If the key is offered but rejected, work through this checklist:</p>
+      <ul>
+        <li>Is <code>.ssh/</code> owned by the <strong>target user</strong> (not root)? Check with <code>ls -la /home/targetuser/</code></li>
+        <li>Is <code>.ssh/</code> exactly <code>700</code> (<code>drwx------</code>)?</li>
+        <li>Is <code>authorized_keys</code> exactly <code>600</code> (<code>-rw-------</code>)?</li>
+        <li>Did you copy the <code>.pub</code> file (public key), not the private key?</li>
+        <li>Is the public key content all on a single line in <code>authorized_keys</code>? (No line breaks mid-key)</li>
+      </ul>
+    </div>
+
+    <details class="hint">
+      <summary>What "permission too open" looks like and how to fix it</summary>
+      <div class="hint-body">
+        <p>If you run <code>ssh -v</code> and see the key being offered but rejected, and you suspect permissions, you can reproduce the problem deliberately:</p>
+        <ul>
+          <li>Set <code>.ssh/</code> to 777: <code>sudo chmod 777 /home/targetuser/.ssh</code></li>
+          <li>Try to connect — SSH will now silently ignore the key and ask for a password</li>
+          <li>Fix it: <code>sudo chmod 700 /home/targetuser/.ssh</code></li>
+          <li>Try again — passwordless login resumes</li>
+        </ul>
+        <p>This exercise from the instructor's demonstration helps you understand <em>why</em> the permissions requirement exists: if the <code>.ssh</code> directory or <code>authorized_keys</code> file is world-writable, an attacker could append their own public key and gain access. SSH protects you by refusing to use keys stored with insecure permissions.</p>
+      </div>
+    </details>
+
+    <div class="response-group" role="group" aria-label="Step B3 responses">
+      <div class="response-field">
+        <label for="b3-ssh">
+          <span class="field-num" aria-hidden="true">1</span>
+          Paste your SSH connection output showing successful passwordless login (key deliverable). Include the connection command, the login banner, and the result of <code class="ic">whoami</code>.
+        </label>
+        <textarea id="b3-ssh" class="out" rows="10" placeholder="Paste your SSH session output here — should show login without a password prompt, then whoami confirming the target user…"></textarea>
+      </div>
+      <div class="response-field">
+        <label for="b3-explain">
+          <span class="field-num" aria-hidden="true">2</span>
+          In 2–3 sentences: explain why SSH key authentication is more secure than password authentication. What attack does it prevent?
+        </label>
+        <textarea id="b3-explain" class="exp" rows="4" placeholder="Write your explanation here…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Submission ── -->
+  <section class="submission-section" id="submission" aria-labelledby="h-submission">
+    <h2 id="h-submission">Deliverables and Submission</h2>
+
+    <h3>What to submit</h3>
+    <p>Submit a <strong>single document</strong> to the <strong>Server Configuration: Networking, Web, and SSH</strong> assignment in Canvas. Your document must include all of the following:</p>
+
+    <ul class="checklist" aria-label="Submission checklist">
+      <li>Your Netplan YAML file contents (the completed static IP configuration)</li>
+      <li>Output of <code class="ic">ip addr</code> after applying the static IP, confirming the address is static</li>
+      <li>Output of <code class="ic">curl localhost</code> showing Nginx serving your custom page</li>
+      <li>Your custom <code class="ic">index.html</code> contents (or a screenshot of the page)</li>
+      <li>Output of <code class="ic">sudo ufw status verbose</code> showing SSH and HTTP allowed, default deny incoming</li>
+      <li>Output of <code class="ic">crontab -l</code> showing your cron entry</li>
+      <li>A sample line from your Nginx health log (<code class="ic">cat ~/nginx-health.log</code>)</li>
+      <li>Output of <code class="ic">ls -la ~/.ssh/</code> showing your generated key files</li>
+      <li>Output of <code class="ic">ls -la</code> on the target account's <code class="ic">.ssh/</code> directory showing correct permissions</li>
+      <li>SSH connection output showing successful passwordless login (screenshot or paste)</li>
+      <li>Screenshots of key steps (especially the ufw configuration and SSH login)</li>
+    </ul>
+
+    <h3>How to create your submission document</h3>
+    <p>You can compile your submission in several ways:</p>
+    <ol>
+      <li><strong>Fill in this page and save as PDF</strong> — complete all the response fields above, then click the button below. Use your browser's print-to-PDF feature to save.</li>
+      <li><strong>A Word or Google Docs document</strong> — paste terminal output and screenshots, organized by the deliverable items listed above.</li>
+      <li><strong>A plain text or Markdown file</strong> — paste all terminal output in order, with clear section labels.</li>
+    </ol>
+    <p>Whichever format you choose, keep the deliverables clearly organized so the instructor can locate each item quickly.</p>
+
+    <button class="pdf-btn" onclick="saveAsPDF()" type="button" aria-label="Save all response fields as PDF for review">
+      &#128438;&nbsp; Save Page as PDF
+    </button>
+
+    <h3>Grading</h3>
+    <p>This assignment is worth <strong>45 points</strong> and assesses <strong>CSLO 2</strong> (Configure a Linux operating system as a platform for web-based and other applications) and <strong>CSLO 3</strong> (Describe Linux runlevels and startup scripts). Your submission is evaluated as a whole based on evidence that each component was configured correctly and that you understand why each configuration matters.</p>
+
+    <table class="points-table" aria-label="Grading overview">
+      <thead>
+        <tr>
+          <th scope="col">Component</th>
+          <th scope="col">What the instructor is looking for</th>
+          <th scope="col" class="pts">Weight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Static IP (Netplan)</strong></td>
+          <td>Valid YAML with correct syntax; static IP confirmed in <code class="ic">ip addr</code> output; connectivity verified with ping</td>
+          <td class="pts">Part A</td>
+        </tr>
+        <tr>
+          <td><strong>Nginx web server</strong></td>
+          <td>Service running and enabled; custom <code class="ic">index.html</code> clearly yours; <code class="ic">curl localhost</code> shows custom page</td>
+          <td class="pts">Part A</td>
+        </tr>
+        <tr>
+          <td><strong>ufw firewall</strong></td>
+          <td>Firewall active; default deny incoming; SSH (22) and HTTP (80) explicitly allowed; verified with <code class="ic">ufw status verbose</code></td>
+          <td class="pts">Part A</td>
+        </tr>
+        <tr>
+          <td><strong>Cron job</strong></td>
+          <td>Valid crontab entry that runs on a schedule; log file exists with timestamped entries; crontab shown with <code class="ic">crontab -l</code></td>
+          <td class="pts">Part A</td>
+        </tr>
+        <tr>
+          <td><strong>SSH key authentication</strong></td>
+          <td>Key pair generated; public key in <code class="ic">authorized_keys</code> with correct permissions; passwordless login demonstrated</td>
+          <td class="pts">Part B</td>
+        </tr>
+        <tr>
+          <td><strong>Documentation quality</strong></td>
+          <td>Deliverables are complete, organized, and show that commands were run on your actual VM (not fabricated)</td>
+          <td class="pts">Both parts</td>
+        </tr>
+        <tr class="points-total">
+          <td colspan="2">Total</td>
+          <td class="pts">45 pts</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Also due this week</h3>
+    <p>This lab is one of two graded items for Week 7. The other is:</p>
+    <ul>
+      <li><strong>RSI Discussion 7 — "Securing Your Server" (15 points):</strong> Original post (minimum 150 words) due Wednesday; two substantive replies to classmates due Sunday. Reflect on the security decisions you made during this assignment. Why do we use SSH keys? Why run a firewall on a VM that is already behind NAT? What does "securing a server" mean in layers? Post in the Week 7 discussion board in Canvas.</li>
+    </ul>
+
+    <div class="ec-box" role="note">
+      <span class="ec-box-label">&#11088; Extra Credit — Self-Signed TLS for Nginx (5 points)</span>
+      <p>If you would like to extend this assignment, you can earn 5 points of extra credit by adding HTTPS to your Nginx server using a self-signed TLS certificate.</p>
+      <p>Read the <a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu" target="_blank" rel="noopener noreferrer">DigitalOcean tutorial on self-signed SSL for Nginx</a> and the <a href="https://nginx.org/en/docs/http/configuring_https_servers.html" target="_blank" rel="noopener noreferrer">Nginx HTTPS server documentation</a>. Generate a self-signed TLS certificate using <code class="ic">openssl</code>, update your Nginx configuration to serve HTTPS on port 443, allow port 443 through ufw, and document the process with screenshots and explanation. Submit as an addendum to your main Lab 5 document.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function saveAsPDF() {
+    var textareas = document.querySelectorAll('textarea');
+    var swapped = [];
+
+    textareas.forEach(function(ta) {
+      var div = document.createElement('div');
+      div.className = ta.classList.contains('exp') ? 'print-response exp-print' : 'print-response';
+      div.textContent = ta.value.trim() !== '' ? ta.value : '(no response entered)';
+      ta.parentNode.insertBefore(div, ta.nextSibling);
+      swapped.push({ ta: ta, div: div });
+    });
+
+    function restore() {
+      swapped.forEach(function(item) {
+        item.ta.style.display = '';
+        item.div.remove();
+      });
+      window.removeEventListener('afterprint', restore);
+    }
+
+    window.addEventListener('afterprint', restore);
+    swapped.forEach(function(item) { item.ta.style.display = 'none'; });
+    window.print();
+  }
+</script>
+
+</body>
+</html>
