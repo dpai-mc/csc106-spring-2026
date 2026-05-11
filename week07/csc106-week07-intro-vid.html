@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weeks 7 &amp; 8 Introduction | CSC 106</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background-color: #ffffff;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus { top: 0; }
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.top-nav {
+  background-color: #1a1a2e;
+  padding: 0.6rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+}
+.top-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.top-nav a:hover,
+.top-nav a:focus {
+  background-color: #334155;
+  color: #ffffff;
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.65rem;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+  scroll-margin-top: 3.5rem;
+}
+.page-label {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+h2 {
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 3.5rem;
+}
+
+p { margin-bottom: 0.8rem; }
+
+#intro {
+  scroll-margin-top: 3.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Video + Transcript ── */
+.video-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0 1.25rem;
+}
+@media (min-width: 860px) {
+  .video-wrap { flex-direction: row; align-items: flex-start; }
+  .video-col  { flex: 2; min-width: 0; }
+  .transcript-col { flex: 1; min-width: 0; }
+}
+.video-container {
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  position: relative;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.transcript-container {
+  height: 22rem;
+  overflow-y: scroll;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+.transcript-container .loading {
+  color: #64748b;
+  text-align: center;
+  padding: 1rem 0;
+}
+.transcript-line {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  margin-bottom: 0.1rem;
+}
+.transcript-line:hover { background: #f1f5f9; }
+.active-transcript-line {
+  background: #f0f7ff;
+  font-weight: 600;
+  border-left-color: #1e88e5;
+  padding-left: 12px;
+  transition: background-color 0.2s;
+}
+
+/* ── Topics section ── */
+#topics {
+  scroll-margin-top: 3.5rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+.topics-list {
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+.topics-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#intro">Skip to main content</a>
+
+<nav class="top-nav" aria-label="Page sections">
+  <a href="#intro">Introduction</a>
+  <a href="#video">Video Walkthrough</a>
+  <a href="#topics">Topics Covered</a>
+</nav>
+
+<main class="container">
+
+  <!-- ── Introduction ── -->
+  <section id="intro" aria-labelledby="page-heading">
+    <p class="page-label">CSC 106 &middot; Weeks 7 &amp; 8 &middot; Introduction</p>
+    <h1 id="page-heading">Weeks 7 &amp; 8 &mdash; Introduction</h1>
+    <p>Welcome to the final stretch of the course. Week 7 is the most hands-on week yet: you will configure your Ubuntu Server with a static IP address, a running web server, a firewall, a scheduled monitoring task, and SSH key authentication. Week 8 brings everything together with Mini-Project 2, where you build a brand-new server from scratch and document the full process.</p>
+  </section>
+
+  <!-- ── Video Walkthrough ── -->
+  <section id="video" aria-labelledby="video-heading">
+    <h2 id="video-heading">Video Walkthrough</h2>
+    <p style="font-size:0.93rem; margin-bottom:0.75rem;">This video gives a guided tour of the Week 7 and 8 materials in Canvas. The instructor walks through the Week 7 learning page &mdash; covering Netplan, Nginx, UFW, cron, and SSH key authentication &mdash; and highlights the walkthrough videos embedded directly in the Server Configuration lab. The Week 8 Mini-Project 2 expectations are also previewed, including the requirement to build a fresh Ubuntu Server from scratch. Use the transcript panel to follow along or jump to any point in the video.</p>
+
+    <div class="video-wrap">
+      <div class="video-col">
+        <div class="video-container" id="vc-1">
+          <iframe id="yt-1"
+                  src="https://www.youtube.com/embed/cbANfv42lzo?enablejsapi=1"
+                  title="Week 7 and 8 Introduction — Course Walkthrough"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="transcript-col">
+        <div id="tc-1" class="transcript-container"
+             role="region"
+             aria-label="Transcript for Week 7 and 8 introduction video">
+          <p class="loading">Loading transcript&hellip;</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Topics Covered ── -->
+  <section id="topics" aria-labelledby="topics-heading">
+    <h2 id="topics-heading">Topics Covered in This Video</h2>
+    <p style="font-size:0.93rem;">The video covers the following topics in order. Use this list to follow along or to return to a specific part of the discussion.</p>
+    <ol class="topics-list">
+      <li>Week 7 overview: network configuration, server setup, and security</li>
+      <li>Assignment structure: Part A (Netplan, Nginx, UFW, cron) and Part B (SSH key authentication)</li>
+      <li>The Week 7 learning page and how to use it as your primary starting point</li>
+      <li>Netplan and static IP configuration &mdash; what it is and how to apply it</li>
+      <li>Nginx installation, enabling the service at boot, and creating a custom web page</li>
+      <li>UFW firewall setup &mdash; setting default deny, allowing SSH and HTTP</li>
+      <li>Scheduled tasks with cron &mdash; writing an hourly job and verifying it runs</li>
+      <li>SSH key authentication (Part B) &mdash; generating a key pair, copying the public key, and verifying passwordless login</li>
+      <li>The interactive Linux terminal practice lab built into the course page</li>
+      <li>Supplemental web resources: Netplan docs, Nginx beginner guide, UFW tutorial, crontab.guru, SSH guides, and self-signed TLS for extra credit</li>
+      <li>Week 8 Mini-Project 2 overview &mdash; build a new Ubuntu Server from scratch with a different hostname and user</li>
+      <li>Assignment submission tips: what to document, which screenshots are required, and how to submit as a PDF</li>
+    </ol>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VIDEO_ID = 'cbANfv42lzo';
+  var player;
+  var timeUpdater;
+  var parsedTranscript = [];
+
+  var vttContent = `WEBVTT
+
+00:00.920 --> 00:05.520
+Aloha and welcome. I just wanted to do a quick update here for week seven and eight
+
+00:05.520 --> 00:12.620
+and wrapping up the course. That's where this video is right here that we're talking this week
+
+00:12.620 --> 00:18.520
+seven and eight. So real quickly, week seven has an overview, network configuration, server setup,
+
+00:18.580 --> 00:27.320
+and security. There is a lab for this week. So chapter 14, which I assigned last week for
+
+00:27.320 --> 00:32.480
+reading. So you just kind of go back over it. There are some supplemental web resources.
+
+00:33.700 --> 00:41.060
+I do have some videos, but they're built into the lab. Okay. Into the server configuration
+
+00:41.060 --> 00:46.240
+assignment. The videos are built into that. So they will be built in just where they need to be.
+
+00:46.340 --> 00:56.260
+And they basically walk through the server configuration for the lab. Okay. There's not
+
+00:56.260 --> 00:57.300
+55. There's only 55.
+
+00:57.320 --> 01:01.280
+40 and five extra credit if you want to do that.
+
+01:03.160 --> 01:12.360
+So anyway, I want to put this down and say that I added this week. I did something I haven't been
+
+01:12.360 --> 01:22.320
+doing is I added kind of like a learning, if you will, page. So this kind of goes through
+
+01:22.320 --> 01:27.300
+everything for this week that you need to be able to do. So this is a good place.
+
+01:27.320 --> 01:38.460
+Actually start and then use everything else as just kind of reference. Okay. So this page is going
+
+01:38.460 --> 01:50.280
+to go through NetPlan, NGINX, UFW, and Cron. That's part A of our lab. And then SSH keys,
+
+01:50.280 --> 01:57.300
+which is part B. All right. And then the mini project, which is for next week.
+
+01:57.320 --> 02:04.320
+But you can start it this week if you would like. Or you should start it this week. Okay. What is
+
+02:04.320 --> 02:13.820
+NetPlan? Talks about NetPlan, creating your thing, setting that all up, applying, verifying what
+
+02:13.820 --> 02:22.920
+happens beside the scenes. It's all in configuring NGINX. Verify it's running, enable it, create a
+
+02:22.920 --> 02:27.160
+custom page. Here's a custom page. Check it. And then you can start it this week. Or you should
+
+02:27.160 --> 02:38.020
+check it. Okay. So what happens when you cURL that browser or your browser or cURL the client,
+
+02:38.020 --> 02:44.620
+it goes to port 80. The firewall says, do I allow port 80 HTTP traffic through? Yes. It goes to
+
+02:44.620 --> 02:50.320
+NGINX. NGINX says, what do you want? It reads your request and then it'll send it back.
+
+02:52.840 --> 02:56.800
+Okay. So configure the firewall. This is all in the lab too, as well.
+
+02:57.160 --> 03:10.360
+In my videos. But schedule your task. There are some references, SSH key, how that works,
+
+03:11.080 --> 03:19.340
+and how to create it. Permissions are critical. Create it as a functional server, put everything
+
+03:19.340 --> 03:26.980
+together. Okay. And then I have a little lab here, which is actually just kind of an
+
+03:27.160 --> 03:32.360
+HTTP. It's a web-based thing, so it's not a real server. So you can't just type whatever you want
+
+03:32.360 --> 03:42.160
+in the commands. These commands I have work, but nothing else works. You can't say IP ADDR show.
+
+03:42.160 --> 03:55.580
+That works, but I wonder if ENP0S3, that doesn't work. See, it gives everything. It just looks for
+
+03:55.580 --> 03:56.680
+IP ADDR.
+
+03:57.160 --> 04:03.280
+Okay. But you can type in these commands and you can get the answer back and what it looks like. So
+
+04:03.280 --> 04:14.740
+you can see what it is. You can do your config dash dot YAML, your SS dash TNLP, your crontab dash L
+
+04:14.740 --> 04:19.540
+to see your cron jobs, curl localhost. And this is going to give you, it's going to feedback what
+
+04:20.080 --> 04:27.120
+you should be seeing. All right. And then a little scenario here to think through some
+
+04:27.120 --> 04:36.760
+stuff. Okay. So I put that up there. Hopefully it'll be helpful. And then this is the additional
+
+04:36.760 --> 04:41.400
+reading pages. These you'd use as, I would use these more as technical references rather than
+
+04:41.900 --> 04:46.680
+resources rather than, hey, I have to do all these tutorials because there's a lot of stuff.
+
+04:46.680 --> 04:54.300
+If you do all the tutorials, but all these links work or should work when I tested them through
+
+04:54.300 --> 04:55.140
+the networking.
+
+04:55.440 --> 04:56.660
+I'm not going to read this whole thing.
+
+04:57.120 --> 05:01.380
+This is kind of can be a little bit long, but this one's not too bad.
+
+05:06.060 --> 05:07.840
+Netplan.io reference.
+
+05:07.860 --> 05:15.720
+So it talks about Netplan, address routes, TCP4, how you make the file, how to install NGINX, pretty
+
+05:15.720 --> 05:19.920
+straightforward, but there's a beginner's guide to NGINX.
+
+05:20.160 --> 05:22.440
+So how do you set up a basic server block?
+
+05:22.440 --> 05:24.960
+How do you understand commands, stuff like that.
+
+05:24.960 --> 05:25.960
+Firewall commands.
+
+05:27.120 --> 05:32.280
+Configuration documents on firewall configuration, then the tutorial, how to set up a firewall with
+
+05:32.280 --> 05:39.540
+UFW on Ubuntu at DigitalOcean, crontab.guru, which is pretty nice.
+
+05:39.540 --> 05:47.520
+Cause you can type in your, whatever you want, you know, kind of try to figure it out, play with it
+
+05:47.520 --> 05:50.360
+here and they'll tell you what it's doing.
+
+05:51.660 --> 05:57.120
+Asterisk zero, minute zero, hour is any value, day is any value, okay.
+
+06:24.120 --> 06:26.340
+Anyway, so these are tools you can use.
+
+06:27.120 --> 06:37.620
+And look at how to set up SSH keys, open SSH server, which we're doing, and then self-signed TLS.
+
+06:38.220 --> 06:44.100
+If you want to do the extra credit, and then I added this, what do you do if a site is unreachable?
+
+06:44.100 --> 06:45.840
+Because the other week I had problems.
+
+06:45.840 --> 06:47.700
+I couldn't get to Ubuntu to do some stuff.
+
+06:48.780 --> 06:53.280
+If it comes back weird, you can go up here and check for reported outages.
+
+06:57.120 --> 07:03.420
+Okay, no problems.
+
+07:04.260 --> 07:06.380
+Sometimes there's a problem or you can report a problem.
+
+07:06.420 --> 07:08.700
+Like if the web server's not up.
+
+07:21.040 --> 07:23.100
+Most reported problems with the website.
+
+07:23.360 --> 07:25.380
+They had a DNS attack a week ago or so.
+
+07:27.120 --> 07:30.120
+A denial of service attack a week or so ago.
+
+07:30.120 --> 07:33.720
+And so it was down for like a day or half a day.
+
+07:33.960 --> 07:37.860
+So the same with Canvas, you could do Canvas, but it's up and running.
+
+07:37.980 --> 07:44.040
+So, all right, this one, there's others, but it's just one that you can go and check.
+
+07:50.400 --> 07:56.760
+So the lab for this week is here and I haven't linked in the videos I've created.
+
+07:57.000 --> 08:00.060
+I've created the videos, but I haven't linked them here, but I will link the first one here.
+
+08:02.100 --> 08:04.680
+And I think it's longer than this.
+
+08:05.460 --> 08:11.320
+That was my goal, but I think it was longer than that, but it goes through all these steps and you need to
+
+08:11.320 --> 08:14.560
+fill out all these forms while you do it.
+
+08:14.760 --> 08:23.220
+So you get to jump back and forth between them and then for part B.
+
+08:29.340 --> 08:30.900
+My second video will be here.
+
+08:35.200 --> 08:38.880
+I'll pop it in there and you can, you'll see it there.
+
+08:38.880 --> 08:40.440
+You can watch it or not watch it.
+
+08:40.520 --> 08:48.240
+I walked through everything and I did this option here, option two, and I suggest you do the same.
+
+08:50.460 --> 08:56.680
+You can't use your host machine and copy and get into your remote machine
+
+08:57.000 --> 09:07.000
+because of the way the firewall is set up, but you might be able to. It's easier to do option two.
+
+09:07.000 --> 09:08.460
+So that's what I did in my video.
+
+09:13.500 --> 09:14.520
+That's that lab.
+
+09:14.760 --> 09:17.700
+And then if you want to do the extra credit, it is here.
+
+09:22.200 --> 09:24.660
+And then the last thing is next week's.
+
+09:27.020 --> 09:35.580
+The mini project is essentially going to be, I want you to build a new Ubuntu server from scratch, start from scratch.
+
+09:35.700 --> 09:39.920
+And essentially you're going to do everything that we've done through the semester again.
+
+09:43.700 --> 09:53.580
+It's basically going to be going through creating a new server, installing a new server, setting it up.
+
+09:53.580 --> 09:55.580
+Static IP, SSH keys.
+
+09:56.980 --> 10:03.700
+Create multiple users and groups, set up sudo, set up a shared directory.
+
+10:04.060 --> 10:10.600
+We've done these through all the labs and then this is just putting it all together as a second server.
+
+10:11.660 --> 10:16.580
+Don't just turn in your first server, create a new server, different name.
+
+10:18.980 --> 10:23.020
+Different user, different server, different user.
+
+10:26.980 --> 10:40.800
+And then make sure you turn in the files where you need to.
+
+10:43.160 --> 10:55.820
+Ideally you will do it inside this document and you'll create the PDF so that you all have it.
+
+10:56.980 --> 10:58.160
+Okay.
+
+10:58.160 --> 10:59.600
+I don't want you to reuse this.
+
+11:01.080 --> 11:03.400
+I really don't want you to. I'd rather have you create a new one.
+
+11:13.180 --> 11:14.480
+I'd like you to do it from scratch.
+
+11:14.640 --> 11:19.040
+I think it'd be better if you did it from scratch as good practice for you.
+
+11:19.960 --> 11:24.700
+Obviously, you know, you can use the existing one, but now you still got to document everything
+
+11:24.700 --> 11:25.820
+again.
+
+11:26.980 --> 11:30.880
+And that you need to do off your VM.
+
+11:37.080 --> 11:39.800
+And so just go through all this stuff.
+
+11:39.820 --> 11:45.440
+Remember if you need this, put them all in here and submit the PDF.
+
+11:46.120 --> 11:50.160
+Don't create just screenshots of everything.
+
+11:50.160 --> 11:51.940
+Create the screenshots I asked for.
+
+11:55.960 --> 11:58.900
+Just want you to answer the questions that I've asked for here.
+
+12:14.260 --> 12:16.120
+Anyway, so that's the mini project.
+
+12:20.040 --> 12:21.780
+And that's all you have to do next week.
+
+12:24.440 --> 12:26.320
+It's basically document that whole thing.
+
+12:26.840 --> 12:36.780
+So yeah, so this is my introduction.
+
+12:37.100 --> 12:40.340
+Thanks for a great half a semester for you guys.
+
+12:40.340 --> 12:52.520
+I'm sorry if you felt I wasn't available, or I didn't get back to you quickly on all your assignments.
+
+12:52.520 --> 12:55.700
+I've graded labs one and two.
+
+12:55.700 --> 12:58.800
+I just haven't uploaded the grades. I'll do that probably tomorrow.
+
+12:59.700 --> 13:07.040
+And I'm trying to finish all of them before the end of the day tomorrow so that
+
+13:07.040 --> 13:10.400
+you have everything, so you know exactly where you stand.
+
+13:11.080 --> 13:16.040
+But I will say, I did notice that some of you aren't really answering these questions.
+
+13:16.840 --> 13:24.420
+So if you don't answer the questions, it's costing you points that you shouldn't be losing.
+
+13:26.700 --> 13:33.120
+And screenshots are only answers to questions that say, give me screenshots.
+
+13:44.960 --> 13:50.140
+Hey, thanks for a great semester and good luck this week and have a great summer.
+
+13:50.780 --> 13:51.280
+Thanks.`;
+
+  function timeToSeconds(timeStr) {
+    if (!timeStr) return 0;
+    var parts = timeStr.trim().split(':');
+    if (parts.length === 2) {
+      return (parseInt(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
+    } else if (parts.length === 3) {
+      return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
+    }
+    return 0;
+  }
+
+  function parseVtt(vttText) {
+    var cues = vttText.trim().split(/\n\n+/);
+    var parsed = [];
+    cues.forEach(function (block) {
+      if (block.startsWith('WEBVTT') || block.trim() === '') return;
+      var lines = block.trim().split('\n');
+      var timeLine = lines.find(function (l) { return l.includes('-->'); });
+      if (!timeLine) return;
+      var timeParts = timeLine.split(' --> ');
+      var textLines = lines.slice(lines.indexOf(timeLine) + 1);
+      parsed.push({
+        start: timeToSeconds(timeParts[0]),
+        end: timeToSeconds(timeParts[1]),
+        text: textLines.join(' ').trim()
+      });
+    });
+    return parsed;
+  }
+
+  function populateTranscript() {
+    var container = document.getElementById('tc-1');
+    container.innerHTML = '';
+    parsedTranscript.forEach(function (cue) {
+      var el = document.createElement('div');
+      el.className = 'transcript-line';
+      el.dataset.start = cue.start;
+      el.dataset.end = cue.end;
+      el.textContent = cue.text;
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      var seek = function () {
+        if (player && player.seekTo) {
+          player.seekTo(cue.start, true);
+          player.playVideo();
+        }
+      };
+      el.addEventListener('click', seek);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seek(); }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function highlightCurrentLine() {
+    if (!player || !player.getCurrentTime) return;
+    var currentTime = player.getCurrentTime();
+    var lines = document.querySelectorAll('#tc-1 .transcript-line');
+    lines.forEach(function (line) {
+      var start = parseFloat(line.dataset.start);
+      var end = parseFloat(line.dataset.end);
+      if (currentTime >= start && currentTime < end) {
+        if (!line.classList.contains('active-transcript-line')) {
+          var prev = document.querySelector('#tc-1 .active-transcript-line');
+          if (prev) prev.classList.remove('active-transcript-line');
+          line.classList.add('active-transcript-line');
+          line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        line.classList.remove('active-transcript-line');
+      }
+    });
+  }
+
+  function syncTranscriptHeight() {
+    var mq = window.matchMedia('(min-width: 860px)');
+    var vc = document.getElementById('vc-1');
+    var tc = document.getElementById('tc-1');
+    if (!vc || !tc) return;
+    tc.style.maxHeight = mq.matches ? vc.offsetHeight + 'px' : '22rem';
+  }
+
+  function onPlayerStateChange(event) {
+    clearInterval(timeUpdater);
+    if (event.data === YT.PlayerState.PLAYING) {
+      timeUpdater = setInterval(highlightCurrentLine, 300);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('yt-1', {
+      videoId: VIDEO_ID,
+      events: { onStateChange: onPlayerStateChange }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    parsedTranscript = parseVtt(vttContent);
+    populateTranscript();
+    setTimeout(syncTranscriptHeight, 100);
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    } else {
+      window.onYouTubeIframeAPIReady();
+    }
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncTranscriptHeight, 250);
+  });
+}());
+</script>
+</body>
+</html>
